@@ -1,0 +1,25 @@
+{
+    "Whitelist": [
+        "C:\\Windows\\System32",
+        "C:\\Windows\\SysWOW64",
+        "C:\\Program Files\\WindowsApps",
+        "C:\\ProgramData\\Microsoft\\Windows Defender",
+        "C:\\ProgramData\\WinOptimizer"
+    ],
+    "StartupBlacklist": [
+        "OneDriveSetup",
+        "DiscordUpdate",
+        "EpicGamesLauncher",
+        "Spotify",
+        "Steam",
+        "AdobeAAMUpdater",
+        "iTunesHelper",
+        "googledrivesync",
+        "GoogleDriveFS",
+        "Teams"
+    ],
+    "MaxLogAgeDays": 30,
+    "EnableToast": true,
+    "EnableHtmlReport": true,
+    "ScheduleProfile": "Weekly"
+}
