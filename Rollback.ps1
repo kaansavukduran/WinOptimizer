@@ -1,15 +1,15 @@
 #Requires -RunAsAdministrator
 <#
 .SYNOPSIS
-    WinOptimizer Rollback Araci v3.1
+    WinOptimizer Rollback Aracı v3.1
 .DESCRIPTION
-    WinOptimizer'in aldigi en son Registry snapshot'ini geri yukler.
+    WinOptimizer'ın aldığı en son Registry snapshot'ını geri yükler.
 #>
 
 $SnapDir = "$env:ProgramData\WinOptimizer\Snapshots"
 
 if (-not (Test-Path $SnapDir)) {
-    Write-Host "Snapshot klasoru bulunamadi: $SnapDir" -ForegroundColor Red
+    Write-Host "Snapshot klasörü bulunamadı: $SnapDir" -ForegroundColor Red
     exit 1
 }
 
@@ -17,7 +17,7 @@ $snaps = Get-ChildItem "$SnapDir\*.reg" -ErrorAction SilentlyContinue |
          Sort-Object LastWriteTime -Descending
 
 if (-not $snaps) {
-    Write-Host "Geri yuklenecek snapshot bulunamadi." -ForegroundColor Yellow
+    Write-Host "Geri yüklenecek snapshot bulunamadı." -ForegroundColor Yellow
     exit 0
 }
 
@@ -28,20 +28,20 @@ $snaps | Select-Object -First 10 | ForEach-Object {
 }
 
 Write-Host ""
-Write-Host "  En son 5 snapshot geri yuklenecek. Devam edilsin mi? (E/H): " -NoNewline -ForegroundColor Yellow
+Write-Host "  En son 5 snapshot geri yüklenecek. Devam edilsin mi? (E/H): " -NoNewline -ForegroundColor Yellow
 $ans = Read-Host
-if ($ans -notmatch '^[Ee]') { Write-Host "Iptal edildi." -ForegroundColor Gray; exit 0 }
+if ($ans -notmatch '^[Ee]') { Write-Host "İptal edildi." -ForegroundColor Gray; exit 0 }
 
 $restored = 0
 foreach ($snap in $snaps | Select-Object -First 5) {
     try {
-        Write-Host "  Geri yukleniyor: $($snap.Name)" -ForegroundColor Cyan
+        Write-Host "  Geri yükleniyor: $($snap.Name)" -ForegroundColor Cyan
         & reg import $snap.FullName 2>$null
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "  OK: Basariyla geri yuklendi." -ForegroundColor Green
+            Write-Host "  OK: Başarıyla geri yüklendi." -ForegroundColor Green
             $restored++
         } else {
-            Write-Host "  HATA: Geri yukleme basarisiz." -ForegroundColor Red
+            Write-Host "  HATA: Geri yükleme başarısız." -ForegroundColor Red
         }
     } catch {
         Write-Host "  HATA: $_" -ForegroundColor Red
@@ -49,5 +49,5 @@ foreach ($snap in $snaps | Select-Object -First 5) {
 }
 
 Write-Host ""
-Write-Host "  $restored snapshot geri yuklendi." -ForegroundColor Green
-Write-Host "  Degisikliklerin tam gecerli olmasi icin sistemi yeniden baslatin." -ForegroundColor Yellow
+Write-Host "  $restored snapshot geri yüklendi." -ForegroundColor Green
+Write-Host "  Değişikliklerin tam geçerli olması için sistemi yeniden başlatın." -ForegroundColor Yellow

@@ -1,1161 +1,1412 @@
-﻿#Requires -RunAsAdministrator
-#Requires -Version 5.1
-<#
+﻿<#
 .SYNOPSIS
-    WinOptimizer Pro v3.1 - Windows 11 Sistem Optimizasyon Araci
+    WinOptimizer Pro v4.0 - Windows 10/11 Sistem Optimizasyon Araci
 .DESCRIPTION
-    7 ana gorev: Gereksiz dosya temizleme, disk optimizasyonu, guncelleme onarimi,
-    virus tarama, dosya sistemi onarimi, optimizasyon/hizlandirma, otomatik baslama.
-    v3.1: Rollback, Dry-Run, Beyaz Liste, Kismi calisma, RAM temizleyici,
-    Donanim izleme, Ag optimizasyonu, Toast bildirimi, HTML rapor,
-    Zamanlama profilleri, Servis zaman asimi korumasi.
-.PARAMETER DryRun
-    Gercek islem yapmaz, sadece ne yapilacagini raporlar.
-.PARAMETER Tasks
-    Calistirilacak gorev numaralari (1-7). Bos birakilirsa tumU calisir.
-    Ornek: -Tasks 1,3,5
-.PARAMETER Profile
-    Zamanlama profili: "Daily" | "Weekly" | "Monthly" | "Manual"
-.PARAMETER AutoMode
-    Gorev Zamanlayici tarafindan cagrildiginda kullanilir.
-.EXAMPLE
-    .\WinOptimizer.ps1 -DryRun
-    .\WinOptimizer.ps1 -Tasks 1,4,5
-    .\WinOptimizer.ps1 -Tasks 2 -DryRun
+    Kapsamli sistem temizleme, optimizasyon, guvenlik ve bakim araci.
+    Yonetici (Administrator) haklariyla calistirilmalidir.
+.NOTES
+    Surum    : 4.0
+    Tarih    : 2026-04-04
+    Yazar    : WinOptimizer Team
+    Gerekli  : PowerShell 5.1+, Windows 10/11
+    Lisans   : MIT
 #>
 
-[CmdletBinding()]
+#Requires -Version 5.1
+
+# ======================================================================
+#  YAPILANDIRMA & SABITLER
+# ======================================================================
+
 param(
-    [switch]$DryRun,
+    [ValidateSet("Normal","DryRun","Silent")]
+    [string]$Mode = "Normal",
+
     [int[]]$Tasks,
-    [ValidateSet("Daily","Weekly","Monthly","Manual")]
-    [string]$Profile = "Manual",
-    [switch]$AutoMode
+
+    [switch]$NoRestart,
+    [switch]$Help
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Continue"
-$OutputEncoding = [System.Text.Encoding]::UTF8
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$ProgressPreference    = "SilentlyContinue"
 
-# ============================================================
-#  SABITLER VE GLOBAL YAPILAR
-# ============================================================
-$Script:Version = "3.1"
-$Script:BaseDir = "$env:ProgramData\WinOptimizer"
-$Script:LogDir  = "$Script:BaseDir\Logs"
-$Script:SnapDir = "$Script:BaseDir\Snapshots"
-$Script:CfgFile = "$Script:BaseDir\config.json"
-$Script:LogFile = "$Script:LogDir\optimizer_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
-$Script:HtmlRpt = "$Script:BaseDir\son_rapor.html"
-$Script:TxtRpt  = "$Script:BaseDir\son_rapor.txt"
+# Surum bilgisi
+$Script:AppName    = "WinOptimizer Pro"
+$Script:AppVersion = "4.0"
 
-$Script:Results = [System.Collections.Generic.List[hashtable]]::new()
-$Script:Stats   = @{
-    FreedMB      = 0.0
-    TasksDone    = 0
-    TasksFailed  = 0
-    ThreatsFound = 0
-    StartTime    = $null
-    Hostname     = $env:COMPUTERNAME
-    OS           = ""
-    RAM_GB       = 0
-    CPU          = ""
-}
+# Dizinler
+$Script:BaseDir    = $PSScriptRoot
+$Script:LogDir     = Join-Path $Script:BaseDir "Logs"
+$Script:BackupDir  = Join-Path $Script:BaseDir "Backups"
+$Script:ReportDir  = Join-Path $Script:BaseDir "Reports"
 
-# ============================================================
-#  DIZIN KURULUMU
-# ============================================================
-foreach ($d in @($Script:BaseDir, $Script:LogDir, $Script:SnapDir)) {
-    if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }
-}
+# Log dosyasi
+$Script:Timestamp  = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$Script:LogFile    = Join-Path $Script:LogDir "WinOptimizer_$Script:Timestamp.log"
 
-# ============================================================
-#  YAPILANDIRMA
-# ============================================================
-function Get-Config {
-    $default = @{
-        Whitelist = @(
-            "C:\\Windows\\System32",
-            "C:\\Windows\\SysWOW64",
-            "C:\\Program Files\\WindowsApps",
-            "C:\\ProgramData\\Microsoft\\Windows Defender"
-        )
-        StartupBlacklist = @(
-            "OneDriveSetup","DiscordUpdate","EpicGamesLauncher",
-            "Spotify","Steam","AdobeAAMUpdater","iTunesHelper",
-            "googledrivesync","GoogleDriveFS","Teams"
-        )
-        MaxLogAgeDays    = 30
-        EnableToast      = $true
-        EnableHtmlReport = $true
-        ScheduleProfile  = "Weekly"
-    }
-    if (Test-Path $Script:CfgFile) {
-        try {
-            $loaded = Get-Content $Script:CfgFile -Raw -Encoding UTF8 | ConvertFrom-Json
-            foreach ($k in $default.Keys) {
-                if (-not ($loaded.PSObject.Properties.Name -contains $k)) {
-                    $loaded | Add-Member -NotePropertyName $k -NotePropertyValue $default[$k]
-                }
-            }
-            return $loaded
-        } catch {
-            Write-Host "[WARN] Config okunamadi, varsayilan kullaniliyor." -ForegroundColor Yellow
+# Sayaclar
+$Script:TotalCleaned   = 0
+$Script:TotalErrors     = 0
+$Script:TotalWarnings   = 0
+$Script:TotalOptimized  = 0
+$Script:TaskResults     = @()
+
+# DryRun modu
+$Script:DryRun = ($Mode -eq "DryRun")
+$Script:Silent = ($Mode -eq "Silent")
+
+# Gorev tanimlari - plain hashtable (PS 5.1 uyumlu)
+$Script:TaskDefinitions = @{}
+$Script:TaskDefinitions[1]  = @{ Name = "Gereksiz Dosya Temizleme";      Function = "Invoke-JunkCleanup" }
+$Script:TaskDefinitions[2]  = @{ Name = "Disk Temizligi";                 Function = "Invoke-DiskCleanup" }
+$Script:TaskDefinitions[3]  = @{ Name = "Registry Temizligi";             Function = "Invoke-RegistryCleanup" }
+$Script:TaskDefinitions[4]  = @{ Name = "Guvenlik Taramasi";              Function = "Invoke-SecurityScan" }
+$Script:TaskDefinitions[5]  = @{ Name = "Windows Guncelleme Kontrolu";    Function = "Invoke-WindowsUpdateCheck" }
+$Script:TaskDefinitions[6]  = @{ Name = "Uygulama Guncelleme (winget)";   Function = "Invoke-AppUpdate" }
+$Script:TaskDefinitions[7]  = @{ Name = "Baslangic Programlari Yonetimi"; Function = "Invoke-StartupOptimization" }
+$Script:TaskDefinitions[8]  = @{ Name = "Hizmet Optimizasyonu";           Function = "Invoke-ServiceOptimization" }
+$Script:TaskDefinitions[9]  = @{ Name = "Ag Optimizasyonu";               Function = "Invoke-NetworkOptimization" }
+$Script:TaskDefinitions[10] = @{ Name = "Guc Plani Optimizasyonu";        Function = "Invoke-PowerOptimization" }
+$Script:TaskDefinitions[11] = @{ Name = "Sistem Sagligi Raporu";          Function = "Invoke-SystemHealthReport" }
+$Script:TaskOrder = @(1,2,3,4,5,6,7,8,9,10,11)
+
+# ======================================================================
+#  YARDIMCI FONKSIYONLAR
+# ======================================================================
+
+function Initialize-Environment {
+    foreach ($dir in @($Script:LogDir, $Script:BackupDir, $Script:ReportDir)) {
+        if (-not (Test-Path $dir)) {
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
         }
     }
-    $default | ConvertTo-Json -Depth 5 | Out-File $Script:CfgFile -Encoding UTF8 -Force
-    return $default
+    # Eski log dosyalarini temizle (30 gunluk)
+    Get-ChildItem -Path $Script:LogDir -Filter "*.log" -ErrorAction SilentlyContinue |
+        Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) } |
+        Remove-Item -Force -ErrorAction SilentlyContinue
 }
 
-$Script:Config = Get-Config
+function Test-Administrator {
+    $identity  = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
 
-# ============================================================
-#  LOG SISTEMI
-# ============================================================
 function Write-Log {
     param(
-        [string]$Message,
-        [ValidateSet('INFO','WARN','ERROR','OK','DRY')]$Level = 'INFO'
+        [ValidateSet("INFO","OK","WARN","ERROR","DEBUG","SECTION")]
+        [string]$Level,
+        [string]$Message
     )
     $ts   = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $tag  = if ($DryRun -and $Level -eq 'INFO') { 'DRY' } else { $Level }
-    $line = "[$ts][$tag] $Message"
-    Add-Content -Path $Script:LogFile -Value $line -Encoding UTF8 -ErrorAction SilentlyContinue
-    $color = switch ($tag) {
-        'OK'    { 'Green'   }
-        'WARN'  { 'Yellow'  }
-        'ERROR' { 'Red'     }
-        'DRY'   { 'Magenta' }
-        default { 'Cyan'    }
+    $line = "[$ts][$Level] $Message"
+
+    # Dosyaya yaz
+    Add-Content -Path $Script:LogFile -Value $line -ErrorAction SilentlyContinue
+
+    # Konsola yaz (Silent modda sadece ERROR goster)
+    if ($Script:Silent -and $Level -notin @("ERROR","SECTION")) { return }
+
+    $color = switch ($Level) {
+        "INFO"    { "Cyan" }
+        "OK"      { "Green" }
+        "WARN"    { "Yellow"; $Script:TotalWarnings++ }
+        "ERROR"   { "Red";    $Script:TotalErrors++ }
+        "DEBUG"   { "DarkGray" }
+        "SECTION" { "White" }
     }
     Write-Host $line -ForegroundColor $color
 }
 
-function Write-Section {
-    param([string]$Title)
-    $sep = "=" * 62
-    Write-Log $sep
-    Write-Log "  $Title"
-    Write-Log $sep
+function Write-Banner {
+    param([string]$Title, [string]$Subtitle = "")
+    $width = 64
+    $sep   = "=" * $width
+    Write-Log "SECTION" ""
+    Write-Log "SECTION" $sep
+    Write-Log "SECTION" "  $Title"
+    if ($Subtitle) { Write-Log "SECTION" "  $Subtitle" }
+    Write-Log "SECTION" $sep
 }
 
-function Add-Result {
-    param([string]$Task, [string]$Action, [string]$Status, [string]$Detail = "")
-    $Script:Results.Add(@{
-        Task   = $Task
-        Action = $Action
-        Status = $Status
-        Detail = $Detail
-        Time   = (Get-Date -Format "HH:mm:ss")
-    })
-}
-
-function Remove-OldLogs {
-    $cutoff = (Get-Date).AddDays(-$Script:Config.MaxLogAgeDays)
-    Get-ChildItem "$Script:LogDir\*.log" -ErrorAction SilentlyContinue |
-        Where-Object { $_.LastWriteTime -lt $cutoff } |
-        Remove-Item -Force -ErrorAction SilentlyContinue
-}
-
-# ============================================================
-#  BEYAZ LISTE KONTROLU
-# ============================================================
-function Test-Whitelisted {
-    param([string]$Path)
-    foreach ($entry in $Script:Config.Whitelist) {
-        if ($Path -like "$entry*") { return $true }
-    }
-    return $false
-}
-
-# ============================================================
-#  ROLLBACK - REGISTRY SNAPSHOT
-# ============================================================
-function New-RegistrySnapshot {
-    param([string]$Label)
-    if ($DryRun) { Write-Log "[DRY-RUN] Snapshot atlaniyor: $Label" 'DRY'; return }
-    try {
-        $keys = @(
-            "HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
-            "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
-            "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects"
-        )
-        foreach ($key in $keys) {
-            $leaf    = ($key -split '\\')[-1]
-            $ts      = Get-Date -Format 'yyyyMMdd_HHmmss'
-            $outFile = "$Script:SnapDir\reg_${ts}_${Label}_${leaf}.reg"
-            & reg export $key $outFile /y 2>$null | Out-Null
+function Get-SafeSize {
+    <#
+    .SYNOPSIS
+        Guvenli dosya boyutu hesaplama - bos klasor hatasini onler
+    #>
+    param(
+        [Parameter(ValueFromPipeline)]
+        [object[]]$Files
+    )
+    begin { $total = 0 }
+    process {
+        foreach ($f in $Files) {
+            if ($f -and $f.Length) { $total += $f.Length }
         }
-        Write-Log "Registry snapshot alindi: $Label" 'OK'
-        Add-Result "Rollback" "Snapshot: $Label" "OK" $Script:SnapDir
-    } catch {
-        Write-Log "Snapshot alinamadi: $_" 'WARN'
     }
+    end { return $total }
 }
 
-# ============================================================
-#  SERVIS YONETIMI - ZAMAN ASIMI KORUMALI
-# ============================================================
-function Stop-ServiceSafe {
-    param([string]$Name, [int]$TimeoutSec = 30)
-    try {
-        $svc = Get-Service -Name $Name -ErrorAction SilentlyContinue
-        if (-not $svc -or $svc.Status -eq 'Stopped') { return $true }
-        Stop-Service -Name $Name -Force -ErrorAction SilentlyContinue
-        $deadline = (Get-Date).AddSeconds($TimeoutSec)
-        while ((Get-Date) -lt $deadline) {
-            Start-Sleep -Milliseconds 500
-            $svc.Refresh()
-            if ($svc.Status -eq 'Stopped') { return $true }
-        }
-        Write-Log "Servis durdurulamadi (zaman asimi): $Name" 'WARN'
-        return $false
-    } catch {
-        Write-Log "Servis durdurma hatasi [$Name]: $_" 'WARN'
-        return $false
-    }
+function Format-Size {
+    param([double]$Bytes)
+    if ($Bytes -ge 1GB) { return "{0:N2} GB" -f ($Bytes / 1GB) }
+    if ($Bytes -ge 1MB) { return "{0:N2} MB" -f ($Bytes / 1MB) }
+    if ($Bytes -ge 1KB) { return "{0:N2} KB" -f ($Bytes / 1KB) }
+    return "{0:N0} B" -f $Bytes
 }
 
-function Start-ServiceSafe {
-    param([string]$Name, [int]$TimeoutSec = 30)
-    try {
-        $svc = Get-Service -Name $Name -ErrorAction SilentlyContinue
-        if (-not $svc) { return $false }
-        if ($svc.Status -eq 'Running') { return $true }
-        Start-Service -Name $Name -ErrorAction SilentlyContinue
-        $deadline = (Get-Date).AddSeconds($TimeoutSec)
-        while ((Get-Date) -lt $deadline) {
-            Start-Sleep -Milliseconds 500
-            $svc.Refresh()
-            if ($svc.Status -eq 'Running') { return $true }
-        }
-        Write-Log "Servis baslatillamadi (zaman asimi): $Name" 'WARN'
-        return $false
-    } catch {
-        Write-Log "Servis baslatma hatasi [$Name]: $_" 'WARN'
-        return $false
-    }
-}
-
-# ============================================================
-#  DONANIM BILGISI
-# ============================================================
-function Get-HardwareInfo {
-    try {
-        $os  = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
-        $cpu = Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue | Select-Object -First 1
-        $ram = [math]::Round((Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue).TotalPhysicalMemory / 1GB, 1)
-        $Script:Stats.OS     = if ($os)  { "$($os.Caption) Build $($os.BuildNumber)" } else { "Bilinmiyor" }
-        $Script:Stats.CPU    = if ($cpu) { $cpu.Name.Trim() } else { "Bilinmiyor" }
-        $Script:Stats.RAM_GB = $ram
-        Write-Log "OS  : $($Script:Stats.OS)" 'INFO'
-        Write-Log "CPU : $($Script:Stats.CPU)" 'INFO'
-        Write-Log "RAM : $($Script:Stats.RAM_GB) GB" 'INFO'
-    } catch {
-        Write-Log "Donanim bilgisi alinamadi." 'WARN'
-    }
-}
-
-# ============================================================
-#  YARDIMCI: BOYUT HESAPLAMA
-# ============================================================
-function Get-FolderSizeMB {
-    param([string]$Path)
-    if (-not (Test-Path $Path)) { return 0.0 }
-    try {
-        $sum = (Get-ChildItem -Path $Path -Recurse -Force -ErrorAction SilentlyContinue |
-                Measure-Object -Property Length -Sum).Sum
-        if (-not $sum) { return 0.0 }
-        return [math]::Round($sum / 1MB, 2)
-    } catch { return 0.0 }
-}
-
-function Remove-DirectoryContents {
-    param([string]$Path, [string]$Description)
+function Remove-FolderContents {
+    <#
+    .SYNOPSIS
+        Klasor icerigini guvenli bicimde siler, boyutu raporlar
+    #>
+    param(
+        [string]$Path,
+        [string]$Label,
+        [string[]]$ExcludeExtensions = @()
+    )
     if (-not (Test-Path $Path)) {
-        Write-Log "$Description -- bulunamadi, atlaniyor." 'WARN'
-        Add-Result "Temizlik" $Description "SKIP" "Klasor yok"
-        return 0.0
-    }
-    if (Test-Whitelisted $Path) {
-        Write-Log "$Description -- BEYAZ LISTEDE, atlaniyor." 'WARN'
-        Add-Result "Temizlik" $Description "SKIP" "Beyaz listede"
-        return 0.0
-    }
-    $before = Get-FolderSizeMB $Path
-    if ($DryRun) {
-        Write-Log "[DRY-RUN] Temizlenecek: $Description -- $before MB" 'DRY'
-        Add-Result "Temizlik" $Description "DRY" "$before MB"
-        return $before
-    }
-    Get-ChildItem -Path $Path -Force -ErrorAction SilentlyContinue |
-        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-    $after = Get-FolderSizeMB $Path
-    $freed = [math]::Round($before - $after, 2)
-    Write-Log "$Description -- $freed MB temizlendi." 'OK'
-    Add-Result "Temizlik" $Description "OK" "$freed MB"
-    return $freed
-}
-
-# ============================================================
-#  GOREV 1 -- GEREKSIZ DOSYA TEMIZLEME
-# ============================================================
-function Invoke-JunkCleaner {
-    Write-Section "GOREV 1 -- GEREKSIZ DOSYA TEMIZLEME"
-    $totalFreed = 0.0
-
-    $targets = @(
-        @{ Path = $env:TEMP;                                                     Desc = "Kullanici TEMP" }
-        @{ Path = "C:\Windows\Temp";                                             Desc = "Windows TEMP" }
-        @{ Path = "C:\Windows\Prefetch";                                         Desc = "Prefetch onbellegi" }
-        @{ Path = "$env:LOCALAPPDATA\Microsoft\Windows\INetCache";               Desc = "Internet onbellegi" }
-        @{ Path = "$env:LOCALAPPDATA\Temp";                                      Desc = "AppData Temp" }
-        @{ Path = "C:\Windows\SoftwareDistribution\Download";                    Desc = "WU indirme onbellegi" }
-        @{ Path = "$env:LOCALAPPDATA\CrashDumps";                                Desc = "Kilitlenme dokumu" }
-        @{ Path = "C:\Windows\Minidump";                                         Desc = "Mini dokum dosyalari" }
-        @{ Path = "$env:APPDATA\Microsoft\Windows\Recent\AutomaticDestinations"; Desc = "Son ogeler gecmisi" }
-        @{ Path = "C:\Windows\LiveKernelReports";                                Desc = "Canli cekirdek raporlari" }
-        @{ Path = "C:\Windows\Logs\CBS";                                         Desc = "CBS gunlukleri" }
-    )
-
-    foreach ($t in $targets) { $totalFreed += Remove-DirectoryContents -Path $t.Path -Description $t.Desc }
-
-    # Windows.old
-    if (Test-Path "C:\Windows.old") {
-        Write-Log "Windows.old bulundu." 'WARN'
-        $totalFreed += Remove-DirectoryContents -Path "C:\Windows.old" -Description "Windows.old"
+        Write-Log "INFO" "$Label -- klasor bulunamadi, atlaniyor."
+        return 0
     }
 
-    # Kullanici klasorlerindeki .tmp / .bak
-    foreach ($dir in @("$env:USERPROFILE\Downloads","$env:USERPROFILE\Desktop","$env:USERPROFILE\Documents")) {
-        if (-not (Test-Path $dir)) { continue }
-        $removed = 0.0
-        Get-ChildItem -Path $dir -Recurse -Force -Include "*.tmp","*.bak" -ErrorAction SilentlyContinue |
-            ForEach-Object {
-                $removed += $_.Length / 1MB
-                if (-not $DryRun) { Remove-Item $_.FullName -Force -ErrorAction SilentlyContinue }
-            }
-        if ($removed -gt 0) {
-            $mb  = [math]::Round($removed, 2)
-            $tag = if ($DryRun) { "[DRY-RUN]" } else { "" }
-            Write-Log "$tag $dir -- .tmp/.bak: $mb MB" 'OK'
-            $totalFreed += $removed
-        }
+    $files = Get-ChildItem -Path $Path -Recurse -File -Force -ErrorAction SilentlyContinue
+    if ($ExcludeExtensions.Count -gt 0) {
+        $files = $files | Where-Object { $_.Extension -notin $ExcludeExtensions }
     }
 
-    # Cop kutusu
-    if (-not $DryRun) {
-        try { Clear-RecycleBin -Force -ErrorAction SilentlyContinue; Write-Log "Cop kutusu bosaltildi." 'OK' }
-        catch { Write-Log "Cop kutusu bosaltilamadi." 'WARN' }
+    $size = $files | Get-SafeSize
+
+    if ($Script:DryRun) {
+        Write-Log "INFO" "[DRY-RUN] $Label -- $(Format-Size $size) silinecekti."
     } else {
-        Write-Log "[DRY-RUN] Cop kutusu bosaltilacak." 'DRY'
-    }
-
-    $Script:Stats.FreedMB += $totalFreed
-    Write-Log "GOREV 1 TOPLAM: $([math]::Round($totalFreed,2)) MB temizlendi." 'OK'
-    return $totalFreed
-}
-
-# ============================================================
-#  GOREV 2 -- DISK TEMIZLIGI VE OPTIMIZASYON
-# ============================================================
-function Invoke-DiskCleanup {
-    Write-Section "GOREV 2 -- DISK TEMIZLIGI"
-
-    if ($DryRun) {
-        Write-Log "[DRY-RUN] cleanmgr /sagerun:99 calistirilacak." 'DRY'
-        Write-Log "[DRY-RUN] Surucu Optimize-Volume calistirilacak." 'DRY'
-        Add-Result "Disk" "cleanmgr" "DRY" ""
-        return
-    }
-
-    # Cleanmgr kategori kaydi
-    $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches"
-    $categories = @(
-        "Active Setup Temp Folders","BranchCache","Content Indexer Cleaner",
-        "D3D Shader Cache","Delivery Optimization Files","Device Driver Packages",
-        "Diagnostic Data Viewer database files","Downloaded Program Files",
-        "Internet Cache Files","Language Pack","Memory Dump Files",
-        "Offline Pages Files","Old ChkDsk Files","Previous Installations",
-        "Recycle Bin","Setup Log Files","System error memory dump files",
-        "System error minidump files","Temporary Files","Temporary Setup Files",
-        "Temporary Sync Files","Thumbnail Cache","Update Cleanup",
-        "Upgrade Discarded Files","User file versions","Windows Defender",
-        "Windows Error Reporting Files","Windows Reset Log Files",
-        "Windows Upgrade Log Files"
-    )
-    foreach ($cat in $categories) {
-        $key = "$regPath\$cat"
-        if (Test-Path $key) {
-            Set-ItemProperty -Path $key -Name "StateFlags0099" -Value 2 -Type DWord -ErrorAction SilentlyContinue
-        }
-    }
-
-    Write-Log "Disk Temizleme baslatiliyor..." 'INFO'
-    try {
-        $proc = Start-Process "cleanmgr.exe" -ArgumentList "/sagerun:99" -PassThru -WindowStyle Hidden
-        if ($proc.WaitForExit(180000)) {
-            Write-Log "Disk Temizleme tamamlandi." 'OK'
-            Add-Result "Disk" "cleanmgr /sagerun:99" "OK" ""
-        } else {
-            $proc.Kill()
-            Write-Log "Disk Temizleme zaman asimina ugradi (3 dk), sonlandirildi." 'WARN'
-            Add-Result "Disk" "cleanmgr" "WARN" "Zaman asimi"
-        }
-    } catch {
-        Write-Log "Disk Temizleme baslatillamadi: $_" 'ERROR'
-        Add-Result "Disk" "cleanmgr" "ERROR" "$_"
-    }
-
-    # Surucu optimizasyonu
-    Write-Log "Surucu optimizasyonu baslatiliyor..." 'INFO'
-    try {
-        Get-Volume | Where-Object { $_.DriveLetter -and $_.DriveType -eq 'Fixed' } |
+        $files | Remove-Item -Force -ErrorAction SilentlyContinue
+        # Bos alt klasorleri temizle
+        Get-ChildItem -Path $Path -Recurse -Directory -Force -ErrorAction SilentlyContinue |
+            Sort-Object { $_.FullName.Length } -Descending |
             ForEach-Object {
-                $letter = $_.DriveLetter
-                Write-Log "  Optimize ediliyor: ${letter}:" 'INFO'
-                Optimize-Volume -DriveLetter $letter -ReTrim -ErrorAction SilentlyContinue 2>$null
-                Add-Result "Disk" "Optimize ${letter}:" "OK" ""
-            }
-        Write-Log "Surucu optimizasyonu tamamlandi." 'OK'
-    } catch {
-        Write-Log "Surucu optimizasyonu hatasi: $_" 'WARN'
-    }
-}
-
-# ============================================================
-#  GOREV 3 -- GUNCELLEME ONARIMI
-# ============================================================
-function Invoke-UpdateRepair {
-    Write-Section "GOREV 3 -- GUNCELLEME ONARIMI"
-
-    $wuServices = @("wuauserv","bits","cryptsvc","msiserver")
-
-    if ($DryRun) {
-        Write-Log "[DRY-RUN] WU servisleri durdurulup yeniden baslatilacak." 'DRY'
-        Write-Log "[DRY-RUN] SoftwareDistribution ve catroot2 sifirllanacak." 'DRY'
-        Write-Log "[DRY-RUN] DLL'ler yeniden kaydedilecek, WinSock sifirllanacak." 'DRY'
-        Add-Result "Guncelleme" "Tum onarim adimlari" "DRY" ""
-        return
-    }
-
-    New-RegistrySnapshot "Before_UpdateRepair"
-
-    Write-Log "WU servisleri durduruluyor..." 'INFO'
-    foreach ($svc in $wuServices) {
-        $ok = Stop-ServiceSafe -Name $svc -TimeoutSec 45
-        Write-Log "  $svc : $(if($ok){'Durduruldu'}else{'Durdurulamadi'})" $(if($ok){'OK'}else{'WARN'})
-    }
-    Start-Sleep -Seconds 2
-
-    # SoftwareDistribution ve catroot2 sifirla
-    $foldersToReset = @(
-        @{ Src = "C:\Windows\SoftwareDistribution"; Bak = "C:\Windows\SoftwareDistribution.bak" }
-        @{ Src = "C:\Windows\System32\catroot2";    Bak = "C:\Windows\System32\catroot2.bak"    }
-    )
-    foreach ($f in $foldersToReset) {
-        if (Test-Path $f.Bak) { Remove-Item $f.Bak -Recurse -Force -ErrorAction SilentlyContinue }
-        if (Test-Path $f.Src) {
-            try {
-                Rename-Item -Path $f.Src -NewName $f.Bak -ErrorAction Stop
-                Write-Log "  Yeniden adlandirildi: $($f.Src)" 'OK'
-            } catch {
-                Remove-Item "$($f.Src)\*" -Recurse -Force -ErrorAction SilentlyContinue
-                Write-Log "  Icerik temizlendi: $($f.Src)" 'WARN'
-            }
-        }
-    }
-
-    # DLL kaydi
-    Write-Log "Windows Update DLL'leri kaydediliyor..." 'INFO'
-    $dlls = @(
-        "atl.dll","urlmon.dll","mshtml.dll","shdocvw.dll","browseui.dll",
-        "jscript.dll","vbscript.dll","scrrun.dll","msxml.dll","msxml3.dll",
-        "msxml6.dll","actxprxy.dll","softpub.dll","wintrust.dll","dssenh.dll",
-        "rsaenh.dll","gpkcsp.dll","sccbase.dll","slbcsp.dll","cryptdlg.dll",
-        "oleaut32.dll","ole32.dll","shell32.dll","initpki.dll","wuapi.dll",
-        "wuaueng.dll","wuaueng1.dll","wucltui.dll","wups.dll","wups2.dll",
-        "wuweb.dll","qmgr.dll","qmgrprxy.dll","wucltux.dll","muweb.dll","wuwebv.dll"
-    )
-    $dllErrors = 0
-    foreach ($dll in $dlls) {
-        & regsvr32.exe /s $dll 2>$null
-        if ($LASTEXITCODE -ne 0) { $dllErrors++ }
-    }
-    $dllMsg = "DLL kaydi tamamlandi. ($dllErrors hata)"
-    Write-Log $dllMsg $(if($dllErrors -eq 0){'OK'}else{'WARN'})
-
-    # WinSock ve WinHTTP sifirla
-    & netsh winsock reset 2>$null | Out-Null
-    & netsh winhttp reset proxy 2>$null | Out-Null
-    Write-Log "WinSock ve WinHTTP sifirlandi." 'OK'
-
-    # Servisleri yeniden basla
-    Write-Log "WU servisleri yeniden baslatiliyor..." 'INFO'
-    foreach ($svc in $wuServices) {
-        $ok = Start-ServiceSafe -Name $svc -TimeoutSec 45
-        Write-Log "  $svc : $(if($ok){'Baslatildi'}else{'Baslatillamadi'})" $(if($ok){'OK'}else{'WARN'})
-    }
-
-    # WU tetikle
-    try {
-        (New-Object -ComObject Microsoft.Update.AutoUpdate).DetectNow()
-        Write-Log "Guncelleme kontrolu tetiklendi." 'OK'
-    } catch {
-        Write-Log "Guncelleme kontrolu tetiklenemedi." 'WARN'
-    }
-
-    Add-Result "Guncelleme" "WU onarim dongusu" "OK" "$dllErrors DLL hatasi"
-    Write-Log "Guncelleme onarimi tamamlandi." 'OK'
-}
-
-# ============================================================
-#  GOREV 4 -- VIRUS TARAMA
-# ============================================================
-function Invoke-VirusScan {
-    Write-Section "GOREV 4 -- VIRUS VE KOTU AMACLI YAZILIM TARAMA"
-
-    if ($DryRun) {
-        Write-Log "[DRY-RUN] Defender imza guncellemesi ve QuickScan calistirilacak." 'DRY'
-        Add-Result "Virus" "Defender Quick Scan" "DRY" ""
-        return
-    }
-
-    # Imza guncelle
-    Write-Log "Defender imzalari guncelleniyor..." 'INFO'
-    try {
-        Update-MpSignature -ErrorAction Stop
-        Write-Log "Imza guncellemesi tamamlandi." 'OK'
-    } catch {
-        Write-Log "Imza guncellemesi basarisiz: $_" 'WARN'
-    }
-
-    # Hizli tarama
-    Write-Log "Hizli tarama baslatiliyor..." 'INFO'
-    $scanOk = $false
-    try {
-        Start-MpScan -ScanType QuickScan -ErrorAction Stop
-        $scanOk = $true
-        Write-Log "Hizli tarama tamamlandi." 'OK'
-    } catch {
-        Write-Log "Defender PS API basarisiz, MpCmdRun deneniyor..." 'WARN'
-        $mpCmd = "$env:ProgramFiles\Windows Defender\MpCmdRun.exe"
-        if (Test-Path $mpCmd) {
-            $p = Start-Process $mpCmd -ArgumentList "-Scan -ScanType 1" -PassThru -WindowStyle Hidden
-            if ($p.WaitForExit(300000)) {
-                $scanOk = $true
-                Write-Log "MpCmdRun taramasi tamamlandi." 'OK'
-            } else {
-                $p.Kill()
-                Write-Log "MpCmdRun zaman asimi." 'WARN'
-            }
-        }
-    }
-
-    # Tehdit listesi - ThreatID bazli temizlik
-    try {
-        $threats = Get-MpThreatDetection -ErrorAction SilentlyContinue
-        if ($threats -and $threats.Count -gt 0) {
-            $Script:Stats.ThreatsFound = $threats.Count
-            Write-Log "UYARI: $($threats.Count) tehdit tespit edildi!" 'WARN'
-            $activeThreatIds = $threats | Select-Object -ExpandProperty ThreatID -Unique
-            foreach ($id in $activeThreatIds) {
-                try {
-                    Remove-MpThreat -ThreatID $id -ErrorAction SilentlyContinue
-                    Write-Log "  Temizlendi: ThreatID $id" 'OK'
-                } catch {
-                    Write-Log "  Temizlenemedi: ThreatID $id" 'WARN'
+                if (-not (Get-ChildItem -Path $_.FullName -Force -ErrorAction SilentlyContinue)) {
+                    Remove-Item $_.FullName -Force -ErrorAction SilentlyContinue
                 }
             }
-            Add-Result "Virus" "Tehdit Temizleme" "WARN" "$($threats.Count) tehdit"
-        } else {
-            Write-Log "Tehdit bulunamadi. Sistem temiz." 'OK'
-            Add-Result "Virus" "Quick Scan" "OK" "Temiz"
-        }
+        Write-Log "OK" "$Label -- $(Format-Size $size) temizlendi."
+    }
+    return $size
+}
+
+function Backup-RegistryKey {
+    param([string]$KeyPath, [string]$BackupName)
+    $backupFile = Join-Path $Script:BackupDir "${BackupName}_$Script:Timestamp.reg"
+    try {
+        $null = reg export $KeyPath $backupFile /y 2>&1
+        Write-Log "OK" "Registry yedeklendi: $backupFile"
+        return $true
     } catch {
-        Write-Log "Tehdit gecmisi okunamadi." 'WARN'
-        Add-Result "Virus" "Tehdit Gecmisi" "WARN" "$_"
+        Write-Log "WARN" "Registry yedeklenemedi: $KeyPath"
+        return $false
+    }
+}
+
+function Test-CommandExists {
+    param([string]$Command)
+    return [bool](Get-Command $Command -ErrorAction SilentlyContinue)
+}
+
+# ======================================================================
+#  GOREV 1: GEREKSIZ DOSYA TEMIZLEME
+# ======================================================================
+function Invoke-JunkCleanup {
+    Write-Banner "GOREV 1 - GEREKSIZ DOSYA TEMIZLEME"
+    $taskTotal = 0
+
+    # --- Kullanici TEMP ---
+    $taskTotal += Remove-FolderContents -Path $env:TEMP -Label "Kullanici TEMP"
+
+    # --- Windows TEMP ---
+    $taskTotal += Remove-FolderContents -Path "$env:SystemRoot\Temp" -Label "Windows TEMP"
+
+    # --- Prefetch ---
+    $taskTotal += Remove-FolderContents -Path "$env:SystemRoot\Prefetch" -Label "Prefetch onbellegi"
+
+    # --- Tarayici onbellekleri ---
+    $browserCaches = @(
+        @{ Path = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cache\Cache_Data";     Label = "Chrome Onbellek" }
+        @{ Path = "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Code Cache";            Label = "Chrome Code Cache" }
+        @{ Path = "$env:LOCALAPPDATA\Microsoft\Edge\User Data\Default\Cache\Cache_Data";     Label = "Edge Onbellek" }
+        @{ Path = "$env:LOCALAPPDATA\Mozilla\Firefox\Profiles";                              Label = "Firefox Onbellek" }
+        @{ Path = "$env:LOCALAPPDATA\BraveSoftware\Brave-Browser\User Data\Default\Cache";   Label = "Brave Onbellek" }
+        @{ Path = "$env:LOCALAPPDATA\Opera Software\Opera Stable\Cache";                     Label = "Opera Onbellek" }
+    )
+    foreach ($bc in $browserCaches) {
+        $taskTotal += Remove-FolderContents -Path $bc.Path -Label $bc.Label
     }
 
-    # Gercek zamanli koruma durumu
-    try {
-        $mpStatus = Get-MpComputerStatus -ErrorAction SilentlyContinue
-        if ($mpStatus) {
-            $rtpState = $mpStatus.RealTimeProtectionEnabled
-            Write-Log "Gercek Zamanli Koruma: $rtpState" 'INFO'
-            if (-not $rtpState) {
-                Set-MpPreference -DisableRealtimeMonitoring $false -ErrorAction SilentlyContinue
-                Write-Log "Gercek zamanli koruma yeniden etkinlestirildi." 'OK'
-                Add-Result "Virus" "RTP Yeniden Etkinlestirme" "OK" ""
+    # --- Windows Update indirme onbellegi ---
+    $wuPath = "$env:SystemRoot\SoftwareDistribution\Download"
+    $taskTotal += Remove-FolderContents -Path $wuPath -Label "WU indirme onbellegi"
+
+    # --- Kilitlenme dokumleri ---
+    $crashPaths = @(
+        @{ Path = "$env:LOCALAPPDATA\CrashDumps";                  Label = "Kullanici kilitlenme dokumleri" }
+        @{ Path = "$env:SystemRoot\Minidump";                      Label = "Mini dokum dosyalari" }
+        @{ Path = "$env:SystemRoot\MEMORY.DMP";                    Label = "Bellek dokumu" }
+        @{ Path = "$env:SystemRoot\LiveKernelReports";             Label = "Canli cekirdek raporlari" }
+    )
+    foreach ($cp in $crashPaths) {
+        if (Test-Path $cp.Path -PathType Leaf) {
+            $fSize = (Get-Item $cp.Path -Force -ErrorAction SilentlyContinue).Length
+            if (-not $Script:DryRun) { Remove-Item $cp.Path -Force -ErrorAction SilentlyContinue }
+            Write-Log "OK" "$($cp.Label) -- $(Format-Size $fSize) temizlendi."
+            $taskTotal += $fSize
+        } else {
+            $taskTotal += Remove-FolderContents -Path $cp.Path -Label $cp.Label
+        }
+    }
+
+    # --- CBS Gunlukleri ---
+    $taskTotal += Remove-FolderContents -Path "$env:SystemRoot\Logs\CBS" -Label "CBS gunlukleri"
+
+    # --- DISM Gunlukleri ---
+    $taskTotal += Remove-FolderContents -Path "$env:SystemRoot\Logs\DISM" -Label "DISM gunlukleri"
+
+    # --- Son ogeler ---
+    $taskTotal += Remove-FolderContents -Path "$env:APPDATA\Microsoft\Windows\Recent" -Label "Son ogeler gecmisi"
+
+    # --- Temp/bak/log dosyalari (Documents) ---
+    $docPath = [Environment]::GetFolderPath("MyDocuments")
+    if (Test-Path $docPath) {
+        $junkExts = @("*.tmp","*.bak","*.old","*.log","*.dmp","*.~*")
+        $junkFiles = foreach ($ext in $junkExts) {
+            Get-ChildItem -Path $docPath -Filter $ext -Recurse -File -Force -ErrorAction SilentlyContinue
+        }
+        $junkSize = $junkFiles | Get-SafeSize
+        if (-not $Script:DryRun -and $junkFiles) {
+            $junkFiles | Remove-Item -Force -ErrorAction SilentlyContinue
+        }
+        Write-Log "OK" "Belgeler klasoru (.tmp/.bak/.old/.log) -- $(Format-Size $junkSize)"
+        $taskTotal += $junkSize
+    }
+
+    # --- Thumbnails onbellegi ---
+    $thumbPath = "$env:LOCALAPPDATA\Microsoft\Windows\Explorer"
+    if (Test-Path $thumbPath) {
+        $thumbFiles = Get-ChildItem -Path $thumbPath -Filter "thumbcache_*.db" -Force -ErrorAction SilentlyContinue
+        $thumbSize  = $thumbFiles | Get-SafeSize
+        if (-not $Script:DryRun -and $thumbFiles) {
+            $thumbFiles | Remove-Item -Force -ErrorAction SilentlyContinue
+        }
+        Write-Log "OK" "Thumbnail onbellegi -- $(Format-Size $thumbSize)"
+        $taskTotal += $thumbSize
+    }
+
+    # --- Icondache ---
+    $iconCachePath = "$env:LOCALAPPDATA\IconCache.db"
+    if (Test-Path $iconCachePath) {
+        $icSize = (Get-Item $iconCachePath -Force).Length
+        if (-not $Script:DryRun) { Remove-Item $iconCachePath -Force -ErrorAction SilentlyContinue }
+        Write-Log "OK" "Ikon onbellegi -- $(Format-Size $icSize)"
+        $taskTotal += $icSize
+    }
+
+    # --- Cop kutusu ---
+    if (-not $Script:DryRun) {
+        try {
+            Clear-RecycleBin -Force -ErrorAction SilentlyContinue
+            Write-Log "OK" "Cop kutusu bosaltildi."
+        } catch {
+            Write-Log "WARN" "Cop kutusu bosaltilamadi: $_"
+        }
+    } else {
+        Write-Log "INFO" "[DRY-RUN] Cop kutusu bosaltilacakti."
+    }
+
+    $Script:TotalCleaned += $taskTotal
+    Write-Log "OK" "GOREV 1 TOPLAM: $(Format-Size $taskTotal) temizlendi."
+    return @{ Cleaned = $taskTotal; Status = "OK" }
+}
+
+# ======================================================================
+#  GOREV 2: DISK TEMIZLIGI
+# ======================================================================
+function Invoke-DiskCleanup {
+    Write-Banner "GOREV 2 - DISK TEMIZLIGI"
+
+    # Disk oncesi kullanim
+    $driveBefore = (Get-PSDrive C).Free
+
+    if ($Script:DryRun) {
+        Write-Log "INFO" "[DRY-RUN] Disk Temizleme (cleanmgr) calistirilacakti."
+    } else {
+        Write-Log "INFO" "Disk Temizleme baslatiliyor..."
+
+        # Sageset ile kategori ayarla
+        $regPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches"
+        $categories = @(
+            "Active Setup Temp Folders"
+            "BranchCache"
+            "Delivery Optimization Files"
+            "Device Driver Packages"
+            "Downloaded Program Files"
+            "Internet Cache Files"
+            "Old ChkDsk Files"
+            "Previous Installations"
+            "Recycle Bin"
+            "RetailDemo Offline Content"
+            "Setup Log Files"
+            "System error memory dump files"
+            "System error minidump files"
+            "Temporary Files"
+            "Temporary Setup Files"
+            "Thumbnail Cache"
+            "Update Cleanup"
+            "Upgrade Discarded Files"
+            "Windows Defender"
+            "Windows Error Reporting Files"
+            "Windows ESD installation files"
+        )
+
+        foreach ($cat in $categories) {
+            $catPath = Join-Path $regPath $cat
+            if (Test-Path $catPath) {
+                Set-ItemProperty -Path $catPath -Name "StateFlags0100" -Value 2 -ErrorAction SilentlyContinue
             }
+        }
+
+        # cleanmgr calistir
+        Start-Process cleanmgr.exe -ArgumentList "/sagerun:100" -Wait -WindowStyle Hidden -ErrorAction SilentlyContinue
+
+        # DISM ile Component Store temizligi
+        Write-Log "INFO" "DISM Component Store temizleniyor..."
+        $dismResult = & dism.exe /Online /Cleanup-Image /StartComponentCleanup /ResetBase 2>&1
+        Write-Log "INFO" "DISM tamamlandi."
+    }
+
+    $driveAfter = (Get-PSDrive C).Free
+    $freedSpace = $driveAfter - $driveBefore
+    if ($freedSpace -lt 0) { $freedSpace = 0 }
+
+    $Script:TotalCleaned += $freedSpace
+    Write-Log "OK" "GOREV 2 TOPLAM: $(Format-Size $freedSpace) ek alan kazanildi."
+    return @{ Cleaned = $freedSpace; Status = "OK" }
+}
+
+# ======================================================================
+#  GOREV 3: REGISTRY TEMIZLIGI
+# ======================================================================
+function Invoke-RegistryCleanup {
+    Write-Banner "GOREV 3 - REGISTRY TEMIZLIGI"
+    $cleanedCount = 0
+
+    # Yedekleme
+    Write-Log "INFO" "Registry yedekleniyor..."
+    Backup-RegistryKey "HKCU\Software" "HKCU_Software"
+
+    # --- Gecersiz Uninstall kayitlari ---
+    Write-Log "INFO" "Gecersiz uninstall kayitlari taraniyor..."
+    $uninstallPaths = @(
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+    )
+    foreach ($uPath in $uninstallPaths) {
+        if (-not (Test-Path $uPath)) { continue }
+        Get-ChildItem -Path $uPath -ErrorAction SilentlyContinue | ForEach-Object {
+            $installLoc = $_ | Get-ItemProperty -Name "InstallLocation" -ErrorAction SilentlyContinue
+            if ($installLoc -and $installLoc.InstallLocation -and
+                -not (Test-Path $installLoc.InstallLocation) -and
+                $installLoc.InstallLocation -ne "") {
+                $displayName = ($_ | Get-ItemProperty -Name "DisplayName" -ErrorAction SilentlyContinue).DisplayName
+                if (-not $Script:DryRun) {
+                    # Sadece raporla, silme (guvenlik icin)
+                    Write-Log "WARN" "Gecersiz yol: $displayName -> $($installLoc.InstallLocation)"
+                } else {
+                    Write-Log "INFO" "[DRY-RUN] Gecersiz: $displayName -> $($installLoc.InstallLocation)"
+                }
+                $cleanedCount++
+            }
+        }
+    }
+
+    # --- Gecersiz dosya uzanti iliskilendirmeleri ---
+    Write-Log "INFO" "Gecersiz dosya iliskilendirmeleri taraniyor..."
+    $fileExts = Get-ChildItem "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FileExts" -ErrorAction SilentlyContinue
+    $invalidExts = 0
+    foreach ($ext in $fileExts) {
+        $openWith = Join-Path $ext.PSPath "OpenWithList"
+        if (Test-Path $openWith) {
+            $props = Get-ItemProperty -Path $openWith -ErrorAction SilentlyContinue
+            if ($props) {
+                $props.PSObject.Properties | Where-Object {
+                    $_.Name -match '^[a-z]$' -and $_.Value -and
+                    -not (Test-CommandExists $_.Value) -and
+                    -not (Get-Command $_.Value -ErrorAction SilentlyContinue)
+                } | ForEach-Object { $invalidExts++ }
+            }
+        }
+    }
+    Write-Log "INFO" "Gecersiz dosya iliskilendirmeleri: $invalidExts adet bulundu."
+    $cleanedCount += $invalidExts
+
+    # --- Bos Run kayitlari ---
+    Write-Log "INFO" "Bos Run kayitlari taraniyor..."
+    $runPaths = @(
+        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+    )
+    foreach ($rp in $runPaths) {
+        if (-not (Test-Path $rp)) { continue }
+        $props = Get-ItemProperty -Path $rp -ErrorAction SilentlyContinue
+        if (-not $props) { continue }
+        $props.PSObject.Properties | Where-Object { $_.Name -notin @("PSPath","PSParentPath","PSChildName","PSDrive","PSProvider") } | ForEach-Object {
+            $exePath = $_.Value -replace '"','' -split '\s+' | Select-Object -First 1
+            if ($exePath -and -not (Test-Path $exePath)) {
+                Write-Log "WARN" "Gecersiz Run kaydi: $($_.Name) -> $exePath"
+                $cleanedCount++
+            }
+        }
+    }
+
+    # --- MUI Cache temizligi ---
+    $muiPath = "HKCU:\SOFTWARE\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"
+    if (Test-Path $muiPath) {
+        $muiItems = (Get-ItemProperty $muiPath -ErrorAction SilentlyContinue).PSObject.Properties |
+            Where-Object { $_.Name -notin @("PSPath","PSParentPath","PSChildName","PSDrive","PSProvider") }
+        $muiCount = ($muiItems | Measure-Object).Count
+        if (-not $Script:DryRun -and $muiCount -gt 0) {
+            Remove-Item $muiPath -Force -ErrorAction SilentlyContinue
+            Write-Log "OK" "MUI Cache temizlendi: $muiCount kayit."
+        } else {
+            Write-Log "INFO" "MUI Cache: $muiCount kayit bulundu."
+        }
+        $cleanedCount += $muiCount
+    }
+
+    $Script:TotalOptimized += $cleanedCount
+    Write-Log "OK" "GOREV 3 TOPLAM: $cleanedCount registry kaydi islendi."
+    return @{ Cleaned = $cleanedCount; Status = "OK" }
+}
+
+# ======================================================================
+#  GOREV 4: GUVENLIK TARAMASI
+# ======================================================================
+function Invoke-SecurityScan {
+    Write-Banner "GOREV 4 - GUVENLIK TARAMASI"
+    $issues = 0
+
+    # --- Windows Defender durumu ---
+    Write-Log "INFO" "Windows Defender durumu kontrol ediliyor..."
+    try {
+        $mpStatus = Get-MpComputerStatus -ErrorAction Stop
+        if ($mpStatus.AntivirusEnabled) {
+            Write-Log "OK" "Windows Defender aktif."
+        } else {
+            Write-Log "ERROR" "Windows Defender devre disi!"
+            $issues++
+        }
+        if ($mpStatus.RealTimeProtectionEnabled) {
+            Write-Log "OK" "Gercek zamanli koruma aktif."
+        } else {
+            Write-Log "ERROR" "Gercek zamanli koruma devre disi!"
+            $issues++
+        }
+        $lastScan = $mpStatus.QuickScanEndTime
+        $daysSince = ((Get-Date) - $lastScan).Days
+        if ($daysSince -gt 7) {
+            Write-Log "WARN" "Son hizli tarama $daysSince gun once. Tarama onerilir."
+            $issues++
+        } else {
+            Write-Log "OK" "Son hizli tarama: $($lastScan.ToString('yyyy-MM-dd HH:mm'))"
+        }
+
+        # Tanim guncelligi
+        $sigAge = $mpStatus.AntivirusSignatureAge
+        if ($sigAge -gt 3) {
+            Write-Log "WARN" "Virus tanimlari $sigAge gun eski! Guncelleniyor..."
+            if (-not $Script:DryRun) {
+                Update-MpSignature -ErrorAction SilentlyContinue
+                Write-Log "OK" "Virus tanimlari guncellendi."
+            }
+        } else {
+            Write-Log "OK" "Virus tanimlari guncel ($sigAge gun)."
+        }
+    } catch {
+        Write-Log "WARN" "Windows Defender bilgisi alinamadi: $_"
+    }
+
+    # --- Guvenlik duvari ---
+    Write-Log "INFO" "Guvenlik duvari kontrol ediliyor..."
+    $fwProfiles = Get-NetFirewallProfile -ErrorAction SilentlyContinue
+    foreach ($fw in $fwProfiles) {
+        if ($fw.Enabled) {
+            Write-Log "OK" "Guvenlik duvari ($($fw.Name)): Aktif"
+        } else {
+            Write-Log "ERROR" "Guvenlik duvari ($($fw.Name)): DEVRE DISI!"
+            $issues++
+        }
+    }
+
+    # --- UAC durumu ---
+    Write-Log "INFO" "UAC durumu kontrol ediliyor..."
+    $uacKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+    $uac = Get-ItemProperty -Path $uacKey -Name "EnableLUA" -ErrorAction SilentlyContinue
+    if ($uac -and $uac.EnableLUA -eq 1) {
+        Write-Log "OK" "UAC aktif."
+    } else {
+        Write-Log "ERROR" "UAC devre disi!"
+        $issues++
+    }
+
+    # --- BitLocker durumu ---
+    Write-Log "INFO" "BitLocker durumu kontrol ediliyor..."
+    try {
+        $bl = Get-BitLockerVolume -MountPoint "C:" -ErrorAction Stop
+        if ($bl.ProtectionStatus -eq "On") {
+            Write-Log "OK" "BitLocker (C:): Aktif - $($bl.EncryptionMethod)"
+        } else {
+            Write-Log "WARN" "BitLocker (C:): Devre disi. Disk sifreleme onerilir."
+            $issues++
+        }
+    } catch {
+        Write-Log "WARN" "BitLocker bilgisi alinamadi."
+    }
+
+    # --- Acik portlar ---
+    Write-Log "INFO" "Acik portlar taraniyor..."
+    $listening = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue |
+        Select-Object LocalPort, OwningProcess -Unique |
+        Sort-Object LocalPort
+    $suspiciousPorts = @(4444, 5555, 6666, 8888, 9999, 1337, 31337)
+    foreach ($conn in $listening) {
+        if ($conn.LocalPort -in $suspiciousPorts) {
+            $procName = (Get-Process -Id $conn.OwningProcess -ErrorAction SilentlyContinue).ProcessName
+            Write-Log "WARN" "Suphe verici port: $($conn.LocalPort) (PID: $($conn.OwningProcess), Islem: $procName)"
+            $issues++
+        }
+    }
+    Write-Log "OK" "Toplam dinleyen port: $(($listening | Measure-Object).Count)"
+
+    # --- Parola politikasi ---
+    Write-Log "INFO" "Parola politikasi kontrol ediliyor..."
+    try {
+        $netAccounts = net accounts 2>&1
+        Write-Log "INFO" "Parola politikasi bilgisi alindi."
+    } catch {
+        Write-Log "WARN" "Parola politikasi bilgisi alinamadi."
+    }
+
+    # --- Hizli tarama baslat (opsiyonel) ---
+    if (-not $Script:DryRun -and $daysSince -gt 7) {
+        Write-Log "INFO" "Hizli virus taramasi baslatiliyor..."
+        Start-MpScan -ScanType QuickScan -AsJob | Out-Null
+        Write-Log "OK" "Hizli tarama arka planda baslatildi."
+    }
+
+    Write-Log "OK" "GOREV 4 TOPLAM: $issues guvenlik sorunu tespit edildi."
+    return @{ Issues = $issues; Status = if ($issues -eq 0) { "OK" } else { "WARN" } }
+}
+
+# ======================================================================
+#  GOREV 5: WINDOWS GUNCELLEME KONTROLU
+# ======================================================================
+function Invoke-WindowsUpdateCheck {
+    Write-Banner "GOREV 5 - WINDOWS GUNCELLEME KONTROLU"
+    $updateCount = 0
+
+    # PSWindowsUpdate modulu kontrolu
+    if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate -ErrorAction SilentlyContinue)) {
+        Write-Log "INFO" "PSWindowsUpdate modulu yukleniyor..."
+        try {
+            Install-Module PSWindowsUpdate -Force -Scope CurrentUser -ErrorAction Stop
+            Import-Module PSWindowsUpdate -ErrorAction Stop
+            Write-Log "OK" "PSWindowsUpdate yuklendi."
+        } catch {
+            Write-Log "WARN" "PSWindowsUpdate yuklenemedi. Manuel kontrol yapiliyor..."
+            # Manuel USOClient kullan
+            if (-not $Script:DryRun) {
+                Start-Process "UsoClient.exe" -ArgumentList "StartScan" -WindowStyle Hidden -ErrorAction SilentlyContinue
+                Write-Log "INFO" "Windows Update taramasi baslatildi (UsoClient)."
+            }
+            return @{ Updates = 0; Status = "WARN" }
+        }
+    } else {
+        Import-Module PSWindowsUpdate -ErrorAction SilentlyContinue
+    }
+
+    try {
+        Write-Log "INFO" "Mevcut guncellemeler kontrol ediliyor..."
+        $updates = Get-WindowsUpdate -ErrorAction Stop
+        $updateCount = ($updates | Measure-Object).Count
+
+        if ($updateCount -gt 0) {
+            Write-Log "WARN" "$updateCount adet guncelleme mevcut:"
+            foreach ($u in $updates) {
+                $sizeStr = if ($u.Size) { Format-Size $u.Size } else { "Boyut bilinmiyor" }
+                Write-Log "INFO" "  - $($u.Title) [$sizeStr]"
+            }
+
+            if (-not $Script:DryRun) {
+                Write-Log "INFO" "Guncellemeler yukleniyor..."
+                Install-WindowsUpdate -AcceptAll -IgnoreReboot -ErrorAction SilentlyContinue
+                Write-Log "OK" "Guncellemeler yuklendi."
+            } else {
+                Write-Log "INFO" "[DRY-RUN] Guncellemeler yuklenecekti."
+            }
+        } else {
+            Write-Log "OK" "Sistem guncel, bekleyen guncelleme yok."
+        }
+    } catch {
+        Write-Log "WARN" "Guncelleme kontrolu basarisiz: $_"
+    }
+
+    # Son guncelleme tarihi
+    try {
+        $lastUpdate = Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 1
+        if ($lastUpdate) {
+            Write-Log "INFO" "Son yuklenen guncelleme: $($lastUpdate.HotFixID) ($($lastUpdate.InstalledOn.ToString('yyyy-MM-dd')))"
         }
     } catch {}
 
-    Write-Log "Virus taramasi tamamlandi." 'OK'
+    Write-Log "OK" "GOREV 5 TOPLAM: $updateCount guncelleme islendi."
+    return @{ Updates = $updateCount; Status = "OK" }
 }
 
-# ============================================================
-#  GOREV 5 -- DOSYA SISTEMI ONARIMI
-# ============================================================
-function Invoke-FileSystemRepair {
-    Write-Section "GOREV 5 -- DOSYA SISTEMI ONARIMI"
+# ======================================================================
+#  GOREV 6: UYGULAMA GUNCELLEME (WINGET)
+# ======================================================================
+function Invoke-AppUpdate {
+    Write-Banner "GOREV 6 - UYGULAMA GUNCELLEME (winget)"
 
-    if ($DryRun) {
-        Write-Log "[DRY-RUN] SFC /scannow calistirilacak." 'DRY'
-        Write-Log "[DRY-RUN] DISM /ScanHealth ve /CheckHealth calistirilacak." 'DRY'
-        Write-Log "[DRY-RUN] CHKDSK /scan calistirilacak." 'DRY'
-        Add-Result "Onarim" "SFC + DISM + CHKDSK" "DRY" ""
+    # winget mevcut mu?
+    if (-not (Test-CommandExists "winget")) {
+        Write-Log "ERROR" "winget bulunamadi! Windows 10 1709+ veya App Installer gerekli."
+        Write-Log "INFO" "Yukleme: https://aka.ms/getwinget"
+        return @{ Updated = 0; Status = "ERROR" }
+    }
+
+    # winget surumunu goster
+    $wingetVer = & winget --version 2>$null
+    Write-Log "INFO" "winget surumu: $wingetVer"
+
+    # Kaynaklari guncelle
+    Write-Log "INFO" "Paket kaynaklari guncelleniyor..."
+    & winget source update --disable-interactivity 2>$null | Out-Null
+
+    # Mevcut guncellemeleri listele
+    Write-Log "INFO" "Guncellenebilir uygulamalar kontrol ediliyor..."
+    $upgradeList = & winget upgrade --include-unknown 2>$null
+    $upgradeLines = $upgradeList | Where-Object { $_ -match '\S' -and $_ -notmatch '^[-\s]*$' -and $_ -notmatch 'Name\s+Id' -and $_ -notmatch 'upgrades available' -and $_ -notmatch 'winget' }
+
+    # Satir sayisini hesapla
+    $appCount = 0
+    foreach ($line in $upgradeList) {
+        if ($line -match '^\S+.*\S+\s+\S+\s+\S+') {
+            $appCount++
+        }
+    }
+
+    # Yedek sayac: "X upgrades available" satirini bul
+    if ($appCount -eq 0) {
+        $summaryLine = $upgradeList | Where-Object { $_ -match '(\d+)\s+upgrades?\s+available' }
+        if ($summaryLine -match '(\d+)\s+upgrades?\s+available') {
+            $appCount = [int]$Matches[1]
+        }
+    }
+
+    if ($appCount -gt 0) {
+        Write-Log "INFO" "$appCount adet uygulama guncellenebilir."
+
+        # Listeleme
+        foreach ($line in $upgradeList) {
+            if ($line.Trim()) { Write-Log "INFO" "  $($line.Trim())" }
+        }
+
+        if ($Script:DryRun) {
+            Write-Log "INFO" "[DRY-RUN] Uygulamalar guncellenecekti."
+        } else {
+            Write-Log "INFO" "Tum uygulamalar guncelleniyor (bu islem uzun surebilir)..."
+
+            # Hatalari atlayarak guncelle
+            $result = & winget upgrade --all `
+                --accept-source-agreements `
+                --accept-package-agreements `
+                --silent `
+                --disable-interactivity `
+                --include-unknown 2>&1
+
+            # Sonuclari logla
+            $successCount = ($result | Select-String "Successfully installed" | Measure-Object).Count
+            $failCount    = ($result | Select-String "failed|error" -CaseSensitive:$false | Measure-Object).Count
+
+            Write-Log "OK" "Guncelleme tamamlandi: $successCount basarili"
+            if ($failCount -gt 0) {
+                Write-Log "WARN" "$failCount uygulama guncellenemedi (yonetici hakki veya baska sebep)."
+            }
+        }
+    } else {
+        Write-Log "OK" "Tum uygulamalar guncel."
+    }
+
+    Write-Log "OK" "GOREV 6 TAMAMLANDI."
+    return @{ Updated = $appCount; Status = "OK" }
+}
+
+# ======================================================================
+#  GOREV 7: BASLANGIC PROGRAMLARI YONETIMI
+# ======================================================================
+function Invoke-StartupOptimization {
+    Write-Banner "GOREV 7 - BASLANGIC PROGRAMLARI YONETIMI"
+    $itemCount = 0
+
+    # Registry baslangic kayitlari
+    Write-Log "INFO" "Registry baslangic kayitlari taraniyor..."
+    $startupPaths = @(
+        @{ Path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run";        Scope = "Kullanici" }
+        @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run";        Scope = "Sistem" }
+        @{ Path = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce";    Scope = "Kullanici (RunOnce)" }
+        @{ Path = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce";    Scope = "Sistem (RunOnce)" }
+    )
+
+    foreach ($sp in $startupPaths) {
+        if (-not (Test-Path $sp.Path)) { continue }
+        $items = Get-ItemProperty -Path $sp.Path -ErrorAction SilentlyContinue
+        $items.PSObject.Properties | Where-Object {
+            $_.Name -notin @("PSPath","PSParentPath","PSChildName","PSDrive","PSProvider")
+        } | ForEach-Object {
+            $exePath = $_.Value -replace '"','' -split '\s+' | Select-Object -First 1
+            $exists  = if ($exePath) { Test-Path $exePath } else { $false }
+            $status  = if ($exists) { "[GECERLI]" } else { "[GECERSIZ]" }
+            Write-Log "INFO" "  $($sp.Scope): $($_.Name) $status"
+            if (-not $exists) {
+                Write-Log "WARN" "    Yol bulunamadi: $exePath"
+            }
+            $itemCount++
+        }
+    }
+
+    # Task Scheduler baslangic gorevleri
+    Write-Log "INFO" "Zamanlanmis gorevler (baslangic) taraniyor..."
+    $tasks = Get-ScheduledTask -ErrorAction SilentlyContinue |
+        Where-Object { $_.Triggers | Where-Object { $_ -is [CimInstance] -and $_.CimClass.CimClassName -eq "MSFT_TaskLogonTrigger" } }
+
+    foreach ($t in $tasks) {
+        $state = $t.State
+        Write-Log "INFO" "  Gorev: $($t.TaskName) [$state] - $($t.TaskPath)"
+        $itemCount++
+    }
+
+    # Startup klasorleri
+    Write-Log "INFO" "Baslangic klasorleri taraniyor..."
+    $startupFolders = @(
+        "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup"
+        "$env:ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"
+    )
+    foreach ($sf in $startupFolders) {
+        if (Test-Path $sf) {
+            $files = Get-ChildItem -Path $sf -Force -ErrorAction SilentlyContinue
+            foreach ($f in $files) {
+                Write-Log "INFO" "  Klasor: $($f.Name)"
+                $itemCount++
+            }
+        }
+    }
+
+    Write-Log "OK" "GOREV 7 TOPLAM: $itemCount baslangic ogesi listelendi."
+    Write-Log "INFO" "Ipucu: Gereksiz baslangic ogelerini 'Gorev Yoneticisi > Baslangic' sekmesinden devre disi birakabilirsiniz."
+    return @{ Items = $itemCount; Status = "OK" }
+}
+
+# ======================================================================
+#  GOREV 8: HIZMET OPTIMIZASYONU
+# ======================================================================
+function Invoke-ServiceOptimization {
+    Write-Banner "GOREV 8 - HIZMET OPTIMIZASYONU"
+    $optimized = 0
+
+    # Guvenle devre disi birakilabilecek hizmetler
+    $optionalServices = @(
+        @{ Name = "DiagTrack";            Desc = "Bagli Kullanici Deneyimi ve Telemetri" }
+        @{ Name = "dmwappushservice";      Desc = "WAP Push Mesaj Yonlendirme" }
+        @{ Name = "SysMain";              Desc = "Superfetch (SSD disklerde gereksiz)" }
+        @{ Name = "WSearch";              Desc = "Windows Search (yuksek I/O)" }
+        @{ Name = "MapsBroker";           Desc = "Haritalar Indirme Yoneticisi" }
+        @{ Name = "lfsvc";                Desc = "Konum Hizmeti" }
+        @{ Name = "RetailDemo";           Desc = "Perakende Demo Hizmeti" }
+        @{ Name = "wisvc";                Desc = "Windows Insider Hizmeti" }
+        @{ Name = "WerSvc";              Desc = "Windows Hata Bildirimi" }
+        @{ Name = "Fax";                  Desc = "Faks Hizmeti" }
+        @{ Name = "TabletInputService";   Desc = "Tablet Giris Hizmeti" }
+        @{ Name = "XblAuthManager";       Desc = "Xbox Live Kimlik Dogrulama" }
+        @{ Name = "XblGameSave";          Desc = "Xbox Live Oyun Kaydi" }
+        @{ Name = "XboxNetApiSvc";        Desc = "Xbox Live Ag" }
+    )
+
+    Write-Log "INFO" "Opsiyonel hizmetler taraniyor..."
+    foreach ($svc in $optionalServices) {
+        $service = Get-Service -Name $svc.Name -ErrorAction SilentlyContinue
+        if (-not $service) { continue }
+
+        $startType = (Get-WmiObject Win32_Service -Filter "Name='$($svc.Name)'" -ErrorAction SilentlyContinue).StartMode
+        $status    = $service.Status
+
+        if ($startType -eq "Disabled") {
+            Write-Log "INFO" "  $($svc.Desc) ($($svc.Name)): Zaten devre disi."
+            continue
+        }
+
+        Write-Log "INFO" "  $($svc.Desc) ($($svc.Name)): $status / $startType"
+
+        if (-not $Script:DryRun) {
+            try {
+                Set-Service -Name $svc.Name -StartupType Disabled -ErrorAction Stop
+                if ($service.Status -eq "Running") {
+                    Stop-Service -Name $svc.Name -Force -ErrorAction SilentlyContinue
+                }
+                Write-Log "OK" "    -> Devre disi birakaldi."
+                $optimized++
+            } catch {
+                Write-Log "WARN" "    -> Degistirilemedi: $_"
+            }
+        } else {
+            Write-Log "INFO" "    [DRY-RUN] Devre disi birakilacakti."
+            $optimized++
+        }
+    }
+
+    $Script:TotalOptimized += $optimized
+    Write-Log "OK" "GOREV 8 TOPLAM: $optimized hizmet optimize edildi."
+    return @{ Optimized = $optimized; Status = "OK" }
+}
+
+# ======================================================================
+#  GOREV 9: AG OPTIMIZASYONU
+# ======================================================================
+function Invoke-NetworkOptimization {
+    Write-Banner "GOREV 9 - AG OPTIMIZASYONU"
+    $changes = 0
+
+    if ($Script:DryRun) {
+        Write-Log "INFO" "[DRY-RUN] Ag ayarlari degistirilecekti."
+    }
+
+    # --- DNS onbellegi temizle ---
+    Write-Log "INFO" "DNS onbellegi temizleniyor..."
+    if (-not $Script:DryRun) {
+        Clear-DnsClientCache -ErrorAction SilentlyContinue
+        Write-Log "OK" "DNS onbellegi temizlendi."
+        $changes++
+    }
+
+    # --- Winsock sifirlama ---
+    Write-Log "INFO" "Winsock katalogu kontrol ediliyor..."
+    if (-not $Script:DryRun) {
+        $winsockResult = & netsh winsock reset 2>&1
+        Write-Log "OK" "Winsock katalogu sifirlandi."
+        $changes++
+    }
+
+    # --- TCP/IP optimizasyonu ---
+    Write-Log "INFO" "TCP ayarlari optimize ediliyor..."
+    if (-not $Script:DryRun) {
+        # Auto-tuning Level
+        & netsh int tcp set global autotuninglevel=normal 2>$null | Out-Null
+
+        # ECN Capability
+        & netsh int tcp set global ecncapability=enabled 2>$null | Out-Null
+
+        # RSS (Receive Side Scaling)
+        & netsh int tcp set global rss=enabled 2>$null | Out-Null
+
+        # Chimney Offload (Win10+)
+        & netsh int tcp set global chimney=enabled 2>$null | Out-Null
+
+        # Direct Cache Access
+        & netsh int tcp set global dca=enabled 2>$null | Out-Null
+
+        Write-Log "OK" "TCP parametreleri optimize edildi."
+        $changes++
+    }
+
+    # --- QoS ayarlari ---
+    Write-Log "INFO" "QoS bant genisligi siniri kontrol ediliyor..."
+    $qosPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Psched"
+    if (-not (Test-Path $qosPath)) {
+        New-Item -Path $qosPath -Force | Out-Null
+    }
+    $currentQos = Get-ItemProperty -Path $qosPath -Name "NonBestEffortLimit" -ErrorAction SilentlyContinue
+    if (-not $currentQos -or $currentQos.NonBestEffortLimit -ne 0) {
+        if (-not $Script:DryRun) {
+            Set-ItemProperty -Path $qosPath -Name "NonBestEffortLimit" -Value 0 -Type DWord
+            Write-Log "OK" "QoS bant genisligi siniri kaldirildi."
+            $changes++
+        }
+    } else {
+        Write-Log "OK" "QoS bant genisligi zaten sinirsiz."
+    }
+
+    # --- Nagle algoritmasi (dusuk gecikme) ---
+    Write-Log "INFO" "Nagle algoritmasi kontrol ediliyor..."
+    $adapters = Get-NetAdapter | Where-Object { $_.Status -eq "Up" }
+    foreach ($adapter in $adapters) {
+        Write-Log "INFO" "  Adaptor: $($adapter.Name) [$($adapter.LinkSpeed)]"
+    }
+
+    # --- Ag istatistikleri ---
+    Write-Log "INFO" "Mevcut ag baglantilari:"
+    $connections = Get-NetTCPConnection -State Established -ErrorAction SilentlyContinue |
+        Group-Object RemoteAddress |
+        Sort-Object Count -Descending |
+        Select-Object -First 10
+    foreach ($c in $connections) {
+        Write-Log "INFO" "  $($c.Name): $($c.Count) baglanti"
+    }
+
+    Write-Log "OK" "GOREV 9 TOPLAM: $changes ag optimizasyonu yapildi."
+    return @{ Changes = $changes; Status = "OK" }
+}
+
+# ======================================================================
+#  GOREV 10: GUC PLANI OPTIMIZASYONU
+# ======================================================================
+function Invoke-PowerOptimization {
+    Write-Banner "GOREV 10 - GUC PLANI OPTIMIZASYONU"
+    $changes = 0
+
+    # Mevcut guc planini goster
+    $currentPlan = powercfg /getactivescheme 2>$null
+    Write-Log "INFO" "Mevcut guc plani: $currentPlan"
+
+    # Yuksek Performans plani GUID
+    $highPerfGuid = "8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c"
+    # Ultimate Performance GUID
+    $ultimateGuid = "e9a42b02-d5df-448d-aa00-03f14749eb61"
+
+    if (-not $Script:DryRun) {
+        # Ultimate Performance plani ekle (yoksa)
+        Write-Log "INFO" "Ultimate Performance guc plani kontrol ediliyor..."
+        $existingPlans = powercfg /list 2>$null
+        if ($existingPlans -notmatch $ultimateGuid) {
+            $dupResult = powercfg /duplicatescheme $ultimateGuid 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                Write-Log "OK" "Ultimate Performance guc plani eklendi."
+            } else {
+                Write-Log "INFO" "Ultimate Performance plani eklenemedi, Yuksek Performans kullanilacak."
+                $ultimateGuid = $highPerfGuid
+            }
+        }
+
+        # Yuksek Performans planini aktif et
+        powercfg /setactive $ultimateGuid 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            powercfg /setactive $highPerfGuid 2>$null
+        }
+        Write-Log "OK" "Guc plani: Yuksek Performans olarak ayarlandi."
+        $changes++
+
+        # Disk kapanma suresini devre disi birak
+        powercfg /change disk-timeout-ac 0 2>$null
+        Write-Log "OK" "Disk kapanma suresi: Hic (AC)"
+        $changes++
+
+        # Uyku modunu devre disi birak (AC)
+        powercfg /change standby-timeout-ac 0 2>$null
+        Write-Log "OK" "Uyku modu: Devre disi (AC)"
+        $changes++
+
+        # USB secici askiya alma
+        $usbPath = "HKLM:\SYSTEM\CurrentControlSet\Services\USB"
+        if (Test-Path $usbPath) {
+            Set-ItemProperty -Path $usbPath -Name "DisableSelectiveSuspend" -Value 1 -ErrorAction SilentlyContinue
+        }
+        Write-Log "OK" "USB secici askiya alma: Devre disi"
+        $changes++
+
+        # PCI Express Link State Power Management
+        powercfg /setacvalueindex scheme_current sub_pciexpress ee12f906-d277-404b-b6da-e5fa1a576df5 0 2>$null
+        powercfg /setactive scheme_current 2>$null
+        Write-Log "OK" "PCIe Link State Power Management: Kapatildi"
+        $changes++
+
+        # Islemci minimum performansi %100
+        powercfg /setacvalueindex scheme_current sub_processor PROCTHROTTLEMIN 100 2>$null
+        powercfg /setactive scheme_current 2>$null
+        Write-Log "OK" "Islemci minimum performansi: %100"
+        $changes++
+
+    } else {
+        Write-Log "INFO" "[DRY-RUN] Guc plani ayarlari degistirilecekti."
+    }
+
+    Write-Log "OK" "GOREV 10 TOPLAM: $changes guc ayari optimize edildi."
+    return @{ Changes = $changes; Status = "OK" }
+}
+
+# ======================================================================
+#  GOREV 11: SISTEM SAGLIGI RAPORU
+# ======================================================================
+function Invoke-SystemHealthReport {
+    Write-Banner "GOREV 11 - SISTEM SAGLIGI RAPORU"
+
+    $report = @{}
+
+# --- Isletim sistemi ---
+    $os = Get-CimInstance Win32_OperatingSystem
+    $osCaption = $os.Caption
+    $osBuild   = [string]$os.BuildNumber
+    $report["Isletim Sistemi"]  = "$osCaption Build $osBuild"
+    $report["Yukleme Tarihi"]   = $os.InstallDate.ToString("yyyy-MM-dd")
+    $report["Son Yeniden Baslama"] = $os.LastBootUpTime.ToString("yyyy-MM-dd HH:mm:ss")
+    $uptime = (Get-Date) - $os.LastBootUpTime
+    $uptDays = [string]$uptime.Days
+    $uptHours = [string]$uptime.Hours
+    $uptMins  = [string]$uptime.Minutes
+    $report["Calisma Suresi"] = "$uptDays gun $uptHours saat $uptMins dakika"
+
+    # --- Donanim ---
+    $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1
+    $cpuCores   = [string]$cpu.NumberOfCores
+    $cpuThreads = [string]$cpu.NumberOfLogicalProcessors
+    $cpuName    = $cpu.Name
+    $report["CPU"] = "$cpuName ($cpuCores Cekirdek / $cpuThreads Is Parcacigi)"
+
+    $ram = Get-CimInstance Win32_PhysicalMemory
+    $totalRAM = ($ram | Measure-Object -Property Capacity -Sum).Sum
+    $report["RAM"]     = Format-Size $totalRAM
+    $usedRAM  = $totalRAM - ($os.FreePhysicalMemory * 1KB)
+    $ramPct   = [math]::Round(($usedRAM / $totalRAM) * 100, 1)
+    $ramUsedStr  = Format-Size $usedRAM
+    $ramTotalStr = Format-Size $totalRAM
+    $report["RAM Kullanimi"] = "$ramUsedStr / $ramTotalStr (%$ramPct)"
+
+    # --- Diskler ---
+    Write-Log "INFO" "Disk bilgileri:"
+    $disks = Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3"
+    foreach ($d in $disks) {
+        $usedPct = [math]::Round((1 - $d.FreeSpace / $d.Size) * 100, 1)
+        $freeStr = Format-Size $d.FreeSpace
+        $totalStr = Format-Size $d.Size
+        $health = if ($usedPct -gt 90) { "[KRITIK]" } elseif ($usedPct -gt 80) { "[UYARI]" } else { "[IYI]" }
+        Write-Log "INFO" "  $($d.DeviceID) $health $freeStr bos / $totalStr toplam (%$usedPct dolu)"
+    }
+
+    # --- SSD / HDD SMART durumu ---
+    Write-Log "INFO" "Disk sagligi (SMART) kontrol ediliyor..."
+    try {
+        $diskHealth = Get-PhysicalDisk | Select-Object FriendlyName, MediaType, HealthStatus, OperationalStatus
+        foreach ($dh in $diskHealth) {
+            $hStatus = if ($dh.HealthStatus -eq "Healthy") { "[IYI]" } else { "[UYARI]" }
+            Write-Log "INFO" "  $($dh.FriendlyName) ($($dh.MediaType)): $hStatus $($dh.HealthStatus)"
+        }
+    } catch {
+        Write-Log "WARN" "Disk sagligi bilgisi alinamadi."
+    }
+
+    # --- GPU ---
+    try {
+        $gpu = Get-CimInstance Win32_VideoController | Select-Object -First 1
+        $gpuName = $gpu.Name
+        $gpuRam  = Format-Size $gpu.AdapterRAM
+        $report["GPU"] = "$gpuName ($gpuRam)"
+    } catch {
+        $report["GPU"] = "Bilgi alinamadi"
+    }
+
+    # --- Sicaklik (varsa) ---
+    try {
+        $temp = Get-CimInstance MSAcpi_ThermalZoneTemperature -Namespace root/wmi -ErrorAction Stop
+        foreach ($t in $temp) {
+            $celsius = [math]::Round(($t.CurrentTemperature / 10) - 273.15, 1)
+            Write-Log "INFO" "Sicaklik: ${celsius} dereceC"
+        }
+    } catch {
+        Write-Log "INFO" "Sicaklik bilgisi alinamadi (WMI destegi yok)."
+    }
+
+    # --- En cok kaynak kullanan islemler ---
+    Write-Log "INFO" "En cok CPU kullanan 10 islem:"
+    $topCPU = Get-Process | Sort-Object CPU -Descending | Select-Object -First 10 |
+        Format-Table Name, @{N="CPU (s)";E={"{0:N1}" -f $_.CPU}}, @{N="RAM (MB)";E={"{0:N0}" -f ($_.WorkingSet64/1MB)}}, Id -AutoSize |
+        Out-String
+    Write-Log "INFO" $topCPU.Trim()
+
+    Write-Log "INFO" "En cok RAM kullanan 10 islem:"
+    $topRAM = Get-Process | Sort-Object WorkingSet64 -Descending | Select-Object -First 10 |
+        Format-Table Name, @{N="RAM (MB)";E={"{0:N0}" -f ($_.WorkingSet64/1MB)}}, @{N="CPU (s)";E={"{0:N1}" -f $_.CPU}}, Id -AutoSize |
+        Out-String
+    Write-Log "INFO" $topRAM.Trim()
+
+    # --- SFC / DISM durum ---
+    Write-Log "INFO" "Sistem dosyasi butunlugu kontrol ediliyor (SFC)..."
+    if (-not $Script:DryRun) {
+        $sfcResult = & sfc /verifyonly 2>&1 | Out-String
+        if ($sfcResult -match "did not find any integrity violations|butunluk ihlali bulamadi") {
+            Write-Log "OK" "SFC: Sistem dosyalari bozulmamis."
+        } else {
+            Write-Log "WARN" "SFC: Olasi bozulma tespit edildi. 'sfc /scannow' calistirilmasi onerilir."
+        }
+    }
+
+    # --- Event Log ozeti ---
+    Write-Log "INFO" "Son 24 saatteki kritik olaylar:"
+    try {
+        $critEvents = Get-WinEvent -FilterHashtable @{
+            LogName   = "System"
+            Level     = @(1, 2)  # Critical, Error
+            StartTime = (Get-Date).AddHours(-24)
+        } -MaxEvents 20 -ErrorAction SilentlyContinue
+
+        if ($critEvents) {
+            $critEvents | Group-Object ProviderName | ForEach-Object {
+                Write-Log "WARN" "  $($_.Name): $($_.Count) hata"
+            }
+        } else {
+            Write-Log "OK" "Son 24 saatte kritik olay yok."
+        }
+    } catch {
+        Write-Log "INFO" "Olay gunlugu okunamadi."
+    }
+
+    # --- Rapor ciktisi ---
+    $reportFile = Join-Path $Script:ReportDir "SystemHealth_$Script:Timestamp.txt"
+    $reportContent  = "======================================================================`n"
+    $reportContent += "  SISTEM SAGLIGI RAPORU`n"
+    $reportContent += "  Olusturma: " + (Get-Date -Format "yyyy-MM-dd HH:mm:ss") + "`n"
+    $reportContent += "======================================================================`n`n"
+    $fixedKeys = @("Isletim Sistemi","Yukleme Tarihi","Son Yeniden Baslama","Calisma Suresi","CPU","RAM","RAM Kullanimi","GPU")
+    foreach ($key in $fixedKeys) {
+        if ($report.ContainsKey($key)) {
+            $keyPadded = $key.PadRight(25)
+            $reportContent += ($keyPadded + ": " + $report[$key] + "`n")
+        }
+    }
+    $reportContent | Out-File -FilePath $reportFile -Encoding UTF8
+
+    Write-Log "OK" "Sistem sagligi raporu olusturuldu: $reportFile"
+    return @{ Report = $report; Status = "OK" }
+}
+
+# ======================================================================
+#  ANA MENU VE CALISTIRMA
+# ======================================================================
+
+function Show-Menu {
+    $width = 62
+    $sep   = "=" * $width
+    $appN  = $Script:AppName
+    $appV  = $Script:AppVersion
+
+    $ln0 = ("|  $appN v$appV").PadRight($width) + "|"
+    $ln1 = ("|  Windows 10/11 Sistem Optimizasyon Araci").PadRight($width) + "|"
+    $ln2 = "+$sep+"
+    $ln3 = ("|").PadRight($width+1) + "|"
+    $ln4 = ("|  Mevcut Gorevler:").PadRight($width+1) + "|"
+    Write-Host $ln0 -ForegroundColor Cyan
+    Write-Host $ln1 -ForegroundColor Cyan
+    Write-Host $ln2 -ForegroundColor Cyan
+    Write-Host $ln3 -ForegroundColor White
+    Write-Host $ln4 -ForegroundColor White
+
+    foreach ($key in $Script:TaskOrder) {
+        $taskName = $Script:TaskDefinitions[$key].Name
+        $lnT = ("   [$key] $taskName").PadRight($width)
+        Write-Host "|$lnT|" -ForegroundColor Yellow
+    }
+
+    $lnA = ("|").PadRight($width+1) + "|"
+    $lnB = ("|  Calistirma Modlari:").PadRight($width+1) + "|"
+    $lnC = ("|   [A] Tam Optimizasyon       (tum gorevler)").PadRight($width+1) + "|"
+    $lnD = ("|   [B] Hizli Temizlik          (Gorev 1,2)").PadRight($width+1) + "|"
+    $lnE = ("|   [C] Guvenlik Paketi         (Gorev 4,5,6)").PadRight($width+1) + "|"
+    $lnF = ("|   [D] Performans Paketi       (Gorev 8,9,10)").PadRight($width+1) + "|"
+    $lnG = ("|   [E] Dry-Run Simulasyon      (hicbir sey degismez)").PadRight($width+1) + "|"
+    $lnH = ("|   [F] Ozel Gorev Sec          (virgullu: 1,3,6)").PadRight($width+1) + "|"
+    $lnI = ("|   [R] Sistem Sagligi Raporu   (Gorev 11)").PadRight($width+1) + "|"
+    $lnJ = ("|   [Q] Cikis").PadRight($width+1) + "|"
+    $lnK = ("|").PadRight($width+1) + "|"
+    $lnL = "+$sep+"
+    Write-Host $lnA -ForegroundColor White
+    Write-Host $lnB -ForegroundColor White
+    Write-Host $lnC -ForegroundColor Green
+    Write-Host $lnD -ForegroundColor Green
+    Write-Host $lnE -ForegroundColor Green
+    Write-Host $lnF -ForegroundColor Green
+    Write-Host $lnG -ForegroundColor Green
+    Write-Host $lnH -ForegroundColor Green
+    Write-Host $lnI -ForegroundColor Green
+    Write-Host $lnJ -ForegroundColor Red
+    Write-Host $lnK -ForegroundColor White
+    Write-Host $lnL -ForegroundColor Cyan
+}
+
+function Get-TaskSelection {
+    $choice = Read-Host "`nSeciminiz"
+    switch ($choice.ToUpper()) {
+        "A" { return $Script:TaskOrder }
+        "B" { return @(1, 2) }
+        "C" { return @(4, 5, 6) }
+        "D" { return @(8, 9, 10) }
+        "E" { $Script:DryRun = $true; return $Script:TaskOrder }
+        "F" {
+            $custom = Read-Host "Gorev numaralarini girin (virgullu, orn: 1,3,6)"
+            return ($custom -split ',' | ForEach-Object { [int]$_.Trim() } | Where-Object { $_ -in $Script:TaskOrder })
+        }
+        "R" { return @(11) }
+        "Q" { return @() }
+        default {
+            Write-Host "Gecersiz secim!" -ForegroundColor Red
+            return @()
+        }
+    }
+}
+
+function Invoke-Tasks {
+    param([int[]]$TaskIds)
+
+    $startTime = Get-Date
+
+    Write-Banner "$Script:AppName v$Script:AppVersion" "$(if($Script:DryRun){'DRY-RUN modu'}else{'NORMAL modu'}) - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+
+    # Sistem bilgisi
+    $os  = Get-CimInstance Win32_OperatingSystem
+    $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1
+    Write-Log "INFO" "OS  : $($os.Caption) Build $($os.BuildNumber)"
+    Write-Log "INFO" "CPU : $($cpu.Name)"
+    Write-Log "INFO" "RAM : $([math]::Round($os.TotalVisibleMemorySize / 1MB, 1)) GB"
+    Write-Log "INFO" "Mod : $(if($Script:DryRun){'DRY-RUN (degisiklik yapilmaz)'}else{'NORMAL'})"
+    Write-Log "INFO" "Log : $Script:LogFile"
+    Write-Log "INFO" ""
+
+    $sortedIds = $TaskIds | Sort-Object
+    foreach ($id in $sortedIds) {
+        if ($Script:TaskDefinitions.ContainsKey($id)) {
+            $def = $Script:TaskDefinitions[$id]
+            Write-Log "INFO" ">> Gorev $id baslatiliyor: $($def.Name)"
+            try {
+                $result = & $def.Function
+                $Script:TaskResults += @{
+                    Task   = $id
+                    Name   = $def.Name
+                    Result = $result
+                }
+            } catch {
+                Write-Log "ERROR" "Gorev $id basarisiz: $_"
+                $Script:TaskResults += @{
+                    Task   = $id
+                    Name   = $def.Name
+                    Result = @{ Status = "ERROR"; Error = $_.ToString() }
+                }
+            }
+        } else {
+            Write-Log "WARN" "Gecersiz gorev numarasi: $id"
+        }
+    }
+
+    # --- OZET RAPOR ---
+    $elapsed = (Get-Date) - $startTime
+    Write-Banner "OPTIMIZASYON OZETI"
+    Write-Log "SECTION" "  Sure       : $([math]::Floor($elapsed.TotalMinutes)) dk $($elapsed.Seconds) sn"
+    Write-Log "SECTION" "  Temizlenen : $(Format-Size $Script:TotalCleaned)"
+    Write-Log "SECTION" "  Optimize   : $($Script:TotalOptimized) oge"
+    Write-Log "SECTION" "  Uyarilar   : $($Script:TotalWarnings)"
+    Write-Log "SECTION" "  Hatalar    : $($Script:TotalErrors)"
+    Write-Log "SECTION" "  Log dosyasi: $Script:LogFile"
+    Write-Log "SECTION" ""
+
+    foreach ($tr in $Script:TaskResults) {
+        $statusIcon = switch ($tr.Result.Status) {
+            "OK"    { "[OK]" }
+            "WARN"  { "[!!]" }
+            "ERROR" { "[XX]" }
+            default { "[--]" }
+        }
+        Write-Log "SECTION" "  $statusIcon Gorev $($tr.Task): $($tr.Name)"
+    }
+
+    Write-Log "SECTION" ""
+    Write-Log "SECTION" ("=" * 64)
+    Write-Log "OK" "$Script:AppName v$Script:AppVersion tamamlandi."
+}
+
+# ======================================================================
+#  GIRIS NOKTASI
+# ======================================================================
+
+function Main {
+    # Yardim
+    if ($Help) {
+        Write-Host @"
+
+$Script:AppName v$Script:AppVersion - Kullanim Kilavuzu
+
+  .\WinOptimizer.ps1                     Interaktif menu
+  .\WinOptimizer.ps1 -Mode DryRun        Simulasyon (degisiklik yok)
+  .\WinOptimizer.ps1 -Mode Silent        Sessiz mod (sadece hatalar)
+  .\WinOptimizer.ps1 -Tasks 1,3,6        Belirli gorevleri calistir
+  .\WinOptimizer.ps1 -NoRestart          Yeniden baslatma isteme
+
+Gorevler:
+  1  Gereksiz Dosya Temizleme      7  Baslangic Programlari
+  2  Disk Temizligi                8  Hizmet Optimizasyonu
+  3  Registry Temizligi            9  Ag Optimizasyonu
+  4  Guvenlik Taramasi            10  Guc Plani Optimizasyonu
+  5  Windows Guncelleme           11  Sistem Sagligi Raporu
+  6  Uygulama Guncelleme (winget)
+
+"@
         return
     }
 
-    # SFC
-    Write-Log "SFC /scannow baslatiliyor..." 'INFO'
-    try {
-        $sfcOut    = & sfc /scannow 2>&1 | Out-String
-        Add-Content -Path $Script:LogFile -Value $sfcOut -Encoding UTF8 -ErrorAction SilentlyContinue
-        $sfcStatus = if     ($sfcOut -match "did not find any integrity violations")    { "Temiz" }
-                     elseif ($sfcOut -match "found corrupt files and successfully repaired") { "Onarildi" }
-                     elseif ($sfcOut -match "found corrupt files but was unable to fix")     { "Onarilamadi" }
-                     else   { "Tamamlandi" }
-        Write-Log "SFC: $sfcStatus" $(if($sfcStatus -eq "Onarilamadi"){'WARN'}else{'OK'})
-        Add-Result "Onarim" "SFC /scannow" $(if($sfcStatus -eq "Onarilamadi"){'WARN'}else{'OK'}) $sfcStatus
-    } catch {
-        Write-Log "SFC calistirilamadi: $_" 'ERROR'
-        Add-Result "Onarim" "SFC /scannow" "ERROR" "$_"
-    }
-
-    # DISM ScanHealth -> CheckHealth -> RestoreHealth (kosullu)
-    Write-Log "DISM ScanHealth baslatiliyor..." 'INFO'
-    try {
-        $dismScan = & dism /online /cleanup-image /scanhealth 2>&1 | Out-String
-        Add-Content -Path $Script:LogFile -Value $dismScan -Encoding UTF8 -ErrorAction SilentlyContinue
-        Write-Log "DISM ScanHealth tamamlandi." 'OK'
-
-        $dismCheck = & dism /online /cleanup-image /checkhealth 2>&1 | Out-String
-        Add-Content -Path $Script:LogFile -Value $dismCheck -Encoding UTF8 -ErrorAction SilentlyContinue
-
-        if ($dismCheck -match "repairable") {
-            Write-Log "DISM: Bilesem magazasi onarilabilir, RestoreHealth baslatiliyor..." 'WARN'
-            $dismRestore = & dism /online /cleanup-image /restorehealth 2>&1 | Out-String
-            Add-Content -Path $Script:LogFile -Value $dismRestore -Encoding UTF8 -ErrorAction SilentlyContinue
-            Write-Log "DISM RestoreHealth tamamlandi." 'OK'
-            Add-Result "Onarim" "DISM RestoreHealth" "OK" ""
-        } else {
-            Write-Log "DISM: Bilesem magazasi saglikli." 'OK'
-            Add-Result "Onarim" "DISM CheckHealth" "OK" "Saglikli"
-        }
-    } catch {
-        Write-Log "DISM calistirilamadi: $_" 'ERROR'
-        Add-Result "Onarim" "DISM" "ERROR" "$_"
-    }
-
-    # CHKDSK /scan (cevrimici, surucu kilitlenmez)
-    Write-Log "CHKDSK /scan baslatiliyor..." 'INFO'
-    try {
-        $chkOut    = & chkdsk C: /scan 2>&1 | Out-String
-        Add-Content -Path $Script:LogFile -Value $chkOut -Encoding UTF8 -ErrorAction SilentlyContinue
-        $needsFix  = $chkOut -match "Windows found problems"
-        if ($needsFix) {
-            Write-Log "CHKDSK: Sorunlar bulundu. Bir sonraki yeniden baslatmada onarilacak." 'WARN'
-            & chkdsk C: /f /perf 2>$null | Out-Null
-            Add-Result "Onarim" "CHKDSK" "WARN" "Sorun bulundu, reboot'ta onarilacak"
-        } else {
-            Write-Log "CHKDSK: Sorun bulunamadi." 'OK'
-            Add-Result "Onarim" "CHKDSK /scan" "OK" "Temiz"
-        }
-    } catch {
-        Write-Log "CHKDSK calistirilamadi: $_" 'WARN'
-        Add-Result "Onarim" "CHKDSK" "WARN" "$_"
-    }
-
-    Write-Log "Dosya sistemi onarimi tamamlandi." 'OK'
-}
-
-# ============================================================
-#  GOREV 6 -- OPTIMIZASYON, HIZLANDIRMA VE YENi MODUELLER
-# ============================================================
-function Invoke-SystemOptimization {
-    Write-Section "GOREV 6 -- OPTIMIZASYON VE HIZLANDIRMA"
-
-    New-RegistrySnapshot "Before_Optimization"
-
-    # -- 6a: Baslangic programlari --
-    Write-Log "Baslangic programlari analiz ediliyor..." 'INFO'
-    $startupPaths = @(
-        "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
-        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"
-    )
-    $blacklist = $Script:Config.StartupBlacklist
-    foreach ($regPath in $startupPaths) {
-        if (-not (Test-Path $regPath)) { continue }
-        $props = (Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue).PSObject.Properties |
-                 Where-Object { $_.Name -notin @('PSPath','PSParentPath','PSChildName','PSDrive','PSProvider') }
-        foreach ($prop in $props) {
-            if ($blacklist -contains $prop.Name) {
-                if ($DryRun) {
-                    Write-Log "[DRY-RUN] Baslangic kaldirilacak: $($prop.Name)" 'DRY'
-                } else {
-                    Remove-ItemProperty -Path $regPath -Name $prop.Name -ErrorAction SilentlyContinue
-                    Write-Log "  Baslangic kaldirildi: $($prop.Name)" 'INFO'
-                    Add-Result "Optimizasyon" "Baslangic: $($prop.Name)" "OK" ""
-                }
-            }
-        }
-    }
-
-    # -- 6b: Guc plani --
-    if (-not $DryRun) {
-        try {
-            & powercfg /setactive SCHEME_MIN 2>$null
-            Write-Log "Guc plani: Yuksek Performans aktif." 'OK'
-            Add-Result "Optimizasyon" "Guc Plani" "OK" "Yuksek Performans"
-        } catch { Write-Log "Guc plani degistirilemedi." 'WARN' }
-    } else {
-        Write-Log "[DRY-RUN] Guc plani Yuksek Performans'a alinacak." 'DRY'
-    }
-
-    # -- 6c: Gorsel efektler --
-    if (-not $DryRun) {
-        $vfxPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects"
-        try {
-            if (-not (Test-Path $vfxPath)) { New-Item -Path $vfxPath -Force | Out-Null }
-            Set-ItemProperty -Path $vfxPath -Name "VisualFXSetting" -Value 2 -Type DWord -ErrorAction SilentlyContinue
-            Write-Log "Gorsel efektler: Performans modu." 'OK'
-            Add-Result "Optimizasyon" "Gorsel Efektler" "OK" "Performans modu"
-        } catch { Write-Log "Gorsel efektler ayarlanamadi." 'WARN' }
-    }
-
-    # -- 6d: Gereksiz servisler --
-    $unusedServices = @(
-        @{ Name = "Fax";                Desc = "Faks" }
-        @{ Name = "XblGameSave";        Desc = "Xbox Oyun Kaydetme" }
-        @{ Name = "XboxNetApiSvc";      Desc = "Xbox Ag API" }
-        @{ Name = "WMPNetworkSvc";      Desc = "WMP Ag Paylasimi" }
-        @{ Name = "MapsBroker";         Desc = "Haritalar Yoneticisi" }
-        @{ Name = "RetailDemo";         Desc = "Perakende Demo" }
-        @{ Name = "TabletInputService"; Desc = "Tablet Girisi" }
-    )
-    Write-Log "Gereksiz servisler kontrol ediliyor..." 'INFO'
-    foreach ($svc in $unusedServices) {
-        try {
-            $s = Get-Service -Name $svc.Name -ErrorAction SilentlyContinue
-            if ($s -and $s.StartType -ne 'Disabled') {
-                if ($DryRun) {
-                    Write-Log "[DRY-RUN] Devre disi birakilacak: $($svc.Desc)" 'DRY'
-                } else {
-                    Set-Service -Name $svc.Name -StartupType Disabled -ErrorAction SilentlyContinue
-                    Stop-ServiceSafe -Name $svc.Name -TimeoutSec 15 | Out-Null
-                    Write-Log "  Devre disi: $($svc.Desc)" 'OK'
-                    Add-Result "Optimizasyon" "Servis: $($svc.Desc)" "OK" "Disabled"
-                }
-            }
-        } catch {}
-    }
-
-    # -- 6e: DNS onbellegi --
-    if (-not $DryRun) {
-        Clear-DnsClientCache -ErrorAction SilentlyContinue
-        & ipconfig /flushdns 2>$null | Out-Null
-        Write-Log "DNS onbellegi temizlendi." 'OK'
-        Add-Result "Optimizasyon" "DNS Onbellegi" "OK" ""
-    }
-
-    # -- 6f: Sayfa dosyasi --
-    if (-not $DryRun) {
-        try {
-            $cs = Get-CimInstance Win32_ComputerSystem -ErrorAction SilentlyContinue
-            if ($cs -and -not $cs.AutomaticManagedPagefile) {
-                Set-CimInstance -InputObject $cs -Property @{AutomaticManagedPagefile = $true} -ErrorAction SilentlyContinue
-            }
-            Write-Log "Sayfa dosyasi: Otomatik yonetim aktif." 'OK'
-            Add-Result "Optimizasyon" "Sayfa Dosyasi" "OK" "Otomatik"
-        } catch { Write-Log "Sayfa dosyasi yapilandirillamadi." 'WARN' }
-    }
-
-    # -- 6g: RAM Temizleyici --
-    Write-Log "RAM optimizasyonu baslatiliyor..." 'INFO'
-    if (-not $DryRun) {
-        try {
-            $osBefore  = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
-            $ramBefore = if ($osBefore) { [math]::Round($osBefore.FreePhysicalMemory / 1MB, 1) } else { 0 }
-            [System.GC]::Collect()
-            [System.GC]::WaitForPendingFinalizers()
-            [System.GC]::Collect()
-            # Surecler icin MinWorkingSet trick
-            Get-Process -ErrorAction SilentlyContinue |
-                Where-Object { -not $_.HasExited -and $_.Id -gt 4 } |
-                ForEach-Object {
-                    try { $_.MinWorkingSet = [IntPtr](-1) } catch {}
-                }
-            Start-Sleep -Seconds 1
-            $osAfter  = Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue
-            $ramAfter = if ($osAfter) { [math]::Round($osAfter.FreePhysicalMemory / 1MB, 1) } else { 0 }
-            $gained   = [math]::Round($ramAfter - $ramBefore, 1)
-            Write-Log "RAM optimizasyonu: $gained GB serbest birakildi (once: $ramBefore GB, sonra: $ramAfter GB)." 'OK'
-            Add-Result "Optimizasyon" "RAM Temizleyici" "OK" "+$gained GB serbest"
-        } catch {
-            Write-Log "RAM optimizasyonu sirasinda hata: $_" 'WARN'
-        }
-    } else {
-        Write-Log "[DRY-RUN] RAM temizleyici calistirilacak." 'DRY'
-    }
-
-    # -- 6h: Ag Optimizasyonu (TCP tuning) --
-    Write-Log "Ag optimizasyonu baslatiliyor..." 'INFO'
-    if (-not $DryRun) {
-        try {
-            & netsh int tcp set global autotuninglevel=normal  2>$null | Out-Null
-            & netsh int tcp set global dca=enabled             2>$null | Out-Null
-            & netsh int tcp set global chimney=automatic       2>$null | Out-Null
-            & netsh int tcp set global ecncapability=enabled   2>$null | Out-Null
-            & netsh int tcp set global rss=enabled             2>$null | Out-Null
-            Write-Log "Ag TCP parametreleri optimize edildi." 'OK'
-            Add-Result "Optimizasyon" "TCP/IP Tuning" "OK" "autotuninglevel=normal, RSS=enabled"
-        } catch {
-            Write-Log "Ag optimizasyonu hatasi: $_" 'WARN'
-        }
-    } else {
-        Write-Log "[DRY-RUN] TCP/IP parametreleri optimize edilecek." 'DRY'
-    }
-
-    # -- 6i: Donanim Izleme --
-    Write-Log "Donanim durumu kontrol ediliyor..." 'INFO'
-    try {
-        $diskStatus = Get-PhysicalDisk -ErrorAction SilentlyContinue |
-                      Select-Object FriendlyName, HealthStatus, Size
-        foreach ($disk in $diskStatus) {
-            $sizGB = [math]::Round($disk.Size / 1GB, 0)
-            Write-Log "  Disk: $($disk.FriendlyName) | $($disk.HealthStatus) | $sizGB GB" 'INFO'
-            if ($disk.HealthStatus -ne 'Healthy') {
-                Write-Log "  UYARI: Disk saglik sorunu tespit edildi!" 'WARN'
-                Add-Result "Izleme" "Disk Sagligi" "WARN" "$($disk.FriendlyName): $($disk.HealthStatus)"
-            }
-        }
-        $cpuLoad = (Get-CimInstance Win32_Processor -ErrorAction SilentlyContinue |
-                    Measure-Object LoadPercentage -Average).Average
-        $freeRam = [math]::Round((Get-CimInstance Win32_OperatingSystem -ErrorAction SilentlyContinue).FreePhysicalMemory / 1MB, 1)
-        Write-Log "  CPU Yuku: $cpuLoad%" 'INFO'
-        Write-Log "  Bos RAM : $freeRam GB" 'INFO'
-        Add-Result "Izleme" "Donanim Durumu" "OK" "CPU: $cpuLoad% | Bos RAM: $freeRam GB"
-    } catch {
-        Write-Log "Donanim izleme hatasi: $_" 'WARN'
-    }
-
-    # -- 6j: Registry temizligi --
-    if (-not $DryRun) {
-        $regClean = @(
-            "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs",
-            "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU"
-        )
-        foreach ($rp in $regClean) {
-            if (Test-Path $rp) {
-                try {
-                    Remove-Item -Path $rp -Recurse -Force -ErrorAction SilentlyContinue
-                    Write-Log "  Registry temizlendi: $(Split-Path $rp -Leaf)" 'INFO'
-                } catch {}
-            }
-        }
-        Add-Result "Optimizasyon" "Registry Temizligi" "OK" ""
-    }
-
-    # -- 6k: Geri yukleme noktasi --
-    if (-not $DryRun) {
-        try {
-            $vss = Get-Service -Name "VSS" -ErrorAction SilentlyContinue
-            if ($vss) {
-                Checkpoint-Computer -Description "WinOptimizer v$($Script:Version) -- $(Get-Date -Format 'yyyy-MM-dd')" `
-                    -RestorePointType "MODIFY_SETTINGS" -ErrorAction SilentlyContinue
-                Write-Log "Sistem geri yukleme noktasi olusturuldu." 'OK'
-                Add-Result "Optimizasyon" "Geri Yukleme Noktasi" "OK" ""
-            }
-        } catch { Write-Log "Geri yukleme noktasi olusturulamadi." 'WARN' }
-    }
-
-    Write-Log "Optimizasyon ve hizlandirma tamamlandi." 'OK'
-}
-
-# ============================================================
-#  GOREV 7 -- OTOMATIK BASLAMA KURULUMU
-# ============================================================
-function Install-AutoStart {
-    Write-Section "GOREV 7 -- OTOMATIK BASLAMA KURULUMU"
-
-    $scriptSrc  = $PSCommandPath
-    $scriptDest = "$Script:BaseDir\WinOptimizer.ps1"
-
-    if ($scriptSrc -and $scriptSrc -ne $scriptDest -and (Test-Path $scriptSrc)) {
-        try {
-            Copy-Item -Path $scriptSrc -Destination $scriptDest -Force -ErrorAction Stop
-            Write-Log "Script kalici konuma kopyalandi: $scriptDest" 'OK'
-        } catch {
-            Write-Log "Script kopyalanamadi, mevcut konum kullanilacak." 'WARN'
-            $scriptDest = $scriptSrc
-        }
-    } elseif (-not (Test-Path $scriptDest)) {
-        $scriptDest = $scriptSrc
-    }
-
-    # Zamanlama profili
-    $triggerObj = switch ($Script:Config.ScheduleProfile) {
-        "Daily"   { New-ScheduledTaskTrigger -Daily   -At "03:00" }
-        "Weekly"  { New-ScheduledTaskTrigger -Weekly  -DaysOfWeek Monday -At "03:00" }
-        "Monthly" { New-ScheduledTaskTrigger -Monthly -DaysOfMonth 1 -At "03:00" }
-        default   { New-ScheduledTaskTrigger -AtStartup }
-    }
-
-    $taskName  = "WinOptimizer_AutoRun"
-    $psArgs    = "-WindowStyle Hidden -NonInteractive -ExecutionPolicy Bypass -File `"$scriptDest`" -AutoMode -Profile $($Script:Config.ScheduleProfile)"
-    $action    = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument $psArgs
-    $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-    $settings  = New-ScheduledTaskSettingsSet `
-                     -ExecutionTimeLimit (New-TimeSpan -Hours 3) `
-                     -RestartCount 2 `
-                     -RestartInterval (New-TimeSpan -Minutes 10) `
-                     -StartWhenAvailable `
-                     -MultipleInstances IgnoreNew `
-                     -RunOnlyIfNetworkAvailable $false
-
-    try {
-        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
-        Register-ScheduledTask `
-            -TaskName    $taskName `
-            -Action      $action `
-            -Trigger     $triggerObj `
-            -Principal   $principal `
-            -Settings    $settings `
-            -Description "WinOptimizer Pro v$($Script:Version) -- Otomatik calisma" `
-            -Force | Out-Null
-        Write-Log "Gorev Zamanlayici gorevi olusturuldu: $taskName" 'OK'
-        Write-Log "Profil: $($Script:Config.ScheduleProfile)" 'INFO'
-        Add-Result "Baslama" "Gorev Zamanlayici" "OK" $taskName
-    } catch {
-        Write-Log "Gorev Zamanlayici hatasi, Registry fallback deneniyor: $_" 'WARN'
-        try {
-            Set-ItemProperty `
-                -Path  "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" `
-                -Name  "WinOptimizer" `
-                -Value "PowerShell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptDest`" -AutoMode" `
-                -ErrorAction Stop
-            Write-Log "Registry baslangic girisi olusturuldu (yedek)." 'OK'
-            Add-Result "Baslama" "Registry Startup (fallback)" "OK" $scriptDest
-        } catch {
-            Write-Log "Otomatik baslama kurulamadi: $_" 'ERROR'
-            Add-Result "Baslama" "Otomatik Baslama" "ERROR" "$_"
-        }
-    }
-}
-
-# ============================================================
-#  HTML RAPOR URETICI
-# ============================================================
-function Export-HtmlReport {
-    param([timespan]$Elapsed)
-
-    $statusColor = @{
-        OK    = "#22c55e"
-        WARN  = "#f59e0b"
-        ERROR = "#ef4444"
-        DRY   = "#a855f7"
-        SKIP  = "#6b7280"
-    }
-
-    $rows = ($Script:Results | ForEach-Object {
-        $col = if ($statusColor[$_.Status]) { $statusColor[$_.Status] } else { "#6b7280" }
-        $colBg = $col + "20"
-        "<tr>
-          <td style='padding:8px 12px;border-bottom:1px solid #1e293b'>$($_.Time)</td>
-          <td style='padding:8px 12px;border-bottom:1px solid #1e293b'>$($_.Task)</td>
-          <td style='padding:8px 12px;border-bottom:1px solid #1e293b'>$($_.Action)</td>
-          <td style='padding:8px 12px;border-bottom:1px solid #1e293b'>
-            <span style='background:$colBg;color:$col;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600'>$($_.Status)</span>
-          </td>
-          <td style='padding:8px 12px;border-bottom:1px solid #1e293b;color:#94a3b8;font-size:12px'>$($_.Detail)</td>
-        </tr>"
-    }) -join "`n"
-
-    $dryBanner = if ($DryRun) {
-        "<div style='background:#581c87;color:#e9d5ff;padding:12px 20px;border-radius:8px;margin-bottom:20px;font-weight:600'>DRY-RUN MODU -- Gercek islem yapilmadi.</div>"
-    } else { "" }
-
-    $elMin  = [int]$Elapsed.Minutes
-    $elSec  = [int]$Elapsed.Seconds
-    $dateStr = Get-Date -Format "dd.MM.yyyy HH:mm:ss"
-    $freed  = [math]::Round($Script:Stats.FreedMB, 0)
-    $done   = $Script:Stats.TasksDone
-    $threat = if ($Script:Stats.ThreatsFound -gt 0) { "$($Script:Stats.ThreatsFound) Tehdit" } else { "Temiz" }
-    $threatColor = if ($Script:Stats.ThreatsFound -gt 0) { "#ff3d71" } else { "#00e676" }
-
-    $html = @"
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<title>WinOptimizer Pro v$($Script:Version) - Rapor</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0e1a;color:#cbd5e1;font-family:'Segoe UI',sans-serif;padding:32px}
-h1{font-size:22px;font-weight:700;color:#fff;margin-bottom:4px}
-.sub{font-size:12px;color:#475569;margin-bottom:28px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
-.card{background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:18px}
-.card-val{font-size:24px;font-weight:700;color:#fff;margin-bottom:4px}
-.card-lbl{font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:1px}
-table{width:100%;border-collapse:collapse;background:#0f172a;border-radius:10px;overflow:hidden}
-th{padding:10px 12px;background:#1e293b;color:#94a3b8;font-size:11px;text-align:left;text-transform:uppercase}
-.footer{margin-top:20px;font-size:11px;color:#334155;text-align:center}
-</style>
-</head>
-<body>
-<h1>WinOptimizer Pro <span style="color:#00d4ff">v$($Script:Version)</span> - Optimizasyon Raporu</h1>
-<div class="sub">$dateStr | $($Script:Stats.Hostname) | $($Script:Stats.OS)</div>
-$dryBanner
-<div class="grid">
-  <div class="card">
-    <div class="card-val" style="color:#00e676">$freed MB</div>
-    <div class="card-lbl">Temizlenen Alan</div>
-  </div>
-  <div class="card">
-    <div class="card-val">$done / 7</div>
-    <div class="card-lbl">Tamamlanan Gorev</div>
-  </div>
-  <div class="card">
-    <div class="card-val" style="color:$threatColor">$threat</div>
-    <div class="card-lbl">Virus Durumu</div>
-  </div>
-  <div class="card">
-    <div class="card-val">${elMin}dk ${elSec}sn</div>
-    <div class="card-lbl">Toplam Sure</div>
-  </div>
-</div>
-<table>
-  <thead><tr><th>Saat</th><th>Gorev</th><th>Islem</th><th>Durum</th><th>Detay</th></tr></thead>
-  <tbody>$rows</tbody>
-</table>
-<div class="footer">WinOptimizer Pro v$($Script:Version) | Log: $Script:LogFile | CPU: $($Script:Stats.CPU) | RAM: $($Script:Stats.RAM_GB) GB</div>
-</body>
-</html>
-"@
-    $html | Out-File -FilePath $Script:HtmlRpt -Encoding UTF8 -Force
-    Write-Log "HTML rapor: $Script:HtmlRpt" 'OK'
-}
-
-# ============================================================
-#  TOAST BILDIRIMI
-# ============================================================
-function Send-ToastNotification {
-    param([string]$Title, [string]$Body)
-    if (-not $Script:Config.EnableToast) { return }
-    try {
-        [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
-        [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
-        $template = "<toast><visual><binding template='ToastGeneric'><text>$Title</text><text>$Body</text></binding></visual></toast>"
-        $xml = [Windows.Data.Xml.Dom.XmlDocument]::new()
-        $xml.LoadXml($template)
-        $toast    = [Windows.UI.Notifications.ToastNotification]::new($xml)
-        $notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("WinOptimizer Pro")
-        $notifier.Show($toast)
-    } catch {
-        # WinRT olmadan sessizce atla
-    }
-}
-
-# ============================================================
-#  ANA AKIS
-# ============================================================
-function Main {
-    $Script:Stats.StartTime = Get-Date
-    $modeTag = if ($DryRun) { "DRY-RUN" } else { "NORMAL" }
-
-    Write-Log "=========================================================="
-    Write-Log "     WinOptimizer Pro v$($Script:Version) -- $modeTag modu"
-    Write-Log "     $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    Write-Log "=========================================================="
-
     # Yonetici kontrolu
-    $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
-        [Security.Principal.WindowsBuiltInRole]::Administrator)
-    if (-not $isAdmin) {
-        Write-Log "HATA: Yonetici yetkisi gerekiyor!" 'ERROR'
-        exit 1
+    if (-not (Test-Administrator)) {
+        Write-Host ""
+        Write-Host "  UYARI: Bu script Yonetici (Administrator) haklariyla calistirilmalidir!" -ForegroundColor Red
+        Write-Host "  Sag tikla > 'Yonetici olarak calistir' secin." -ForegroundColor Yellow
+        Write-Host ""
+
+        $continue = Read-Host "Yonetici haklari olmadan devam etmek istiyor musunuz? (E/H)"
+        if ($continue.ToUpper() -ne "E") { return }
     }
 
-    Get-HardwareInfo
-    Remove-OldLogs
+    # Ortam hazirla
+    Initialize-Environment
 
-    # Tum gorevler tanimi
-    $allTasks = @(
-        @{ Id = 1; Fn = { Invoke-JunkCleaner }      ; Name = "Gereksiz Dosya Temizleme" }
-        @{ Id = 2; Fn = { Invoke-DiskCleanup }      ; Name = "Disk Temizligi" }
-        @{ Id = 3; Fn = { Invoke-UpdateRepair }      ; Name = "Guncelleme Onarimi" }
-        @{ Id = 4; Fn = { Invoke-VirusScan }         ; Name = "Virus Tarama" }
-        @{ Id = 5; Fn = { Invoke-FileSystemRepair }  ; Name = "Dosya Sistemi Onarimi" }
-        @{ Id = 6; Fn = { Invoke-SystemOptimization }; Name = "Optimizasyon ve Hizlandirma" }
-        @{ Id = 7; Fn = { Install-AutoStart }         ; Name = "Otomatik Baslama" }
-    )
-
-    # Kismi calisma modu
-    $selected = if ($Tasks -and $Tasks.Count -gt 0) {
-        Write-Log "Secili gorevler: $($Tasks -join ', ')" 'INFO'
-        $allTasks | Where-Object { $Tasks -contains $_.Id }
-    } else {
-        $allTasks
+    # Komut satiri argumanlari varsa direkt calistir
+    if ($Tasks -and $Tasks.Count -gt 0) {
+        Invoke-Tasks -TaskIds $Tasks
+        return
     }
 
-    # AutoMode'da Gorev 7 atla
-    if ($AutoMode) { $selected = $selected | Where-Object { $_.Id -ne 7 } }
+    # Interaktif menu
+    do {
+        Show-Menu
+        $selectedTasks = Get-TaskSelection
 
-    # Gorevleri calistir
-    foreach ($task in $selected) {
-        Write-Log ">> Gorev $($task.Id) baslatiliyor: $($task.Name)" 'INFO'
-        try {
-            & $task.Fn
-            $Script:Stats.TasksDone++
-        } catch {
-            Write-Log "GOREV $($task.Id) HATA: $_" 'ERROR'
-            $Script:Stats.TasksFailed++
-            Add-Result $task.Name "Gorev calistirma" "ERROR" "$_"
+        if ($selectedTasks.Count -eq 0) {
+            Write-Host "`nCikis yapiliyor. Iyi gunler!" -ForegroundColor Cyan
+            return
         }
-    }
 
-    # Bitis ozeti
-    $elapsed = (Get-Date) - $Script:Stats.StartTime
-    Write-Section "TAMAMLANDI"
-    Write-Log "Basarili gorev  : $($Script:Stats.TasksDone)" 'OK'
-    if ($Script:Stats.TasksFailed -gt 0) {
-        Write-Log "Basarisiz gorev : $($Script:Stats.TasksFailed)" 'WARN'
-    }
-    Write-Log "Temizlenen alan : $([math]::Round($Script:Stats.FreedMB,2)) MB" 'OK'
-    Write-Log "Toplam sure     : $([int]$elapsed.Minutes) dk $([int]$elapsed.Seconds) sn" 'OK'
-    Write-Log "Log dosyasi     : $Script:LogFile" 'INFO'
+        Invoke-Tasks -TaskIds $selectedTasks
 
-    # HTML rapor
-    if ($Script:Config.EnableHtmlReport) { Export-HtmlReport -Elapsed $elapsed }
-
-    # Duz metin rapor
-    $txtContent = @"
-WinOptimizer Pro v$($Script:Version) -- Optimizasyon Raporu
-Tarih   : $(Get-Date -Format 'dd.MM.yyyy HH:mm:ss')
-Mod     : $modeTag
-Sure    : $([int]$elapsed.Minutes) dk $([int]$elapsed.Seconds) sn
-Temizlik: $([math]::Round($Script:Stats.FreedMB,2)) MB
-Gorev   : $($Script:Stats.TasksDone) basarili, $($Script:Stats.TasksFailed) basarisiz
-Tehdit  : $($Script:Stats.ThreatsFound)
-Log     : $Script:LogFile
-HTML    : $Script:HtmlRpt
-"@
-    $txtContent | Out-File -FilePath $Script:TxtRpt -Encoding UTF8 -Force
-
-    # Toast bildirimi
-    $toastBody = "Temizlendi: $([math]::Round($Script:Stats.FreedMB,0)) MB | Sure: $([int]$elapsed.Minutes)dk $([int]$elapsed.Seconds)sn"
-    if ($Script:Stats.ThreatsFound -gt 0) { $toastBody += " | UYARI: $($Script:Stats.ThreatsFound) tehdit temizlendi!" }
-    Send-ToastNotification -Title "WinOptimizer Pro -- Tamamlandi" -Body $toastBody
-
-    Write-Log "Ozet rapor: $Script:TxtRpt" 'OK'
+        # Tekrar calistirma
+        if (-not $Script:Silent) {
+            $again = Read-Host "`nBaska bir islem yapmak ister misiniz? (E/H)"
+            if ($again.ToUpper() -ne "E") {
+                Write-Host "`nTesekkurler! Iyi gunler." -ForegroundColor Cyan
+                return
+            }
+            # Sayaclari sifirla
+            $Script:TotalCleaned   = 0
+            $Script:TotalErrors    = 0
+            $Script:TotalWarnings  = 0
+            $Script:TotalOptimized = 0
+            $Script:TaskResults    = @()
+        } else {
+            return
+        }
+    } while ($true)
 }
 
-# ============================================================
-#  GIRIS NOKTASI
-# ============================================================
+# Calistir
 Main
