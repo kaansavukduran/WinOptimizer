@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "version": "5.2.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 131007565,
+  "sha256": "602ba4db4291b41ad84961beec4dac6b71a548a6c562467bd24c0f42284f4ab9",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v5.2.0/WinOptimizer-Aion-5.2.0-Windows-x64-Setup.exe",
+  "sourceCommit": "f354f4b8c39f78b7c0b3e95043e559884e589b95",
+  "notes": {
+    "tr": "Tarama sonuçlarından seçmeli sürücü güncelleme, otomatik sürücü yedeği, yeni Bakım Atölyesi, doğrulanan Microsoft oyun bileşeni kurulumu ve uygulamaya özel 24 karelik Aion animasyonları.",
+    "en": "Selected driver updates from scan results, automatic driver backup, Care workshop, verified Microsoft game-runtime installation and a new application-specific 24-frame Aion sheet."
+  }
+}
