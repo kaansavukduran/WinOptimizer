@@ -3,10 +3,10 @@ const path=require('node:path');
 const crypto=require('node:crypto');
 const {atomicWrite}=require('./settings.cjs');
 const inside=(root,file)=>{const rel=path.relative(root,file);return rel!==''&&!rel.startsWith('..'+path.sep)&&rel!=='..'&&!path.isAbsolute(rel);};
+async function plainPath(file){let cursor=path.resolve(file);for(;;){const s=await fs.lstat(cursor);if(s.isSymbolicLink())return false;const parent=path.dirname(cursor);if(parent===cursor)return true;cursor=parent;}}
 async function regularFile(root,file){
   if(!inside(root,file))return false;
-  try{const actual=await fs.realpath(root); if(actual!==path.resolve(root))return false;
-    let cursor=file;while(cursor!==root){const s=await fs.lstat(cursor);if(s.isSymbolicLink())return false;cursor=path.dirname(cursor);}
+  try{const actualRoot=await fs.realpath(root),actualFile=await fs.realpath(file);if(!inside(actualRoot,actualFile)||!(await plainPath(file)))return false;
     const s=await fs.lstat(file);return s.isFile();}catch{return false;}
 }
 function rootsFor(local){return [{id:'temp',path:path.join(local,'Temp'),days:7},{id:'chrome',path:path.join(local,'Google','Chrome','User Data','Default','Cache','Cache_Data'),days:7},{id:'edge',path:path.join(local,'Microsoft','Edge','User Data','Default','Cache','Cache_Data'),days:7}];}
@@ -37,7 +37,7 @@ class Cleanup {
     const base=path.join(this.dir,'quarantine',id);let restored=0,conflicts=0;
     for(const f of j.items.filter(x=>x.moved&&!x.restored&&!x.purged)){
       const root=this.roots.find(x=>x.id===f.root);if(!root||!inside(root.path,f.original)||!inside(base,f.saved)||!(await regularFile(base,f.saved))){conflicts++;continue;}
-      try{const parent=await fs.realpath(path.dirname(f.original));if(parent!==path.resolve(path.dirname(f.original)))throw Error();
+      try{if(!(await plainPath(path.dirname(f.original))))throw Error();
         // COPYFILE_EXCL never overwrites a newly created file at the original path.
         await fs.copyFile(f.saved,f.original,require('node:fs').constants.COPYFILE_EXCL);await fs.unlink(f.saved);f.restored=true;restored++;
       }catch{conflicts++;}atomicWrite(path.join(base,'journal.json'),j);}
@@ -46,4 +46,4 @@ class Cleanup {
     for(const f of j.items.filter(x=>x.moved&&!x.restored&&!x.purged)){if(!inside(base,f.saved)||!(await regularFile(base,f.saved))){failed++;continue;}try{await fs.unlink(f.saved);f.purged=true;bytes+=f.size;}catch{failed++;}atomicWrite(path.join(base,'journal.json'),j);}
     j.status=failed?'partial':'purged';atomicWrite(path.join(base,'journal.json'),j);return {bytes,failed};}
 }
-module.exports={Cleanup,rootsFor,inside,regularFile};
+module.exports={Cleanup,rootsFor,inside,regularFile,plainPath};
