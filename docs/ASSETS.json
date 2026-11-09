@@ -1,0 +1,28 @@
+{
+  "authorization": "Kaan explicitly requested reuse of his Aion character and supplied a sprite-sheet reference in chat.",
+  "sprite": {
+    "columns": 4,
+    "rows": 8,
+    "width": 887,
+    "height": 1774,
+    "clips": {
+      "idle": 0,
+      "celebration": 1,
+      "reading": 2
+    }
+  },
+  "files": [
+    {
+      "path": "public/assets/aion-actions.png",
+      "sha256": "f0cea5ff50da77e00bbd8d8e0cca6058197ab0d355fabf869e6f8443baa5b14d"
+    },
+    {
+      "path": "public/assets/aion-icon.png",
+      "sha256": "74672addf1fa458b38258cd36e1024e27b93343736ec50e74d830faba693ca56"
+    },
+    {
+      "path": "public/assets/aion.ico",
+      "sha256": "518c7e7d3ae70a8910134ea608bd4f28b2f0b621e46cdbc2ce24cf1347cece3d"
+    }
+  ]
+}

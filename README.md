@@ -1,110 +1,65 @@
-# WinOptimizer Pro v4.0
+# WinOptimizer Aion
 
-**Windows 10/11 Kapsamlı Sistem Optimizasyon Aracı**
+Windows için pembe axolotl Aion eşliğinde, Türkçe ve İngilizce bakım uygulaması.
+Windows only. A bilingual, local-first care center with Kaan’s animated axolotl Aion.
 
----
+## Kurulum / Installation
 
-## Özellikler
+1. [Releases](https://github.com/kaansavukduran/WinOptimizer/releases) sayfasından `WinOptimizer-Aion-<sürüm>-Windows-x64-Setup.exe` dosyasını indirin.
+2. Dosyaya çift tıklayın, kurulum konumunu seçin, kurulumu tamamlayın. Başlat menüsünden **WinOptimizer Aion** uygulamasını açın.
+3. **Sistemi kontrol et** ile gerçek donanım ve koruma durumunu görün. **Temizliği tara** ile adayları listeleyin. Seçilenleri **Güvenli depoya taşı** düğmesiyle taşıyın.
+4. **Geçmiş ve yedekler** üzerinden geri alın. Alan kazanmak için ayrı **Kalıcı sil ve alan aç** işlemini seçin; bu işlem geri alınamaz.
+5. **Ayarlar** yan menünün en altındadır. **Genel ve Dil**, **Görünüm**, **Erişilebilirlik**, **Aion ve Bildirimler**, **Veri ve Yedekler**, **Güncellemeler**, **Hakkında** grupları vardır.
 
-| Görev | Açıklama |
-|-------|----------|
-| **1. Gereksiz Dosya Temizleme** | TEMP, tarayıcı önbellek, prefetch, crash dump, CBS log, thumbnail, çöp kutusu vb. |
-| **2. Disk Temizliği** | cleanmgr + DISM Component Store sıkıştırma |
-| **3. Registry Temizliği** | Geçersiz uninstall, dosya ilişkilendirme, Run kayıtları, MUI Cache |
-| **4. Güvenlik Taraması** | Defender, güvenlik duvarı, UAC, BitLocker, açık portlar, virüs taraması |
-| **5. Windows Güncelleme** | PSWindowsUpdate ile kontrol ve yükleme |
-| **6. Uygulama Güncelleme** | winget ile tüm uygulamaları güncelleme |
-| **7. Başlangıç Programları** | Registry, Task Scheduler ve Startup klasör analizi |
-| **8. Hizmet Optimizasyonu** | Gereksiz Windows hizmetlerini devre dışı bırakma |
-| **9. Ağ Optimizasyonu** | DNS flush, Winsock reset, TCP tuning, QoS |
-| **10. Güç Planı** | Ultimate/High Performance, CPU min %100, PCIe optimizasyonu |
-| **11. Sistem Sağlığı Raporu** | Donanım, disk, SMART, sıcaklık, işlem, SFC, olay günlüğü |
+Download the Windows x64 Setup.exe from Releases, double-click it, finish setup, and open **WinOptimizer Aion** from Start. Use **Check system**, then **Scan for cleanup**, review candidates, and **Move to safe vault**. **History & backups** lets you restore files or delete them permanently. Settings is the last navigation item. Choose **English** in **Genel ve Dil → Dil**.
 
-## Gereksinimler
+Requires Windows 10 22H2 or Windows 11 x64 and built-in Windows PowerShell 5.1. Windows 10 support depends on the installed servicing/ESU channel; this app does not extend Microsoft support. No PowerShell Gallery module, account, API key, or subscription is needed. Installer Authenticode status is documented in release notes. Updates are separately authenticated by an embedded Ed25519 public key and SHA-256.
 
-- Windows 10 (1709+) veya Windows 11
-- PowerShell 5.1 veya üzeri
-- **Yönetici (Administrator) hakları** (tüm görevler için)
-- winget (Görev 6 için) — [İndir](https://aka.ms/getwinget)
+## Özellikler / Features
 
-## Kurulum
+- Salt okunur sistem kontrolü: işletim sistemi, CPU, RAM, disk alanı, Windows’un sağladığı disk sağlığı, Defender, güvenlik duvarı, BitLocker. Erişilemeyen bilgi açıkça belirtilir.
+- Yedi gündür değişmeyen kullanıcı Temp dosyaları ve Chrome/Edge **Default/Cache/Cache_Data** önbellekleri. En fazla 10.000 aday, değişiklik kontrolü, bağlantı/junction koruması, dosya önizlemesi ve geri alınabilir depo.
+- Sürücü envanteri, aygıt hata kodları, imza bilgisi, Windows Update’in cihaza sunduğu seçmeli sürücü güncellemeleri. Yükleme ve üçüncü taraf sürücü deposu yedeği yönetici izni ister. Üretici uygulamaları, inbox sürücüler, BIOS/firmware yedeğe dahil değildir.
+- Kullanıcının HKCU Run başlangıç kayıtlarını kaldırma ve geçmişten geri yükleme. Diğer kullanıcıların kayıtları değiştirilmez.
+- Ağ/DNS bilgisi, yalnızca DNS önbelleğini temizleme, var olan güç planlarını seçme ve önceki plana geri dönme.
+- TR/EN, açık/koyu/sistem/yüksek kontrast, bağımsız %80–%200 arayüz ölçeği (%5 adım ve elle yüzde), %80–%160 yazı boyutu, sistem/Verdana/OpenDyslexic, satır/harf aralığı, vurgu rengi, yoğunluk, ayrı hareket ve ses tercihleri.
+- Gerçek karelerden Aion animasyonu; azaltılmış hareket desteği. Gerçek tamamlanan üç kontrolü izleyen isteğe bağlı bakım yolculuğu; kozmetik değişiklikler ve tekrarlar puan üretmez.
+- Ayar/geçmiş JSON dışa aktarma, görünüm içe aktarma, önceki ayarların otomatik kopyası ve rapor dışa aktarma. İçe aktarılan geçmiş sistem komutu olarak oynatılmaz.
+- Düğmeyle başlayan güncelleme kontrolü; kanal/mimari/sürüm, Ed25519 imzası ve paket SHA-256 doğrulanır. Bozuk/kesik indirme kurulmaz.
 
-1. `WinOptimizer` klasörünü istediğiniz yere kopyalayın (ör. `C:\WinOptimizer`)
-2. İlk çalıştırmada `Logs`, `Backups` ve `Reports` klasörleri otomatik oluşturulur
+English: read-only health checks; scoped, age-filtered cleanup with recoverable quarantine; driver inventory, third-party backup and selected Windows Update drivers; reversible current-user startup management; DNS diagnostics/cache clearing and existing power plan selection; persistent bilingual appearance/accessibility settings; frame-by-frame Aion; optional real-check milestones; local exports; authenticated user-initiated updates.
 
-## Kullanım
+## Veri ve geri alma / Data and recovery
 
-### Kolay Başlatma (BAT)
-```
-WinOptimizer-Baslat.bat
-```
-Otomatik olarak Yönetici hakları ister ve interaktif menüyü açar.
+Kayıtlar `%LOCALAPPDATA%\WinOptimizer Aion` içindedir. `settings.json` görünümü, `activity.json` geçmişi, `quarantine` geri alınabilir dosyaları, `DriverBackups` sürücü paketlerini içerir. Kaldırma ve güncelleme bunları silmez. Taşıma aynı diskte alan açmaz; kalıcı silme ayrıca yapılır. Geri alma yeni dosyaların üzerine yazmaz; çakışan dosyalar yedekte kalır.
 
-### PowerShell ile Doğrudan
-```powershell
-# İnteraktif menü
-.\WinOptimizer.ps1
+Sürücü yedeği için **Aygıt Yöneticisi → ilgili aygıt → Sürücüyü güncelleştir → Bilgisayarımdaki sürücülere göz at** yolunda yedek klasörünü seçebilirsiniz. Windows uygun paketi seçer; eski sürüme geçiş her aygıtta garanti edilmez. Driver backup is not a complete system image or an automatic recovery guarantee.
 
-# Dry-Run (simülasyon — hiçbir şey değişmez)
-.\WinOptimizer.ps1 -Mode DryRun
+Offline: local scans, history, settings and cleanup work. Windows Update, application update checks and downloads need internet. No automatic background updating or telemetry runs.
 
-# Sessiz mod (sadece hatalar gösterilir)
-.\WinOptimizer.ps1 -Mode Silent
+## Development
 
-# Belirli görevler
-.\WinOptimizer.ps1 -Tasks 1,3,6
-
-# Yardım
-.\WinOptimizer.ps1 -Help
+```sh
+npm ci
+npm run check
+npm run dev
+npm run build
+npm start
+# Windows:
+npm run dist:win
 ```
 
-### Menü Seçenekleri
-| Kısayol | Mod | Görevler |
-|---------|-----|----------|
-| A | Tam Optimizasyon | 1–11 tümü |
-| B | Hızlı Temizlik | 1, 2 |
-| C | Güvenlik Paketi | 4, 5, 6 |
-| D | Performans Paketi | 8, 9, 10 |
-| E | Dry-Run Simülasyon | Tümü (salt okunur) |
-| F | Özel Görev | Kullanıcı seçer |
-| R | Sistem Raporu | 11 |
+The browser development entry labels itself as a preview and never fabricates Windows data. Windows operations use the isolated preload/main bridge and a fixed PowerShell action allowlist, not arbitrary shell strings.
 
-## Klasör Yapısı
-
-```
-WinOptimizer/
-├── WinOptimizer.ps1          # Ana script
-├── WinOptimizer-Baslat.bat   # Kolay başlatıcı
-├── README.md                 # Bu dosya
-├── Logs/                     # Çalıştırma logları (30 gün sonra otomatik silinir)
-├── Backups/                  # Registry yedekleri
-└── Reports/                  # Sistem sağlığı raporları
+```sh
+npx playwright install chromium
+npm run test:e2e
 ```
 
-## Güvenlik Notları
+`tests/windows-backend.ps1` runs the real Windows/PowerShell 5.1 path. CI installs a real NSIS package and exercises the installed app. A separate workflow tests in-app updating between two published packages and preservation of settings/history. See [FORGE.md](FORGE.md) and [docs/VALIDATION.md](docs/VALIDATION.md) for verified results and remaining work.
 
-- **Registry Temizliği** (Görev 3): Silme öncesi otomatik `.reg` yedek alır
-- **Hizmet Optimizasyonu** (Görev 8): Yalnızca bilinen güvenli hizmetleri devre dışı bırakır
-- **Dry-Run modu**: Tüm görevleri simüle eder, hiçbir değişiklik yapmaz
-- Tüm işlemler `Logs/` klasörüne kaydedilir
+## Origin and license
 
-## v3.1 → v4.0 Değişiklik Günlüğü
+Fork of [OguzhanDUYAR/WinOptimizer](https://github.com/OguzhanDUYAR/WinOptimizer). Upstream history and scripts are preserved in `legacy/`; they are not used or packaged by the desktop app. Broad deletion, registry cleaning, blanket service/network tweaks, Prefetch deletion and DISM `/ResetBase` are excluded. Root launchers open only the desktop app.
 
-- **DÜZELTME**: `Measure-Object` boş klasör hatası (`Get-SafeSize` fonksiyonu ile)
-- **YENİ**: Görev 6 — winget ile uygulama güncelleme
-- **YENİ**: Görev 7 — Başlangıç programları yönetimi
-- **YENİ**: Görev 8 — Hizmet optimizasyonu
-- **YENİ**: Görev 9 — Ağ optimizasyonu (TCP, DNS, Winsock, QoS)
-- **YENİ**: Görev 10 — Güç planı optimizasyonu (Ultimate Performance)
-- **YENİ**: Görev 11 — Kapsamlı sistem sağlığı raporu
-- **İYİLEŞTİRME**: Tarayıcı önbellek temizliği (Chrome, Edge, Firefox, Brave, Opera)
-- **İYİLEŞTİRME**: Thumbnail ve icon cache temizliği
-- **İYİLEŞTİRME**: Modüler menü yapısı (A/B/C/D/E/F/R/Q)
-- **İYİLEŞTİRME**: Komut satırı parametreleri (-Mode, -Tasks, -Help)
-- **İYİLEŞTİRME**: DryRun ve Silent modları
-- **İYİLEŞTİRME**: Otomatik log rotasyonu (30 gün)
-- **İYİLEŞTİRME**: Renkli konsol çıktısı ve detaylı loglama
-
-## Lisans
-
-MIT License
+The existing **GPLv3 LICENSE** is retained for the new code. Upstream README/script headers said MIT despite the GPLv3 LICENSE; this fork does not claim to relicense upstream work as MIT. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

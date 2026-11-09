@@ -1,0 +1,54 @@
+name: Windows application
+on:
+  push:
+    branches: [main, 'forge/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare real baseline version
+        run: npm version 5.0.0-beta.1 --no-git-tag-version --allow-same-version
+      - run: npm run check
+      - name: PowerShell 5.1 real Windows integration
+        shell: powershell
+        run: .\tests\windows-backend.ps1
+      - name: Browser integration
+        run: |
+          npx playwright install chromium
+          npm run test:e2e
+      - name: Build baseline installer
+        run: npx electron-builder --win nsis --x64 --publish never
+      - name: Install baseline package
+        shell: pwsh
+        run: |
+          $setup = (Get-ChildItem release/*-Setup.exe | Select-Object -First 1).FullName
+          $process = Start-Process -FilePath $setup -ArgumentList '/S' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Installer failed: $($process.ExitCode)" }
+      - name: Installed application real user flow
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
+          node scripts/windows-smoke.cjs "$exe" seed
+      - name: Build next real package
+        run: |
+          npm version 5.0.0 --no-git-tag-version --allow-same-version
+          npm run dist:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: |
+            release/*-Setup.exe
+            work/native-seed.json
+            work/screenshots/
+          if-no-files-found: error

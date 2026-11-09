@@ -1,0 +1,16 @@
+node_modules/
+dist/
+release/
+test-results/
+playwright-report/
+work/
+*.pem
+!desktop/update-public-key.pem
+*.key
+*.pfx
+*.p12
+.env*
+!.env.example
+Logs/
+Backups/
+Reports/
