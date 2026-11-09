@@ -4,9 +4,9 @@ import {diagnosticsText,type DiagnosticKey} from './diagnostics-i18n';
 type Action={id:string;kind:'repair'|'guide'|'navigate'};
 type Finding={id:string;category:DiagnosticKey;status:DiagnosticKey;reason:DiagnosticKey;evidence:Record<string,string|number>;actions:Action[]};
 export type DiagnosticReport={id:string;at:string;online:boolean;findings:Finding[]};
-type Props={report:DiagnosticReport|null;setReport:(report:DiagnosticReport)=>void;language:'tr'|'en';busy:boolean;perform:(command:string,payload?:any,callback?:(value:any)=>void,showSuccess?:boolean)=>Promise<void>;navigate:(destination?:string)=>void;companion:React.ReactNode};
+type Props={onVerifiedRepair:()=>void;report:DiagnosticReport|null;setReport:(report:DiagnosticReport)=>void;language:'tr'|'en';busy:boolean;perform:(command:string,payload?:any,callback?:(value:any)=>void,showSuccess?:boolean)=>Promise<void>;navigate:(destination?:string)=>void;companion:React.ReactNode};
 const actionKeys:Record<string,DiagnosticKey>={'device-rescan':'rescan','audio-start':'audioStart','dns-flush':'dnsFlush',drivers:'goDrivers',sound:'sound',display:'displayAction','network-settings':'networkAction',devices:'devicesAction','visual-cpp':'vcAction',runtimes:'goRuntimes',directx:'dxAction'};
-export function ScanFix({report,setReport,language,busy,perform,navigate,companion}:Props){
+export function ScanFix({onVerifiedRepair,report,setReport,language,busy,perform,navigate,companion}:Props){
   const t=(key:DiagnosticKey)=>diagnosticsText[language][key];
   const [online,setOnline]=useState(false),[status,setStatus]=useState('all'),[category,setCategory]=useState('all'),[result,setResult]=useState<string|null>(null),[manual,setManual]=useState(false),[pending,setPending]=useState<{finding:Finding;action:Action}|null>(null);
   const dialog=useRef<HTMLDialogElement>(null);
@@ -35,6 +35,6 @@ export function ScanFix({report,setReport,language,busy,perform,navigate,compani
       </section>)}</div>
     </>}
     <details className="card"><summary>{t('evidence')}</summary><p>{t('scope')}</p></details>
-    <dialog ref={dialog} onCancel={()=>setPending(null)} aria-labelledby="diagnostic-confirm-title"><h2 id="diagnostic-confirm-title">{t('confirm')}</h2><p><strong>{pending?.finding.evidence.name||t('network')}</strong></p><p>{t(pending?.action.id==='audio-start'?'audioImpact':pending?.action.id==='dns-flush'?'dnsImpact':'deviceImpact')}</p><div className="actions"><button className="button" onClick={()=>setPending(null)}>{t('cancel')}</button><button className="button primary" disabled={busy} onClick={()=>{if(!pending||!report)return;const payload={reportId:report.id,findingId:pending.finding.id,actionId:pending.action.id,confirm:true};setPending(null);setResult(null);void perform('diagnostics.repair',payload,value=>{setReport(value.report);setResult(value.status);},false);}}>{t('continue')}</button></div></dialog>
+    <dialog ref={dialog} onCancel={()=>setPending(null)} aria-labelledby="diagnostic-confirm-title"><h2 id="diagnostic-confirm-title">{t('confirm')}</h2><p><strong>{pending?.finding.evidence.name||t('network')}</strong></p><p>{t(pending?.action.id==='audio-start'?'audioImpact':pending?.action.id==='dns-flush'?'dnsImpact':'deviceImpact')}</p><div className="actions"><button className="button" onClick={()=>setPending(null)}>{t('cancel')}</button><button className="button primary" disabled={busy} onClick={()=>{if(!pending||!report)return;const payload={reportId:report.id,findingId:pending.finding.id,actionId:pending.action.id,confirm:true};setPending(null);setResult(null);void perform('diagnostics.repair',payload,value=>{setReport(value.report);setResult(value.status);if(value.success===true&&value.status==='fixed')onVerifiedRepair();},false);}}>{t('continue')}</button></div></dialog>
   </>;
 }
