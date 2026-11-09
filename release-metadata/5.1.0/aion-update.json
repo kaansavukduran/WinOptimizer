@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "version": "5.1.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 128258942,
+  "sha256": "b4898218d8203460abc8e5585659508503a367cd030fb693be404e06ce5d40aa",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v5.1.0/WinOptimizer-Aion-5.1.0-Windows-x64-Setup.exe",
+  "sourceCommit": "5d696ccbdbd7d4eaee8dfa0041fcf744507c05ed",
+  "notes": {
+    "tr": "Yeni Tara ve Düzelt: aygıt, ses, ağ, ekran ve oyun bileşeni kontrolleri; onaylı düzeltmelerden sonra gerçek sonuç doğrulaması.",
+    "en": "New Scan & Fix: device, audio, network, display and game runtime checks, with confirmed repairs and verified outcomes."
+  }
+}
