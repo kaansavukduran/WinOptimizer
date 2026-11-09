@@ -4,8 +4,8 @@ import {diagnosticsText,type DiagnosticKey} from './diagnostics-i18n';
 type Action={id:string;kind:'repair'|'guide'|'navigate'};
 type Finding={id:string;category:DiagnosticKey;status:DiagnosticKey;reason:DiagnosticKey;evidence:Record<string,string|number>;actions:Action[]};
 export type DiagnosticReport={id:string;at:string;online:boolean;findings:Finding[]};
-type Props={report:DiagnosticReport|null;setReport:(report:DiagnosticReport)=>void;language:'tr'|'en';busy:boolean;perform:(command:string,payload?:any,callback?:(value:any)=>void,showSuccess?:boolean)=>Promise<void>;navigate:()=>void;companion:React.ReactNode};
-const actionKeys:Record<string,DiagnosticKey>={'device-rescan':'rescan','audio-start':'audioStart','dns-flush':'dnsFlush',drivers:'goDrivers',sound:'sound',display:'displayAction','network-settings':'networkAction',devices:'devicesAction','visual-cpp':'vcAction',directx:'dxAction'};
+type Props={report:DiagnosticReport|null;setReport:(report:DiagnosticReport)=>void;language:'tr'|'en';busy:boolean;perform:(command:string,payload?:any,callback?:(value:any)=>void,showSuccess?:boolean)=>Promise<void>;navigate:(destination?:string)=>void;companion:React.ReactNode};
+const actionKeys:Record<string,DiagnosticKey>={'device-rescan':'rescan','audio-start':'audioStart','dns-flush':'dnsFlush',drivers:'goDrivers',sound:'sound',display:'displayAction','network-settings':'networkAction',devices:'devicesAction','visual-cpp':'vcAction',runtimes:'goRuntimes',directx:'dxAction'};
 export function ScanFix({report,setReport,language,busy,perform,navigate,companion}:Props){
   const t=(key:DiagnosticKey)=>diagnosticsText[language][key];
   const [online,setOnline]=useState(false),[status,setStatus]=useState('all'),[category,setCategory]=useState('all'),[result,setResult]=useState<string|null>(null),[manual,setManual]=useState(false),[pending,setPending]=useState<{finding:Finding;action:Action}|null>(null);
@@ -15,7 +15,7 @@ export function ScanFix({report,setReport,language,busy,perform,navigate,compani
   const statuses:DiagnosticKey[]=['issue','update','optional','unknown','info'];
   const categories:DiagnosticKey[]=['devices','audio','network','display','runtimes'];
   const findings=report?.findings.filter(f=>(status==='all'||f.status===status)&&(category==='all'||f.category===category))||[];
-  function action(finding:Finding,a:Action){if(a.kind==='repair'){setPending({finding,action:a});return;}if(a.kind==='navigate'){navigate();return;}setManual(true);void perform('external',{id:a.id},undefined,false);}
+  function action(finding:Finding,a:Action){if(a.kind==='repair'){setPending({finding,action:a});return;}if(a.kind==='navigate'){navigate(a.id);return;}setManual(true);void perform('external',{id:a.id},undefined,false);}
   return <>
     <div className="page-heading"><div><h1>{t('title')}</h1><p>{t('intro')}</p></div><Wrench size={30}/></div>
     <section className={`hero diagnostics-hero ${!companion?'no-companion':''}`}><div className="hero-copy"><h2>{t('title')}</h2><p>{t('localHelp')}</p><label className="diagnostic-option"><input type="checkbox" checked={online} disabled={busy} onChange={e=>setOnline(e.target.checked)}/><strong>{t('online')}</strong></label><p className="muted">{t('onlineHelp')}</p><div className="actions"><button className="button primary" disabled={busy} onClick={scan}><Search size={18}/>{t(report?'again':'scan')}</button>{report&&<button className="button" disabled={busy} onClick={()=>void perform('report.export',{},undefined,false)}><Download size={18}/>{t('export')}</button>}</div></div>{companion}</section>

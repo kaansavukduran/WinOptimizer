@@ -13,3 +13,5 @@ Copyright Abbie Gonzalez. SIL Open Font License 1.1, Reserved Font Name OpenDysl
 ## Libraries
 
 Electron: MIT, bundled Chromium/Node notices. React/React DOM: MIT. Lucide: ISC. Vite: MIT. Electron Builder: MIT. Playwright: Apache-2.0. Exact versions/integrity hashes: package-lock.json. Runtime dependencies’ license files are included by the packager; Electron’s LICENSE.electron.txt and LICENSES.chromium.html remain in the installed runtime.
+
+WinOptimizer-specific Aion animation sheet (`public/assets/aion-optimizer.png`): generated for this application from Kaan’s approved main character, turnaround and tail-continuity references in Drive. 4 columns × 6 rows; 24 distinct poses. Original generated master retained in the session workspace. The earlier Aion assets and their provenance remain preserved. Runtime installers and driver packages are downloaded/imported by the user; Microsoft installers are not redistributed inside this application.

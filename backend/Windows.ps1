@@ -1,5 +1,5 @@
 param(
-  [Parameter(Mandatory=$true)][ValidateSet('diagnostics','diagnostic-repair','health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set')][string]$Action,
+  [Parameter(Mandatory=$true)][ValidateSet('focus-apps','focus-close','package-inspect','package-apply','runtime-verify','runtime-install','restore-points','restore-point-create','ghosts','ghost-remove','diagnostics','diagnostic-repair','health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set')][string]$Action,
   [string]$PayloadBase64 = 'e30=',
   [string]$ResultFile = ''
 )
@@ -23,8 +23,25 @@ function Get-Startup {
   }
 }
 . (Join-Path $PSScriptRoot 'Diagnostics.ps1')
+function Get-DriverBackup([string]$Destination) {
+      Assert-Admin
+      $dir=[IO.Path]::GetFullPath($Destination)
+      if($dir -notmatch '\\WinOptimizer Aion\\DriverBackups\\[a-zA-Z0-9-]+$'){throw 'INVALID_DESTINATION'}
+      Assert-NoReparseParent $dir
+      New-Item -ItemType Directory -Path $dir -Force|Out-Null
+      Assert-NoReparseParent $dir
+      $log=& "$env:windir\System32\pnputil.exe" /export-driver '*' $dir 2>&1|Out-String
+      if($LASTEXITCODE -ne 0){throw 'DRIVER_BACKUP_FAILED'}
+      $infs=@(Get-ChildItem -LiteralPath $dir -Recurse -Filter '*.inf' -File)
+      $hashes=@(Get-ChildItem -LiteralPath $dir -Recurse -File|ForEach-Object{[pscustomobject]@{path=$_.FullName.Substring($dir.Length+1);sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash}})
+      $manifest=@{created=(Get-Date).ToUniversalTime().ToString('o');packages=$infs.Count;files=$hashes;scope='third-party-driver-store'}
+      $manifest|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $dir 'backup.json') -Encoding UTF8
+      return @{destination=$dir;packages=$infs.Count;scope='third-party-driver-store'}
+}
+. (Join-Path $PSScriptRoot 'Recovery.ps1')
 function Invoke-Action {
   switch($Action) {
+    {$_ -in @('focus-apps','focus-close','package-inspect','package-apply','runtime-verify','runtime-install','restore-points','restore-point-create','ghosts','ghost-remove')} {return Invoke-Recovery}
     'diagnostics' {return Get-Diagnostics}
     'diagnostic-repair' {return Invoke-DiagnosticRepair}
     'health' {
@@ -42,19 +59,7 @@ function Invoke-Action {
       $problems=@{};Get-CimInstance Win32_PnPEntity | ForEach-Object{if($_.PNPDeviceID){$problems[$_.PNPDeviceID]=[int]$_.ConfigManagerErrorCode}}
       return @((Get-CimInstance Win32_PnPSignedDriver)|Where-Object{$_.DeviceName}|ForEach-Object{[pscustomobject]@{id=$_.DeviceID;name=$_.DeviceName;provider=$_.DriverProviderName;version=$_.DriverVersion;date=if($_.DriverDate){$_.DriverDate.ToUniversalTime().ToString('o')}else{$null};signed=[bool]$_.IsSigned;inf=$_.InfName;deviceClass=$_.DeviceClass;problem=$problems[$_.DeviceID]}}|Sort-Object name)
     }
-    'driver-backup' {
-      Assert-Admin
-      $dir=[IO.Path]::GetFullPath([string]$payload.destination)
-      if($dir -notmatch '\\WinOptimizer Aion\\DriverBackups\\[a-zA-Z0-9-]+$'){throw 'INVALID_DESTINATION'}
-      New-Item -ItemType Directory -Path $dir -Force|Out-Null
-      $log=& "$env:windir\System32\pnputil.exe" /export-driver '*' $dir 2>&1|Out-String
-      if($LASTEXITCODE -ne 0){throw 'DRIVER_BACKUP_FAILED'}
-      $infs=@(Get-ChildItem -LiteralPath $dir -Recurse -Filter '*.inf' -File)
-      $hashes=@(Get-ChildItem -LiteralPath $dir -Recurse -File|ForEach-Object{[pscustomobject]@{path=$_.FullName.Substring($dir.Length+1);sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash}})
-      $manifest=@{created=(Get-Date).ToUniversalTime().ToString('o');packages=$infs.Count;files=$hashes;scope='third-party-driver-store'}
-      $manifest|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $dir 'backup.json') -Encoding UTF8
-      return @{destination=$dir;packages=$infs.Count;scope='third-party-driver-store'}
-    }
+    'driver-backup' {return Get-DriverBackup ([string]$payload.destination)}
     'startup' {return @(Get-Startup)}
     'startup-disable' {
       $entry=@(Get-Startup|Where-Object{$_.id -ceq [string]$payload.id})
@@ -85,11 +90,12 @@ function Invoke-Action {
       $collection=New-Object -ComObject Microsoft.Update.UpdateColl
       foreach($update in $found.Updates){if($ids -contains $update.Identity.UpdateID){if(-not $update.EulaAccepted){$update.AcceptEula()};$null=$collection.Add($update)}}
       if($collection.Count -ne $ids.Count){throw 'UPDATE_CHANGED'}
+      $backup=$null;if($payload.backupDestination){$backup=Get-DriverBackup ([string]$payload.backupDestination)}
       $downloader=$session.CreateUpdateDownloader();$downloader.Updates=$collection;$download=$downloader.Download()
       if([int]$download.ResultCode -ne 2){throw 'UPDATE_DOWNLOAD_FAILED'}
       $installer=$session.CreateUpdateInstaller();$installer.Updates=$collection;$result=$installer.Install()
       $items=@();for($i=0;$i -lt $collection.Count;$i++){$r=$result.GetUpdateResult($i);$items+=@{id=$collection.Item($i).Identity.UpdateID;name=$collection.Item($i).Title;success=([int]$r.ResultCode -eq 2);code=[int]$r.ResultCode;hresult=$r.HResult}}
-      return @{items=$items;reboot=[bool]$result.RebootRequired;success=([int]$result.ResultCode -eq 2)}
+      return @{backup=$backup;items=$items;reboot=[bool]$result.RebootRequired;success=([int]$result.ResultCode -eq 2)}
     }
     'network' {
       $adapters=@(Get-NetAdapter|ForEach-Object{[pscustomobject]@{name=$_.Name;status=$_.Status;speed=$_.LinkSpeed}})
@@ -117,6 +123,6 @@ function Invoke-Action {
     }
   }
 }
-try { $data=Invoke-Action; if($Action -in @('drivers','startup','windows-updates','power-profiles')){if($null -eq $data){$data=@()}else{$data=@($data)}}; $output=@{ok=$true;data=$data}|ConvertTo-Json -Depth 12 -Compress }
+try { $data=Invoke-Action; if($Action -in @('drivers','startup','windows-updates','power-profiles','package-inspect','ghosts','focus-apps')){if($null -eq $data){$data=@()}else{$data=@($data)}}; $output=@{ok=$true;data=$data}|ConvertTo-Json -Depth 12 -Compress }
 catch { $output=@{ok=$false;error=$_.Exception.Message}|ConvertTo-Json -Compress }
 if($ResultFile){[IO.File]::WriteAllText($ResultFile,$output,(New-Object Text.UTF8Encoding($false)))}else{[Console]::WriteLine($output)}
