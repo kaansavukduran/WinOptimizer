@@ -1,0 +1,38 @@
+name: Publish verified Windows packages
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: Successful Windows application workflow run ID
+        required: true
+        type: string
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify source build status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_RUN_ID: ${{ inputs.build_run_id }}
+        run: |
+          test "$BUILD_RUN_ID" -eq "$BUILD_RUN_ID"
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$BUILD_RUN_ID" > build-run.json
+          node -e "const r=require('./build-run.json');if(r.conclusion!=='success'||r.head_repository.full_name!==process.env.GITHUB_REPOSITORY)throw Error('Unverified build');"
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-installers
+          run-id: ${{ inputs.build_run_id }}
+          github-token: ${{ github.token }}
+          path: build-packages
+      - name: Verify signatures, hashes, source and publish immutable files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/publish-release.cjs

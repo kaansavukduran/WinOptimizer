@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "version": "5.0.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 128250532,
+  "sha256": "55680d128171c1914fd136673f9b4ea93712b370fff265ea0ef0346ef1977160",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v5.0.0/WinOptimizer-Aion-5.0.0-Windows-x64-Setup.exe",
+  "sourceCommit": "e2f54e019e3268c1eecd981aa1d937f6ea65e16d",
+  "notes": {
+    "tr": "Aion ile güvenli temizlik, geri alma, sürücü merkezi ve bağımsız görünüm ayarları.",
+    "en": "Safe cleanup, recovery, driver center and independent appearance preferences with Aion."
+  }
+}
