@@ -1,10 +1,11 @@
 # Driver workflow coverage (5.2)
 
-This is a feature comparison, not a claim that WinOptimizer reproduces another vendor's private catalog or algorithms. Feature names were checked against the [official Driver Booster manual](https://www.iobit.com/product-manuals/db-help/). A named tool does not mean identical diagnosis or hardware coverage.
+This is a feature comparison, not a claim that WinOptimizer reproduces another vendor's private catalog or algorithms. Feature names were checked for [Driver Booster for Steam, Steam app 920490](https://store.steampowered.com/app/920490/Driver_Booster_for_Steam/), with repair-tool details from the [official Driver Booster manual](https://www.iobit.com/product-manuals/db-help/). A named tool does not mean identical diagnosis or hardware coverage.
 
 | Workflow | WinOptimizer behavior | Remaining distinction |
 | --- | --- | --- |
 | Scan drivers | Windows device problem codes and applicable Windows Update offers | No IObit/OEM-wide proprietary version database; an old date is not a fault |
+| Game Ready GPU updates | Applicable Windows Update offers, with official NVIDIA/AMD/Intel pages for newer vendor packages | Manufacturer-page download is manual; no private per-game readiness catalog |
 | Stop scan | Cancels the read-only Windows inventory/update query | Driver/runtime installation is not interrupted mid-change |
 | Driver installation | Selected Windows Update offers; automatic third-party package backup first | No blanket silent installation or forced version override |
 | Driver recovery | Inspect signed packages from prior backups; reapply selected INF files with a fresh backup and Windows ranking | Forced rollback uses Device Manager; inbox/vendor apps are not fully backed up |
@@ -12,7 +13,7 @@ This is a feature comparison, not a claim that WinOptimizer reproduces another v
 | Ignore updates | Persistently ignore a specific Windows Update offer and restore visibility | Not a global ignore for all future versions of a hardware model |
 | Audio/device/network repair | Service start, hardware rescan, DNS-cache repair with fresh verification | Does not guess every physical, VPN, audio-endpoint or router fault |
 | Disconnected devices | Inspect/remove selected absent audio/Bluetooth/camera/printer entries; recheck absence | Other device classes and bulk removal are not offered |
-| Missing game runtimes | Official Visual C++ v14 x86/x64 and legacy DirectX installers; HTTPS allowlist, Microsoft Authenticode, hash, license confirmation, protected staging, installed-indicator postcheck | Not a universal game-specific DLL repair catalog; no arbitrary DLL downloads |
+| Missing game runtimes | Official Visual C++ v14 x86/x64 and legacy DirectX installers; HTTPS allowlist, Microsoft Authenticode, hash, license confirmation, protected staging, installed-indicator postcheck | Not a universal game-specific DLL repair catalog; PhysX/OpenAL and older VC generations are not managed; no arbitrary DLL downloads |
 | Bad resolution | Display inventory, driver repair workflow and Windows display settings | Automatic resolution selection is not implemented |
 | Incompatible drivers | Device codes, signed package inspection, recovery and Device Manager | No private compatibility blacklist or guaranteed diagnosis |
 | Restore points | List/create verified Windows points; open System Protection/System Restore | Final system restoration is done in Windows; no automatic enabling or deletion |

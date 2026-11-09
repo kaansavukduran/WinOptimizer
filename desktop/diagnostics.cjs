@@ -32,7 +32,7 @@ function classify(raw,updates=null,updateError=false){
     add(`display:${i}`,'display',basic?'issue':'info',basic?'basicDisplay':'displayInfo',{name:d.name||'',width:d.width||0,height:d.height||0},[{id:'display',kind:'guide'},{id:'drivers',kind:'navigate'}]);
   }
   if(!unavailable.has('runtimes'))for(const r of raw.runtimes||[])add(`runtime:${r.id}`,'runtimes',r.installed?'info':'optional',r.installed?'runtimePresent':'runtimeOptional',{name:r.id==='directx-legacy'?'DirectX (D3DX9 / XAudio 2.7)':`Visual C++ v14 (${r.id.slice(3)})`,version:r.version||''},r.installed?[]:[{id:'runtimes',kind:'navigate'}]);
-  if(updates!==null)for(const u of updates)add(`update:${u.id}`,'devices','update','driverUpdate',{name:u.name,bytes:u.bytes,manufacturer:u.manufacturer},[{id:'drivers',kind:'navigate'}]);
+  if(updates!==null)for(const u of updates)add(`update:${u.id}`,'devices','update','driverUpdate',{name:u.name,bytes:u.bytes,manufacturer:u.manufacturer},[{id:'update-driver',kind:'update'},{id:'drivers',kind:'navigate'}]);
   if(updates!==null&&!updates.length)add('updates:none','devices','info','noUpdates');
   if(updateError)add('updates:unknown','devices','unknown','updateUnavailable');
   return findings;
@@ -45,7 +45,7 @@ function verified(finding,raw){
   return null;
 }
 class Diagnostics {
-  constructor(native,record,now=Date.now,persist=()=>{}){this.native=native;this.record=record;this.now=now;this.persist=persist;this.report=null;}
+  constructor(native,record,now=Date.now,persist=()=>{},filterUpdates=offers=>offers){this.filterUpdates=filterUpdates;this.updates=[];this.native=native;this.record=record;this.now=now;this.persist=persist;this.report=null;}
   cancel(){const cancelled=!!this.controller;if(cancelled)this.controller.abort();return {cancelled};}
   async scan(payload={}){
     const online=payload.online===true;const controller=new AbortController();this.controller=controller;
@@ -53,11 +53,18 @@ class Diagnostics {
       const raw=await this.native('diagnostics',{online},false,{signal:controller.signal});let updates=null,updateError=false;
       if(online)try{updates=await this.native('windows-updates',{},false,{signal:controller.signal})||[];}catch(error){if(controller.signal.aborted)throw Error('SCAN_CANCELLED');updateError=true;}
       if(controller.signal.aborted)throw Error('SCAN_CANCELLED');
+      if(updates!==null)updates=this.filterUpdates(updates);this.updates=updates||[];
       this.report={id:crypto.randomUUID(),at:new Date(this.now()).toISOString(),online,findings:classify(raw,updates,updateError)};
       this.created=this.now();return this.report;
     }finally{this.controller=null;}
   }
 
+  selectUpdates(payload){
+    if(payload.confirm!==true)throw Error('CONFIRM_REQUIRED');
+    if(!this.report||this.report.id!==payload.reportId||this.now()-this.created>TTL)throw Error('SCAN_EXPIRED');
+    const ids=payload.ids;if(!Array.isArray(ids)||!ids.length||ids.length>20||new Set(ids).size!==ids.length||ids.some(id=>!this.updates.some(u=>u.id===id)))throw Error('INVALID_SELECTION');
+    this.report=null;this.updates=[];return ids;
+  }
   async repair(payload){
     if(payload.confirm!==true)throw Error('CONFIRM_REQUIRED');
     const report=this.report;

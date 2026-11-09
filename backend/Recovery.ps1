@@ -131,7 +131,7 @@ function Invoke-Recovery {
     if($device.Present -ne $false -or $device.Class -notin @('MEDIA','AudioEndpoint','Bluetooth','Camera','Image','Printer','PrintQueue')){throw 'DIAGNOSTIC_CHANGED'}
     & "$env:windir\System32\pnputil.exe" /remove-device $id|Out-Null
     $code=$LASTEXITCODE;if($code -notin @(0,3010)){throw 'DEVICE_REMOVE_FAILED'}
-    $after=@(Get-PnpDevice -InstanceId $id -ErrorAction SilentlyContinue)
+    $after=@(Get-PnpDevice -ErrorAction Stop|Where-Object {$_.InstanceId -ceq $id})
     return @{success=($after.Count -eq 0);reboot=($code -eq 3010);id=$id}
   }
  }
