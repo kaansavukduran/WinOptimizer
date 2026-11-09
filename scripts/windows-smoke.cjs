@@ -10,7 +10,7 @@ async function showcase(app,page,settings){
  const text=page.locator('#text-size').locator('..').locator('..').getByRole('spinbutton');await text.fill('100');await text.press('Enter');
  await page.getByRole('button',{name:'Genel bakış',exact:true}).click();await page.getByRole('button',{name:'Sistemi kontrol et',exact:true}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
  await page.screenshot({path:'work/screenshots/WinOptimizer-5.2-Windows-overview-tr.png'});
- await page.locator('.nav-item').filter({hasText:'Tara ve Düzelt'}).click();await page.getByRole('button',{name:'Taramayı başlat',exact:true}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
+ await page.locator('.nav-item').filter({hasText:'Tara ve Düzelt'}).click();await page.getByRole('button',{name:/^(Taramayı başlat|Yeniden tara)$/}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
  await page.screenshot({path:'work/screenshots/WinOptimizer-5.2-Windows-scan-tr.png'});
  await page.getByRole('button',{name:'Bakım atölyesi',exact:true}).click();await page.getByRole('button',{name:'Oyun bileşenleri',exact:true}).click();await page.getByRole('button',{name:'Bileşenleri kontrol et',exact:true}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
  await page.screenshot({path:'work/screenshots/WinOptimizer-5.2-Windows-workshop-tr.png'});
