@@ -19,6 +19,8 @@ Requires Windows 10 22H2 or Windows 11 x64 and built-in Windows PowerShell 5.1. 
 
 ## Özellikler / Features
 
+- **5.1.0 Tara ve Düzelt / Scan & Fix:** aygıt hata kodları, ses servisleri, ağ, ekran ve oyun bileşeni göstergeleri; isteğe bağlı Windows Update/DNS kontrolleri. Onaylı ses servisi başlatma, aygıt yeniden algılama ve DNS temizliği aynı sorunu yeniden denetler. Visual C++/DirectX ve ekran ayarları resmî kaynaklara yönlendirir; açılan bir ekran düzeltilmiş sorun sayılmaz. [Kapsam ve sınırlar](docs/SCAN-FIX.md).
+
 - Salt okunur sistem kontrolü: işletim sistemi, CPU, RAM, disk alanı, Windows’un sağladığı disk sağlığı, Defender, güvenlik duvarı, BitLocker. Erişilemeyen bilgi açıkça belirtilir.
 - Yedi gündür değişmeyen kullanıcı Temp dosyaları ve Chrome/Edge **Default/Cache/Cache_Data** önbellekleri. En fazla 10.000 aday, değişiklik kontrolü, bağlantı/junction koruması, dosya önizlemesi ve geri alınabilir depo.
 - Sürücü envanteri, aygıt hata kodları, imza bilgisi, Windows Update’in cihaza sunduğu seçmeli sürücü güncellemeleri. Yükleme ve üçüncü taraf sürücü deposu yedeği yönetici izni ister. Üretici uygulamaları, inbox sürücüler, BIOS/firmware yedeğe dahil değildir.

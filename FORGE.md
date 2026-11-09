@@ -1,8 +1,17 @@
 # WinOptimizer Aion Forge
 
-Durum: **ACTIVE, 5.1.0 Scan & Fix geliştiriliyor ve Windows doğrulaması hazırlanıyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
+Durum: **IDLE, Windows 5.1.0 Scan & Fix kararlı sürümü teslim edildi.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
 
-## Son doğrulanmış yayın
+## Son doğrulanmış yayın: 5.1.0
+
+- [WinOptimizer Aion 5.1.0, Latest](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v5.1.0); kaynak etiketi `5d696ccbdbd7d4eaee8dfa0041fcf744507c05ed`, [PR #2](https://github.com/kaansavukduran/WinOptimizer/pull/2), merge `67eb48fd4d2944e28118e9e3fb9e00f9ae711c4f`.
+- Paket: `WinOptimizer-Aion-5.1.0-Windows-x64-Setup.exe`, 128.258.942 bayt; SHA-256 `b4898218d8203460abc8e5585659508503a367cd030fb693be404e06ce5d40aa`. Yeni imzalı meta veri `release-metadata/5.1.0`; yayın kimliği `439703384`. Eski yayınlar korunur.
+- [Kaynak Windows doğrulaması](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42707694779), [PR doğrulaması](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42707734459), [ana dal](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42708567170), [yayın](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42708918343) ve [gerçek 5.0.1 → 5.1.0 güncelleme](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42709194171): başarılı.
+- 19 Node testi, 8 Chromium senaryosu, TypeScript/Vite, PS 5.1 gerçek envanter, kurulu uygulama taraması, NSIS kurulum ve imzalı güncelleme sonrası korunan görünüm/geçmiş doğrulandı. Üretim bağımlılığı denetimi temiz. Donanım bilerek bozulmadı; başarısız düzeltme senaryoları kontrollü test verisidir.
+- [Özel Drive 5.1.0 yedeği](https://drive.google.com/drive/folders/1tLhO4dwlI61oMv18r4TlMKL6pw8DnHaY): kaynak, iki kayıpsız kurulum parçası, birleştirme betikleri, notlar, imzalı meta veri ve yayın makbuzu. Gerçek Drive geri okumaları ve birleştirme betiği özgün paket SHA-256 değerini verdi. Git bundle tüm erişilebilir geçmiş/etiketleri içerir. Özel imzalama anahtarı depoya veya Drive’a yüklenmedi.
+- Kesin davranış ve resmî kaynaklar: [docs/SCAN-FIX.md](docs/SCAN-FIX.md). Çalışma zamanı denetimi v14 x64/x86 ve belirli eski DirectX dosyalarıyla sınırlıdır; bütün oyun DLL’lerini onarma iddiası yok. Windows Update özel IObit kataloğunun kopyası değildir. Authenticode sertifikası hâlâ yoktur.
+
+## Önceki doğrulanmış yayın: 5.0.1
 
 - [WinOptimizer Aion 5.0.1, Latest](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v5.0.1).
 - Uygulama kaynağı ve sürüm etiketi: `fc0e0dedc58e33041159b567e06acdc0671b55b9`. Bu dosyayı içeren sonraki commit, belge ve yedek kapanışıdır; çalışır uygulama kodu yeniden yazılmadı.
@@ -39,6 +48,6 @@ Windows sanal makinesinde PowerShell 5.1 parser; gerçek sağlık/sürücü/ağ/
 - Windows derleme akışı hedef sürümü package.json'dan alır. Yükseltme akışı eski sürüm etiketi ve beklenen sürüm girdilerini alır. Sonraki yeni sürümde önceki yayımlanmış beta paketini yeniden etiketleme.
 - OEM entegrasyonları, daha çok tarayıcı profili ve donanıma özgü kurtarma gelecekte ayrı kapsamdır. Evrensel hızlanma, firmware güncellemesi veya tam sistem yedeği iddiası yoktur.
 
-## Aktif 5.1.0 değişikliği
+## Tamamlanan 5.1.0 değişikliği
 
-Kullanıcı Driver Booster benzeri tarama/düzeltme istedi. `docs/SCAN-FIX.md` kapsamı, resmî kaynakları ve sınırları kaydeder. Yerel aygıt/ses/ağ/ekran/oyun bileşeni envanteri, isteğe bağlı Windows Update ve DNS sorgusu; kullanıcı onaylı ses servisi başlatma/aygıt yeniden algılama/DNS önbelleği temizleme, ön ve son kontrol, süreli tek kullanımlık rapor, doğrulanan/çözülmeyen/doğrulanamayan sonuçlar. Bağlı olmayan aygıtları arıza sayma veya eski tarihi otomatik hata sayma yok. Microsoft çalışma zamanı yükleme bağlantıları ve Windows ayarları yönlendirmedir, otomatik DLL düzeltme iddiası yok. 19 Node testi ve 8 tarayıcı senaryosu yerelde geçti; gerçek Windows CI ve yayın henüz bekleniyor.
+Kullanıcı Driver Booster benzeri tarama/düzeltme istedi. `docs/SCAN-FIX.md` kapsamı, resmî kaynakları ve sınırları kaydeder. Yerel aygıt/ses/ağ/ekran/oyun bileşeni envanteri, isteğe bağlı Windows Update ve DNS sorgusu; kullanıcı onaylı ses servisi başlatma/aygıt yeniden algılama/DNS önbelleği temizleme, ön ve son kontrol, süreli tek kullanımlık rapor, doğrulanan/çözülmeyen/doğrulanamayan sonuçlar. Bağlı olmayan aygıtları arıza sayma veya eski tarihi otomatik hata sayma yok. Microsoft çalışma zamanı yükleme bağlantıları ve Windows ayarları yönlendirmedir, otomatik DLL düzeltme iddiası yok. 19 Node testi ve 8 tarayıcı senaryosu yerelde ve Windows CI’da geçti. Kurulu uygulama taraması ve 5.0.1 → 5.1.0 güncelleme de doğrulandı; sürüm Latest kararlı olarak yayımlandı.
