@@ -7,15 +7,15 @@ for(const version of ['5.0.0-beta.1','5.0.0']){
   if(manifest.version!==version||manifest.sourceCommit!==run.head_sha||manifest.platform!=='win32'||manifest.arch!=='x64')throw Error('Build/source mismatch');
   const name=`WinOptimizer-Aion-${version}-Windows-x64-Setup.exe`;const installer=path.join('build-packages','release',name),file=fs.readFileSync(installer);
   if(file.length!==manifest.bytes||crypto.createHash('sha256').update(file).digest('hex')!==manifest.sha256||file.toString('ascii',0,2)!=='MZ')throw Error('Installer mismatch');
-  const tag='v'+version;let release;try{release=JSON.parse(gh(['api',`repos/${repo}/releases/tags/${tag}`]));}catch{
+  const tag='v'+version;let release=JSON.parse(gh(['api',`repos/${repo}/releases?per_page=30`])).find(r=>r.tag_name===tag);if(!release){
     gh(['release','create',tag,'--repo',repo,'--target',manifest.sourceCommit,'--draft','--prerelease','--latest=false','--title',`WinOptimizer Aion ${version}`,'--notes-file',path.join(folder,'notes.md')]);
     const releases=JSON.parse(gh(['api',`repos/${repo}/releases?per_page=30`]));release=releases.find(r=>r.tag_name===tag);if(!release)throw Error('Draft not found');
   }
-  if(!release.draft&&release.assets.some(a=>a.name===name))throw Error('Already published; do not replace immutable release');
   for(const f of [installer,...['aion-update.json','aion-update.sig','SHA256SUMS.txt'].map(n=>path.join(folder,n))]){
-    const existing=release.assets.find(a=>a.name===path.basename(f));if(existing){if(existing.size!==fs.statSync(f).size)throw Error('Existing asset mismatch');continue;}
+    const existing=release.assets.find(a=>a.name===path.basename(f));if(existing){const data=fs.readFileSync(f);if(existing.size!==data.length||existing.digest!=='sha256:'+crypto.createHash('sha256').update(data).digest('hex'))throw Error('Existing asset mismatch');continue;}
+    if(!release.draft)throw Error('Published release missing an asset; refusing mutation');
     gh(['release','upload',tag,f,'--repo',repo]);
   }
-  gh(['release','edit',tag,'--repo',repo,'--draft=false','--prerelease','--latest=false']);
+  if(release.draft)gh(['release','edit',tag,'--repo',repo,'--draft=false','--prerelease','--latest=false']);
   console.log(`Published verified Windows package: ${tag}, ${manifest.bytes} bytes, source ${manifest.sourceCommit}`);
 }

@@ -2,6 +2,14 @@ name: Windows application
 on:
   push:
     branches: [main, 'forge/**']
+    paths-ignore:
+      - 'release-metadata/**'
+      - 'docs/**'
+      - 'FORGE.md'
+      - 'README.md'
+      - 'scripts/backup.py'
+      - 'scripts/publish-release.cjs'
+      - '.github/workflows/publish.yml'
   pull_request:
   workflow_dispatch:
 permissions:
