@@ -1,6 +1,6 @@
 const {execFile,spawn}=require('node:child_process');
 const path=require('node:path');const fs=require('node:fs/promises');const os=require('node:os');
-const ACTIONS=new Set(['health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set']);
+const ACTIONS=new Set(['diagnostics','diagnostic-repair','health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set']);
 function command(script,action,payload){if(!ACTIONS.has(action))throw Error('UNKNOWN_COMMAND');return ['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',script,'-Action',action,'-PayloadBase64',Buffer.from(JSON.stringify(payload||{})).toString('base64')];}
 function parse(stdout){const value=JSON.parse(stdout.replace(/^\uFEFF/,''));if(!value.ok)throw Error(value.error||'WINDOWS_FAILED');return value.data;}
 function run(script,action,payload={},elevated=false){

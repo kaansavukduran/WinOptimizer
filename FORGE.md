@@ -1,6 +1,6 @@
 # WinOptimizer Aion Forge
 
-Durum: **IDLE, Windows sürümü teslim edildi.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
+Durum: **ACTIVE, 5.1.0 Scan & Fix geliştiriliyor ve Windows doğrulaması hazırlanıyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
 
 ## Son doğrulanmış yayın
 
@@ -38,3 +38,7 @@ Windows sanal makinesinde PowerShell 5.1 parser; gerçek sağlık/sürücü/ağ/
 - Yerel bağlı GitHub kimliği uploads.github.com için 401 verdi. Bu yüzden `publish.yml`, deponun kendi contents:write GITHUB_TOKEN yetkisiyle paketleri yükler; imza/hash/kaynak commit eşleşmesini kontrol eder. `release-metadata/release-ids.json` tam yayın kimliklerini korur. Yeni sürüm için yeni draft kimliği ve imzalı meta veri gerekir.
 - Windows derleme akışı hedef sürümü package.json'dan alır. Yükseltme akışı eski sürüm etiketi ve beklenen sürüm girdilerini alır. Sonraki yeni sürümde önceki yayımlanmış beta paketini yeniden etiketleme.
 - OEM entegrasyonları, daha çok tarayıcı profili ve donanıma özgü kurtarma gelecekte ayrı kapsamdır. Evrensel hızlanma, firmware güncellemesi veya tam sistem yedeği iddiası yoktur.
+
+## Aktif 5.1.0 değişikliği
+
+Kullanıcı Driver Booster benzeri tarama/düzeltme istedi. `docs/SCAN-FIX.md` kapsamı, resmî kaynakları ve sınırları kaydeder. Yerel aygıt/ses/ağ/ekran/oyun bileşeni envanteri, isteğe bağlı Windows Update ve DNS sorgusu; kullanıcı onaylı ses servisi başlatma/aygıt yeniden algılama/DNS önbelleği temizleme, ön ve son kontrol, süreli tek kullanımlık rapor, doğrulanan/çözülmeyen/doğrulanamayan sonuçlar. Bağlı olmayan aygıtları arıza sayma veya eski tarihi otomatik hata sayma yok. Microsoft çalışma zamanı yükleme bağlantıları ve Windows ayarları yönlendirmedir, otomatik DLL düzeltme iddiası yok. 19 Node testi ve 8 tarayıcı senaryosu yerelde geçti; gerçek Windows CI ve yayın henüz bekleniyor.

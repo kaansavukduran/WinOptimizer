@@ -1,4 +1,7 @@
 $ErrorActionPreference='Stop'
+$extra=Join-Path $PSScriptRoot '..\backend\Diagnostics.ps1'
+$extraTokens=$null;$extraErrors=$null;$null=[Management.Automation.Language.Parser]::ParseFile($extra,[ref]$extraTokens,[ref]$extraErrors)
+if($extraErrors.Count){throw 'Diagnostics PS 5.1 parser errors'}
 $file=Join-Path $PSScriptRoot '..\backend\Windows.ps1'
 $tokens=$null;$errors=$null;$null=[Management.Automation.Language.Parser]::ParseFile($file,[ref]$tokens,[ref]$errors)
 if($errors.Count){$errors|Format-List;throw 'PowerShell parser errors'}
@@ -7,6 +10,11 @@ function Call-Backend($Action,$Data=@{}){
   $raw=& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $file -Action $Action -PayloadBase64 $encoded
   $r=$raw|ConvertFrom-Json;if(-not $r.ok){throw $r.error};return $r.data
 }
+$diag=Call-Backend 'diagnostics'
+if($diag.devices.Count -lt 1 -or $null -eq $diag.network -or $diag.runtimes.Count -ne 3){throw 'Invalid diagnostic inventory'}
+if(@($diag.unavailable).Count){throw ('Unavailable scan provider: '+($diag.unavailable -join ','))}
+if($diag.network.dnsChecked -ne $false){throw 'Offline scan performed an online check'}
+$diag|ConvertTo-Json -Depth 12|Set-Content (Join-Path $env:TEMP 'aion-native-diagnostics.json')
 $health=Call-Backend 'health';if(-not $health.os -or $health.ramTotal -le 0){throw 'Invalid health output'}
 $drivers=@(Call-Backend 'drivers');if($drivers.Count -lt 1){throw 'No drivers enumerated'}
 $network=Call-Backend 'network';if($null -eq $network.adapters){throw 'Missing network output'}

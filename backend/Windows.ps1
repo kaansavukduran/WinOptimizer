@@ -1,5 +1,5 @@
 param(
-  [Parameter(Mandatory=$true)][ValidateSet('health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set')][string]$Action,
+  [Parameter(Mandatory=$true)][ValidateSet('diagnostics','diagnostic-repair','health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set')][string]$Action,
   [string]$PayloadBase64 = 'e30=',
   [string]$ResultFile = ''
 )
@@ -22,8 +22,11 @@ function Get-Startup {
     }
   }
 }
+. (Join-Path $PSScriptRoot 'Diagnostics.ps1')
 function Invoke-Action {
   switch($Action) {
+    'diagnostics' {return Get-Diagnostics}
+    'diagnostic-repair' {return Invoke-DiagnosticRepair}
     'health' {
       $os=Get-CimInstance Win32_OperatingSystem
       $cpu=Get-CimInstance Win32_Processor | Select-Object -First 1
