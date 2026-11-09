@@ -1,0 +1,48 @@
+name: Verify installed signed update
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  upgrade:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Download and install previous published package
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v5.0.0-beta.1 --repo kaansavukduran/WinOptimizer --pattern '*-Setup.exe' --dir baseline
+          $setup = (Get-ChildItem baseline/*-Setup.exe | Select-Object -First 1).FullName
+          $p = Start-Process -FilePath $setup -ArgumentList '/S' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw 'Baseline installation failed' }
+      - name: Create real sample data in installed baseline
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\winoptimizer-aion\WinOptimizer Aion.exe'
+          node scripts/windows-smoke.cjs "$exe" seed
+      - name: Use in-app update and verify preserved data
+        shell: pwsh
+        run: |
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\winoptimizer-aion\WinOptimizer Aion.exe'
+          node scripts/windows-smoke.cjs "$exe" upgrade
+          $deadline = (Get-Date).AddMinutes(3)
+          do {
+            Start-Sleep -Seconds 3
+            $p = Get-Process | Where-Object { $_.ProcessName -like '*Setup*' -or $_.ProcessName -like '*nsis*' }
+          } while ($p -and (Get-Date) -lt $deadline)
+          node scripts/windows-smoke.cjs "$exe" verify
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: installed-update-evidence
+          path: |
+            work/native-*.json
+            work/screenshots/

@@ -1,0 +1,14 @@
+{
+  "source": "https://github.com/antijingoist/opendyslexic/tree/main/compiled",
+  "license": "OFL-1.1; original files, Reserved Font Name unchanged",
+  "files": [
+    {
+      "file": "OpenDyslexic-Regular.otf",
+      "sha256": "32f5840fb2bf844bdabafe372591ddfb9286e98117f5b21950aaf54ea856919a"
+    },
+    {
+      "file": "OpenDyslexic-Bold.otf",
+      "sha256": "5d690ea4c87ccb0d5d5d81487826a395e9b20a6c1d606f1f262c060d2bef4f03"
+    }
+  ]
+}
