@@ -5,7 +5,7 @@ const local=process.env.LOCALAPPDATA||app.getPath('appData');
 app.setPath('userData',path.join(local,'WinOptimizer Aion'));
 if(!app.requestSingleInstanceLock()){app.quit();}else{
 let window,service,updater,updating=false;const language=()=>service?.settings.data.language==='en';
-const sources={github:`https://github.com/${REPO}`,releases:`https://github.com/${REPO}/releases`,windows:'ms-settings:windowsupdate',security:'windowsdefender:',startup:'ms-settings:startupapps'};
+const sources={github:`https://github.com/${REPO}`,releases:`https://github.com/${REPO}/releases`,windows:'ms-settings:windowsupdate',security:'windowsdefender:',startup:'ms-settings:startupapps',sound:'ms-settings:sound',display:'ms-settings:display','network-settings':'ms-settings:network-status',devices:'ms-settings:troubleshoot','visual-cpp':'https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170',directx:'https://www.microsoft.com/en-us/download/details.aspx?id=35'};
 app.on('second-instance',()=>{if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});
 app.whenReady().then(async()=>{
   service=new Service({dir:app.getPath('userData'),local,locale:app.getLocale(),backend:path.join(app.isPackaged?process.resourcesPath:app.getAppPath(),'backend','Windows.ps1'),version:app.getVersion()});
@@ -22,7 +22,7 @@ app.whenReady().then(async()=>{
       if(command==='backup.export'||command==='report.export'){
         const result=await dialog.showSaveDialog(window,{title:language()?'Export':'Dışa aktar',defaultPath:command==='backup.export'?'WinOptimizer-backup.json':'WinOptimizer-report.json',filters:[{name:'JSON',extensions:['json']}]});
         if(result.canceled)return {ok:true,data:{cancelled:true}};
-        const data=command==='backup.export'?service.exportData():{app:'WinOptimizer Aion',version:app.getVersion(),created:new Date().toISOString(),health:service.latestHealth,activity:service.state};
+        const data=command==='backup.export'?service.exportData():{app:'WinOptimizer Aion',version:app.getVersion(),created:new Date().toISOString(),health:service.latestHealth,diagnostics:service.diagnostics.report,activity:service.state};
         await fsp.writeFile(result.filePath,JSON.stringify(data,null,2),'utf8');return {ok:true,data:{saved:true}};
       }
       if(command==='backup.import'){

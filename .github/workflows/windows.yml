@@ -61,5 +61,6 @@ jobs:
           path: |
             release/*-Setup.exe
             work/native-seed.json
+            work/native-diagnostics.json
             work/screenshots/
           if-no-files-found: error

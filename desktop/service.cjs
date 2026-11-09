@@ -1,8 +1,9 @@
 const fs=require('node:fs');const fsp=require('node:fs/promises');const path=require('node:path');const crypto=require('node:crypto');
+const {Diagnostics}=require('./diagnostics.cjs');
 const {Settings,atomicWrite}=require('./settings.cjs');const {Cleanup,rootsFor}=require('./cleanup.cjs');const windows=require('./windows.cjs');
 class Service {
   constructor({dir,local,locale='tr',backend,version,platform=process.platform,run=windows.run,roots}){
-    this.dir=dir;this.backend=backend;this.version=version;this.platform=platform;this.run=run;const fresh=!fs.existsSync(path.join(dir,'settings.json'));this.settings=new Settings(dir,locale);if(fresh)this.settings.data.channel=version.includes('-')?'beta':'stable';this.cleanup=new Cleanup(dir,roots||rootsFor(local));this.busy=false;this.latestHealth=null;this.driverCandidates=[];this.startup=[];this.stateFile=path.join(dir,'activity.json');
+    this.dir=dir;this.backend=backend;this.version=version;this.platform=platform;this.run=run;const fresh=!fs.existsSync(path.join(dir,'settings.json'));this.settings=new Settings(dir,locale);if(fresh)this.settings.data.channel=version.includes('-')?'beta':'stable';this.cleanup=new Cleanup(dir,roots||rootsFor(local));this.busy=false;this.latestHealth=null;this.driverCandidates=[];this.startup=[];this.diagnostics=new Diagnostics((...args)=>this.native(...args),(...args)=>this.record(...args),Date.now,()=>this.save());this.stateFile=path.join(dir,'activity.json');
     try{this.state=JSON.parse(fs.readFileSync(this.stateFile,'utf8'));if(this.state.schema!==1||!Array.isArray(this.state.events)||!Array.isArray(this.state.milestones))throw Error();}catch{this.state={schema:1,events:[],milestones:[]};}
   }
   record(type,data){const event={id:crypto.randomUUID(),at:new Date().toISOString(),type,...data};this.state.events.unshift(event);this.state.events=this.state.events.slice(0,500);this.save();return event;}
@@ -15,6 +16,8 @@ class Service {
     if(command==='history')return {events:this.state.events,cleanup:await this.cleanup.journals(),milestones:this.state.milestones};
     if(this.busy)throw Error('OPERATION_BUSY');this.busy=true;
     try{switch(command){
+      case 'diagnostics.scan':return await this.diagnostics.scan(payload);
+      case 'diagnostics.repair':return await this.diagnostics.repair(payload);
       case 'scan':{if(this.platform!=='win32')throw Error('WINDOWS_ONLY');const result=await this.cleanup.scan();this.milestone('scan');return result;}
       case 'cleanup':{if(!Array.isArray(payload.groups)||!payload.groups.length||!payload.groups.every(x=>['temp','chrome','edge'].includes(x)))throw Error('INVALID_SELECTION');const result=await this.cleanup.quarantine(payload.planId,payload.groups);if(result.bytes)this.record('cleanup',{backupId:result.id,bytes:result.bytes,skipped:result.skipped});return result;}
       case 'restore':{const result=await this.cleanup.restore(payload.id);this.record('restore',result);return result;}
