@@ -1,6 +1,8 @@
 # Verification evidence
 
-Production release: [5.0.1](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v5.0.1). Production application source/tag: `fc0e0dedc58e33041159b567e06acdc0671b55b9`.
+Production release: [5.1.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v5.1.0). Production application source/tag: `5d696ccbdbd7d4eaee8dfa0041fcf744507c05ed`. Current Scan & Fix evidence is in the final section.
+
+## Earlier 5.0.1 evidence
 
 | Evidence | Result |
 | --- | --- |
