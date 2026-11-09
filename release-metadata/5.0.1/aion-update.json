@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "version": "5.0.1",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 128250297,
+  "sha256": "9e687a2a8776de50c29350483c01b708c962ea2da8b758998d0c6a08e9b83d65",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v5.0.1/WinOptimizer-Aion-5.0.1-Windows-x64-Setup.exe",
+  "sourceCommit": "fc0e0dedc58e33041159b567e06acdc0671b55b9",
+  "notes": {
+    "tr": "Kısmi sürücü yükleme ve geri alma hataları artık başarı sayılmaz. Her sürücünün sonucu geçmişte ayrı gösterilir.",
+    "en": "Partial driver installation and recovery failures no longer trigger success feedback. History shows each driver result separately."
+  }
+}
