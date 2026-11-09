@@ -46,3 +46,5 @@ test('online scan failure preserves local results; offline scan never calls Wind
 test('failed native repair remains in history as failed and invalidates the plan',async()=>{
  const {manager,events}=fixture({fail:true});const r=await manager.scan();const payload={reportId:r.id,findingId:'network:dns',actionId:'dns-flush',confirm:true};await assert.rejects(manager.repair(payload),/WINDOWS_FAILED/);assert.equal(events[0].status,'failed');assert.equal(manager.report,null);await assert.rejects(manager.repair(payload),/SCAN_EXPIRED/);
 });
+
+test('cancelling a read-only scan aborts its native process and leaves previous results intact',async()=>{const manager=new Diagnostics(async(_action,_payload,_elevated,{signal})=>new Promise((_resolve,reject)=>signal.addEventListener('abort',()=>reject(Error('SCAN_CANCELLED')),{once:true})),()=>({}));manager.report={id:'previous'};const pending=manager.scan();assert.equal(manager.cancel().cancelled,true);await assert.rejects(pending,/SCAN_CANCELLED/);assert.equal(manager.report.id,'previous');assert.equal(manager.cancel().cancelled,false);});

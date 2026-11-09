@@ -22,7 +22,7 @@ test('partial driver installation shows failed items and never celebrates succes
   await page.getByRole('dialog').getByRole('button',{name:'Devam et',exact:true}).click();
   await expect(page.getByRole('alert')).toContainText('Bazı öğeler tamamlanamadı');
   await page.getByRole('button',{name:'Genel bakış',exact:true}).click();
-  await expect(page.locator('.aion-sprite')).toHaveAttribute('data-clip','idle');
+  await expect(page.locator('.aion-sprite')).toHaveAttribute('data-clip','help');
   await page.getByRole('button',{name:'Geçmiş ve yedekler',exact:true}).click();
   await expect(page.getByText('Fixture Wi-Fi',{exact:true})).toBeVisible();
   await expect(page.getByText('Başarısız (4)',{exact:true})).toBeVisible();
