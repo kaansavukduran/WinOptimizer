@@ -1,8 +1,10 @@
 const fs=require('node:fs');const path=require('node:path');const crypto=require('node:crypto');const cp=require('node:child_process');
 const repo='kaansavukduran/WinOptimizer';const run=JSON.parse(fs.readFileSync('build-run.json','utf8'));const publicKey=fs.readFileSync('desktop/update-public-key.pem');
 const gh=(args,input)=>cp.execFileSync('gh',args,{encoding:'utf8',input:input?JSON.stringify(input):undefined,stdio:['pipe','pipe','inherit']});
-const releaseIds={'5.0.0-beta.1':439547840,'5.0.0':439549740};
-for(const version of ['5.0.0-beta.1','5.0.0']){
+const releaseIds=JSON.parse(fs.readFileSync('release-metadata/release-ids.json','utf8'));
+const versions=fs.readdirSync('release-metadata').filter(v=>fs.existsSync(path.join('release-metadata',v,'aion-update.json'))&&JSON.parse(fs.readFileSync(path.join('release-metadata',v,'aion-update.json'))).sourceCommit===run.head_sha);
+if(!versions.length)throw Error('No signed metadata for this source build');
+for(const version of versions){
   const folder=path.join('release-metadata',version),bytes=fs.readFileSync(path.join(folder,'aion-update.json')),sig=fs.readFileSync(path.join(folder,'aion-update.sig'),'utf8').trim();
   if(!crypto.verify(null,bytes,publicKey,Buffer.from(sig,'base64')))throw Error('Invalid manifest signature');const manifest=JSON.parse(bytes);
   if(manifest.version!==version||manifest.sourceCommit!==run.head_sha||manifest.platform!=='win32'||manifest.arch!=='x64')throw Error('Build/source mismatch');
