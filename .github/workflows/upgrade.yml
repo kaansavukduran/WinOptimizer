@@ -33,11 +33,14 @@ jobs:
         run: |
           $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
           node scripts/windows-smoke.cjs "$exe" upgrade
-          $deadline = (Get-Date).AddMinutes(3)
+          $deadline = (Get-Date).AddMinutes(5)
           do {
             Start-Sleep -Seconds 3
-            $p = Get-Process | Where-Object { $_.ProcessName -like '*Setup*' -or $_.ProcessName -like '*nsis*' }
-          } while ($p -and (Get-Date) -lt $deadline)
+            $restarted = Get-Process -Name 'WinOptimizer Aion' -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+          } while (-not $restarted -and (Get-Date) -lt $deadline)
+          if (-not $restarted) { throw 'Application did not restart after update' }
+          if (-not $restarted.CloseMainWindow()) { throw 'Could not close restarted app normally' }
+          if (-not $restarted.WaitForExit(60000)) { throw 'Restarted app did not close' }
           node scripts/windows-smoke.cjs "$exe" verify
       - uses: actions/upload-artifact@v4
         if: always()

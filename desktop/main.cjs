@@ -35,7 +35,7 @@ app.whenReady().then(async()=>{
         if(service.busy||updating)throw Error('OPERATION_BUSY');if(process.platform!=='win32')throw Error('WINDOWS_ONLY');if(payload.confirm!==true)throw Error('CONFIRM_REQUIRED');updating=true;
         try{const file=await updater.download();service.settings.save(service.settings.data);service.save();
           // Detached installer waits for the application to close. The validated bytes are never handed to a shell.
-          const child=spawn(file,['/S'],{detached:true,stdio:'ignore',windowsHide:true});await new Promise((resolve,reject)=>{child.once('spawn',resolve);child.once('error',reject);});child.unref();updating=false;setTimeout(()=>app.quit(),500);return {ok:true,data:{installing:true}};
+          const child=spawn(file,['/S','--updated','--force-run'],{detached:true,stdio:'ignore',windowsHide:true});await new Promise((resolve,reject)=>{child.once('spawn',resolve);child.once('error',reject);});child.unref();updating=false;setTimeout(()=>app.quit(),500);return {ok:true,data:{installing:true}};
         }catch(e){updating=false;throw e;}
       }
       return {ok:true,data:await service.handle(command,payload)};

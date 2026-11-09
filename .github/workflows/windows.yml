@@ -17,6 +17,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Prepare real baseline version
+        run: npm version 5.0.0-beta.1 --no-git-tag-version --allow-same-version
       - run: npm run check
       - name: PowerShell 5.1 real Windows integration
         shell: powershell

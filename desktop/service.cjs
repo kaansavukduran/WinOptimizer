@@ -2,7 +2,7 @@ const fs=require('node:fs');const fsp=require('node:fs/promises');const path=req
 const {Settings,atomicWrite}=require('./settings.cjs');const {Cleanup,rootsFor}=require('./cleanup.cjs');const windows=require('./windows.cjs');
 class Service {
   constructor({dir,local,locale='tr',backend,version,platform=process.platform,run=windows.run,roots}){
-    this.dir=dir;this.backend=backend;this.version=version;this.platform=platform;this.run=run;this.settings=new Settings(dir,locale);this.cleanup=new Cleanup(dir,roots||rootsFor(local));this.busy=false;this.latestHealth=null;this.driverCandidates=[];this.startup=[];this.stateFile=path.join(dir,'activity.json');
+    this.dir=dir;this.backend=backend;this.version=version;this.platform=platform;this.run=run;const fresh=!fs.existsSync(path.join(dir,'settings.json'));this.settings=new Settings(dir,locale);if(fresh)this.settings.data.channel=version.includes('-')?'beta':'stable';this.cleanup=new Cleanup(dir,roots||rootsFor(local));this.busy=false;this.latestHealth=null;this.driverCandidates=[];this.startup=[];this.stateFile=path.join(dir,'activity.json');
     try{this.state=JSON.parse(fs.readFileSync(this.stateFile,'utf8'));if(this.state.schema!==1||!Array.isArray(this.state.events)||!Array.isArray(this.state.milestones))throw Error();}catch{this.state={schema:1,events:[],milestones:[]};}
   }
   record(type,data){const event={id:crypto.randomUUID(),at:new Date().toISOString(),type,...data};this.state.events.unshift(event);this.state.events=this.state.events.slice(0,500);this.save();return event;}

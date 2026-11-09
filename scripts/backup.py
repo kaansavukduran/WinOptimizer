@@ -6,10 +6,14 @@ sha=git('rev-parse','HEAD').decode().strip()
 branch=git('branch','--show-current').decode().strip()
 out=root/'work'/'backups'/sha[:12];out.mkdir(parents=True,exist_ok=True)
 files=git('ls-tree','-r','--name-only','HEAD').decode().splitlines()
-for file in files:
-    data=git('show',f'HEAD:{file}')
-    if re.search(rb'-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16}',data):
-        raise SystemExit('Secret-like material detected; stopped in '+file)
+seen=set()
+for commit in git('rev-list','--all').decode().splitlines():
+    for line in git('ls-tree','-r',commit).decode().splitlines():
+        meta,file=line.split('\t',1);blob=meta.split()[2]
+        if blob in seen:continue
+        seen.add(blob);data=git('cat-file','blob',blob)
+        if re.search(rb'-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16}',data):
+            raise SystemExit('Secret-like material detected; stopped in '+file)
 source=out/f'WinOptimizer-{sha[:12]}-source.zip'
 with zipfile.ZipFile(source,'w',zipfile.ZIP_DEFLATED) as z:
     for file in files:z.writestr('WinOptimizer/'+file,git('show',f'HEAD:{file}'))
