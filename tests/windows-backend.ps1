@@ -1,4 +1,7 @@
 $ErrorActionPreference='Stop'
+$recovery=Join-Path $PSScriptRoot '..\backend\Recovery.ps1'
+$rt=$null;$re=$null;$null=[Management.Automation.Language.Parser]::ParseFile($recovery,[ref]$rt,[ref]$re)
+if($re.Count){throw 'Recovery PS 5.1 parser errors'}
 $extra=Join-Path $PSScriptRoot '..\backend\Diagnostics.ps1'
 $extraTokens=$null;$extraErrors=$null;$null=[Management.Automation.Language.Parser]::ParseFile($extra,[ref]$extraTokens,[ref]$extraErrors)
 if($extraErrors.Count){throw 'Diagnostics PS 5.1 parser errors'}
@@ -18,6 +21,9 @@ $diag|ConvertTo-Json -Depth 12|Set-Content (Join-Path $env:TEMP 'aion-native-dia
 $health=Call-Backend 'health';if(-not $health.os -or $health.ramTotal -le 0){throw 'Invalid health output'}
 $drivers=@(Call-Backend 'drivers');if($drivers.Count -lt 1){throw 'No drivers enumerated'}
 $network=Call-Backend 'network';if($null -eq $network.adapters){throw 'Missing network output'}
+$points=Call-Backend 'restore-points';if($null -eq $points.available){throw 'Missing restore-point availability'}
+$ghosts=@(Call-Backend 'ghosts')
+$apps=@(Call-Backend 'focus-apps')
 $plans=@(Call-Backend 'power-profiles');if($plans.Count -lt 1){throw 'No power plans'}
 $identity=[Security.Principal.WindowsIdentity]::GetCurrent()
 if((New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
@@ -26,6 +32,8 @@ if((New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole([Securit
   if(-not (Test-Path (Join-Path $destination 'backup.json'))){throw 'Driver backup manifest missing'}
   $manifest=Get-Content (Join-Path $destination 'backup.json') -Raw|ConvertFrom-Json
   foreach($f in $manifest.files){if((Get-FileHash (Join-Path $destination $f.path) -Algorithm SHA256).Hash -ne $f.sha256){throw 'Driver backup hash mismatch'}}
+  $candidates=@(Call-Backend 'package-inspect' @{directory=$destination})
+  if($backup.packages -gt 0 -and $candidates.Count -lt 1){throw 'Backed-up packages could not be inspected'}
   Remove-Item $destination -Recurse -Force
 }
 $name='WinOptimizerIntegration-'+[guid]::NewGuid().ToString('N');$key='HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'

@@ -1,6 +1,6 @@
 # WinOptimizer Aion Forge
 
-Durum: **IDLE, Windows 5.1.0 Scan & Fix kararlı sürümü teslim edildi.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
+Durum: **ACTIVE, 5.2.0 bakım atölyesi ve uygulamaya özel Aion seti geliştiriliyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
 
 ## Son doğrulanmış yayın: 5.1.0
 
@@ -51,3 +51,7 @@ Windows sanal makinesinde PowerShell 5.1 parser; gerçek sağlık/sürücü/ağ/
 ## Tamamlanan 5.1.0 değişikliği
 
 Kullanıcı Driver Booster benzeri tarama/düzeltme istedi. `docs/SCAN-FIX.md` kapsamı, resmî kaynakları ve sınırları kaydeder. Yerel aygıt/ses/ağ/ekran/oyun bileşeni envanteri, isteğe bağlı Windows Update ve DNS sorgusu; kullanıcı onaylı ses servisi başlatma/aygıt yeniden algılama/DNS önbelleği temizleme, ön ve son kontrol, süreli tek kullanımlık rapor, doğrulanan/çözülmeyen/doğrulanamayan sonuçlar. Bağlı olmayan aygıtları arıza sayma veya eski tarihi otomatik hata sayma yok. Microsoft çalışma zamanı yükleme bağlantıları ve Windows ayarları yönlendirmedir, otomatik DLL düzeltme iddiası yok. 19 Node testi ve 8 tarayıcı senaryosu yerelde ve Windows CI’da geçti. Kurulu uygulama taraması ve 5.0.1 → 5.1.0 güncelleme de doğrulandı; sürüm Latest kararlı olarak yayımlandı.
+
+## Aktif 5.2.0 işi
+
+Yetkili hedef aynı Windows deposu. Kullanıcı Driver Booster işlevlerini geliştirme, uygulamaya özel Aion paftası ve gerçek ekran görüntüsü istedi. Drive ana/model/kuyruk referansları okundu; 4×6 yeni saydam kare paftası `public/assets/aion-optimizer.png`, envanter `docs/ASSETS.json`. Yeni bakım atölyesi: sürücü yedeği/paket inceleme, imzalı çevrimdışı klasör, uygulama öncesi yedek, gerçek paket kabulü/aygıt değişimi ayrımı, seçmeli ghost kayıt temizliği, atlanan güncellemeler, Windows geri yükleme noktaları, geçici güç planı ve kullanıcı pencerelerine normal kapatma isteği. Microsoft VC/DirectX indirme ve imza doğrulamalı onaylı kurulum eklendi; gerçek Windows testi bekliyor. Kareler gerçek tarama/onarım/başarı/odak durumlarına bağlı, görünmeyince duraklar. Kapsam ve açık kalan farklar `docs/DRIVER-COVERAGE.md`; tam IObit katalog eşitliği iddiası yok. Yayından önce Windows CI, gerçek runtime kurulumu ve 5.1.0 → 5.2.0 yükseltme, normal ölçekli Türkçe Windows ekran görüntüleri ve özel Drive yedeği tamamlanmalı.

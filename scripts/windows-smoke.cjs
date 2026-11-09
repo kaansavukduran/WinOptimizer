@@ -1,6 +1,23 @@
 const {_electron:electron,expect}=require('@playwright/test');const fs=require('node:fs/promises');const path=require('node:path');const os=require('node:os');const assert=require('node:assert/strict');
 const exe=process.argv[2],scenario=process.argv[3]||'seed';if(!exe)throw Error('Pass installed application path');
 async function waitForFile(file,timeout=120000){const started=Date.now();while(Date.now()-started<timeout){try{return await fs.stat(file);}catch{}await new Promise(r=>setTimeout(r,500));}throw Error('FILE_TIMEOUT');}
+async function showcase(app,page,settings){
+ await app.evaluate(({BrowserWindow})=>BrowserWindow.getAllWindows()[0].setSize(1440,1024));
+ await page.locator('.nav-item').last().click();await page.locator('#language').selectOption('tr');
+ await page.getByRole('button',{name:'Görünüm',exact:true}).click();await page.getByLabel('Tema',{exact:true}).selectOption('light');
+ await page.getByRole('spinbutton',{name:'Arayüz ölçeği (%)',exact:true}).fill('100');await page.getByRole('spinbutton',{name:'Arayüz ölçeği (%)',exact:true}).press('Enter');
+ await page.getByRole('button',{name:'Erişilebilirlik',exact:true}).click();await page.getByLabel('Yazı tipi',{exact:true}).selectOption('system');
+ const text=page.locator('#text-size').locator('..').locator('..').getByRole('spinbutton');await text.fill('100');await text.press('Enter');
+ await page.getByRole('button',{name:'Genel bakış',exact:true}).click();await page.getByRole('button',{name:'Sistemi kontrol et',exact:true}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
+ await page.screenshot({path:'work/screenshots/WinOptimizer-5.2-Windows-overview-tr.png'});
+ await page.locator('.nav-item').filter({hasText:'Tara ve Düzelt'}).click();await page.getByRole('button',{name:'Taramayı başlat',exact:true}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
+ await page.screenshot({path:'work/screenshots/WinOptimizer-5.2-Windows-scan-tr.png'});
+ await page.getByRole('button',{name:'Bakım atölyesi',exact:true}).click();await page.getByRole('button',{name:'Oyun bileşenleri',exact:true}).click();await page.getByRole('button',{name:'Bileşenleri kontrol et',exact:true}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
+ await page.screenshot({path:'work/screenshots/WinOptimizer-5.2-Windows-workshop-tr.png'});
+ await page.getByRole('button',{name:'Ayarlar',exact:true}).click();await page.getByRole('button',{name:'Görünüm',exact:true}).click();await page.getByLabel('Tema',{exact:true}).selectOption('dark');await page.getByRole('button',{name:'Genel bakış',exact:true}).click();
+ await page.screenshot({path:'work/screenshots/WinOptimizer-5.2-Windows-dark-tr.png'});
+ const restored=await page.evaluate(settings=>window.aion.invoke('settings.save',settings),settings);assert.equal(restored.ok,true);
+}
 (async()=>{
  const app=await electron.launch({executablePath:exe,timeout:60000});const page=await app.firstWindow();page.setDefaultTimeout(45000);await page.locator('.app-shell').waitFor();
  const reply=await page.evaluate(()=>window.aion.invoke('bootstrap'));assert.equal(reply.ok,true);assert.equal(reply.data.platform,'win32');
@@ -25,8 +42,8 @@ async function waitForFile(file,timeout=120000){const started=Date.now();while(D
    await page.getByRole('button',{name:'Settings',exact:true}).click();await page.getByRole('button',{name:'Updates',exact:true}).click();await page.getByLabel('Release channel',{exact:true}).selectOption('beta');await page.getByRole('button',{name:'Check for updates',exact:true}).click();await expect(page.getByText(/A new version is ready/)).toBeVisible({timeout:180000});await page.screenshot({path:'work/screenshots/windows-update-offered.png',fullPage:true});
    const closed=new Promise(resolve=>app.once('close',resolve));await page.getByRole('button',{name:'Update and restart',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'Continue',exact:true}).click();let timer;try{await Promise.race([closed,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('UPDATER_DID_NOT_CLOSE')),660000);})]);}finally{clearTimeout(timer);}
  }else if(scenario==='verify'){
-   assert.equal(reply.data.version,process.env.EXPECTED_VERSION||'5.0.0');assert.equal(reply.data.settings.scale,135);assert.equal(reply.data.settings.textSize,125);assert.equal(reply.data.settings.font,'dyslexic');assert.equal(reply.data.settings.theme,'dark');const h=await page.evaluate(()=>window.aion.invoke('history'));assert.ok(h.data.events.some(e=>e.type==='restore'));assert.ok(h.data.milestones.includes('health'));assert.ok(h.data.milestones.includes('scan'));await page.screenshot({path:'work/screenshots/windows-updated-verified.png',fullPage:true});if((process.env.EXPECTED_VERSION||'').startsWith('5.1.')){await page.locator('.nav-item').filter({hasText:'Scan & Fix'}).click();await page.getByRole('button',{name:'Start scan',exact:true}).click();await expect(page.locator('.diagnostic-summary')).toBeVisible({timeout:180000});await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});await page.screenshot({path:'work/screenshots/windows-updated-scan-fix.png',fullPage:true});}
-   await fs.writeFile('work/native-upgrade-verified.json',JSON.stringify({version:reply.data.version,settings:reply.data.settings,events:h.data.events.length,verified:true},null,2));await app.close();
+   assert.equal(reply.data.version,process.env.EXPECTED_VERSION||'5.0.0');assert.equal(reply.data.settings.scale,135);assert.equal(reply.data.settings.textSize,125);assert.equal(reply.data.settings.font,'dyslexic');assert.equal(reply.data.settings.theme,'dark');const h=await page.evaluate(()=>window.aion.invoke('history'));assert.ok(h.data.events.some(e=>e.type==='restore'));assert.ok(h.data.milestones.includes('health'));assert.ok(h.data.milestones.includes('scan'));await page.screenshot({path:'work/screenshots/windows-updated-verified.png',fullPage:true});if(/^5\.[12]\./.test(process.env.EXPECTED_VERSION||'')){await page.locator('.nav-item').filter({hasText:'Scan & Fix'}).click();await page.getByRole('button',{name:'Start scan',exact:true}).click();await expect(page.locator('.diagnostic-summary')).toBeVisible({timeout:180000});await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});await page.screenshot({path:'work/screenshots/windows-updated-scan-fix.png',fullPage:true});}
+   await fs.writeFile('work/native-upgrade-verified.json',JSON.stringify({version:reply.data.version,settings:reply.data.settings,events:h.data.events.length,verified:true},null,2));if(/^5\.2\./.test(reply.data.version))await showcase(app,page,reply.data.settings);await app.close();
  }else{await app.close();throw Error('Unknown scenario');}
  console.log('PASS installed Windows scenario:',scenario);
 })().catch(e=>{console.error(e);process.exit(1);});

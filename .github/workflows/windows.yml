@@ -34,6 +34,8 @@ jobs:
       - name: PowerShell 5.1 real Windows integration
         shell: powershell
         run: .\tests\windows-backend.ps1
+      - name: Real Microsoft runtime download and installation
+        run: node scripts/windows-runtime-smoke.cjs
       - name: Browser integration
         run: |
           npx playwright install chromium
@@ -62,5 +64,6 @@ jobs:
             release/*-Setup.exe
             work/native-seed.json
             work/native-diagnostics.json
+            work/native-runtime.json
             work/screenshots/
           if-no-files-found: error

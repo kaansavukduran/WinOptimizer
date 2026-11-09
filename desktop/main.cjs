@@ -5,7 +5,7 @@ const local=process.env.LOCALAPPDATA||app.getPath('appData');
 app.setPath('userData',path.join(local,'WinOptimizer Aion'));
 if(!app.requestSingleInstanceLock()){app.quit();}else{
 let window,service,updater,updating=false;const language=()=>service?.settings.data.language==='en';
-const sources={github:`https://github.com/${REPO}`,releases:`https://github.com/${REPO}/releases`,windows:'ms-settings:windowsupdate',security:'windowsdefender:',startup:'ms-settings:startupapps',sound:'ms-settings:sound',display:'ms-settings:display','network-settings':'ms-settings:network-status',devices:'ms-settings:troubleshoot','visual-cpp':'https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170',directx:'https://www.microsoft.com/en-us/download/details.aspx?id=35'};
+const sources={'oem-nvidia':'https://www.nvidia.com/en-us/drivers/','oem-amd':'https://www.amd.com/en/support/download/drivers.html','oem-intel':'https://www.intel.com/content/www/us/en/download-center/home.html','runtime-license':'https://aka.ms/VCRedistLicense',game:'ms-settings:gaming-gamemode',github:`https://github.com/${REPO}`,releases:`https://github.com/${REPO}/releases`,windows:'ms-settings:windowsupdate',security:'windowsdefender:',startup:'ms-settings:startupapps',sound:'ms-settings:sound',display:'ms-settings:display','network-settings':'ms-settings:network-status',devices:'ms-settings:troubleshoot','visual-cpp':'https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170',directx:'https://www.microsoft.com/en-us/download/details.aspx?id=35'};
 app.on('second-instance',()=>{if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});
 app.whenReady().then(async()=>{
   service=new Service({dir:app.getPath('userData'),local,locale:app.getLocale(),backend:path.join(app.isPackaged?process.resourcesPath:app.getAppPath(),'backend','Windows.ps1'),version:app.getVersion()});
@@ -18,6 +18,20 @@ app.whenReady().then(async()=>{
     if(event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame)return {ok:false,error:'UNAUTHORIZED'};
     try{
       if(command==='external'){if(!Object.hasOwn(sources,payload.id))throw Error('INVALID_SELECTION');await shell.openExternal(sources[payload.id]);return {ok:true,data:true};}
+      if(command==='system.open'){
+        const names={restore:'rstrui.exe',protection:'SystemPropertiesProtection.exe',devices:'devmgmt.msc'};if(!Object.hasOwn(names,payload.id))throw Error('INVALID_SELECTION');
+        const folder=path.join(process.env.SystemRoot||'C:\\Windows','System32');const exe=payload.id==='devices'?path.join(folder,'mmc.exe'):path.join(folder,names[payload.id]);
+        const args=payload.id==='devices'?[path.join(folder,'devmgmt.msc')]:[];const child=spawn(exe,args,{detached:true,stdio:'ignore',windowsHide:false});await new Promise((resolve,reject)=>{child.once('spawn',resolve);child.once('error',reject);});child.unref();return {ok:true,data:{opened:true}};
+      }
+      if(command==='hardware.search'){
+        const device=service.offlineDevices.find(d=>d.id===payload.id);const hardware=device?.hardwareIds?.find(h=>typeof h==='string'&&h.length>0&&h.length<=500);if(!hardware)throw Error('INVALID_SELECTION');await shell.openExternal('https://www.catalog.update.microsoft.com/Search.aspx?q='+encodeURIComponent(hardware));return {ok:true,data:{opened:true}};
+      }
+      if(command==='offline.export'){
+        const data=await service.handle('offline.inventory');const result=await dialog.showSaveDialog(window,{defaultPath:'WinOptimizer-hardware.json',filters:[{name:'JSON',extensions:['json']}]});if(result.canceled)return {ok:true,data:{cancelled:true}};await fsp.writeFile(result.filePath,JSON.stringify({app:'WinOptimizer Aion',schema:1,...data},null,2));return {ok:true,data:{saved:true}};
+      }
+      if(command==='package.import'){
+        if(service.busy)throw Error('OPERATION_BUSY');const r=await dialog.showOpenDialog(window,{properties:['openDirectory']});if(r.canceled)return {ok:true,data:{cancelled:true}};return {ok:true,data:await service.handle(command,{directory:r.filePaths[0]})};
+      }
       if(command==='folder.open'){const folders={data:service.dir,drivers:path.join(service.dir,'DriverBackups')};const dest=folders[payload.id];if(!dest)throw Error('INVALID_SELECTION');await fsp.mkdir(dest,{recursive:true});const error=await shell.openPath(dest);if(error)throw Error('FOLDER_FAILED');return {ok:true,data:true};}
       if(command==='backup.export'||command==='report.export'){
         const result=await dialog.showSaveDialog(window,{title:language()?'Export':'Dışa aktar',defaultPath:command==='backup.export'?'WinOptimizer-backup.json':'WinOptimizer-report.json',filters:[{name:'JSON',extensions:['json']}]});

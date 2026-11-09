@@ -24,5 +24,36 @@
       "path": "public/assets/aion.ico",
       "sha256": "518c7e7d3ae70a8910134ea608bd4f28b2f0b621e46cdbc2ce24cf1347cece3d"
     }
-  ]
+  ],
+  "optimizerSprite": {
+    "path": "public/assets/aion-optimizer.png",
+    "columns": 4,
+    "rows": 6,
+    "width": 1024,
+    "height": 1536,
+    "clips": {
+      "idle": 0,
+      "scan": 1,
+      "repair": 2,
+      "success": 3,
+      "help": 4,
+      "game": 5
+    },
+    "timingMs": {
+      "idle": 420,
+      "scan": 380,
+      "repair": 380,
+      "success": 360,
+      "help": 380,
+      "game": 380
+    },
+    "successLoops": false,
+    "source": "Generated specifically for WinOptimizer using Kaan’s approved Drive references",
+    "references": [
+      "https://drive.google.com/file/d/1pJvIAjU-CT9c3WXWUonxnCIttuzz296W/view",
+      "https://drive.google.com/file/d/1rX8gLJ2jRAaIk13Y3AHA9RY2tOf_gFD3/view",
+      "https://drive.google.com/file/d/1Ji766C3MG2Seg9fuPaarvMVhoxknrUyZ/view"
+    ],
+    "sha256": "517a1b4c43a68fb0a8dc857237a8208996314d3655f06e981fbe12819cf78d05"
+  }
 }
