@@ -1,5 +1,7 @@
 # WinOptimizer Aion
 
+[Son kararlı sürüm / Latest release](https://github.com/kaansavukduran/WinOptimizer/releases/latest) · Windows x64
+
 Windows için pembe axolotl Aion eşliğinde, Türkçe ve İngilizce bakım uygulaması.
 Windows only. A bilingual, local-first care center with Kaan’s animated axolotl Aion.
 
@@ -38,6 +40,8 @@ Sürücü yedeği için **Aygıt Yöneticisi → ilgili aygıt → Sürücüyü 
 Offline: local scans, history, settings and cleanup work. Windows Update, application update checks and downloads need internet. No automatic background updating or telemetry runs.
 
 ## Development
+
+Development requires Node.js 24. End users only need Setup.exe; Node.js is not required to run the installed app.
 
 ```sh
 npm ci

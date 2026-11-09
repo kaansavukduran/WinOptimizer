@@ -16,7 +16,7 @@ Kurulum dosyası Windows Authenticode sertifikasıyla imzalanmamıştır. Günce
 
 ## Doğrulama
 
-[Windows derleme ve kurulu uygulama testi](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42687275191) geçti. 11 Node güvenlik/veri testi, 5 genel Chromium akışı ve ayrıca kısmi sürücü sonucu için gerçek arayüz regresyon testi geçti. Kısmi sürücü sonucu testi kontrollü bir UI senaryosudur; gerçek bir aygıta bilerek bozuk sürücü yüklenmedi. Windows test ortamı GitHub’ın sanal makinesidir. 5.0.0 → 5.0.1 uygulama içi yükseltme sonucu final yayın öncesi eklenir.
+[Windows derleme ve kurulu uygulama testi](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42687275191) geçti. 11 Node güvenlik/veri testi, 5 genel Chromium akışı ve ayrıca kısmi sürücü sonucu için gerçek arayüz regresyon testi geçti. Kısmi sürücü sonucu testi kontrollü bir UI senaryosudur; gerçek bir aygıta bilerek bozuk sürücü yüklenmedi. Windows test ortamı GitHub’ın sanal makinesidir. [5.0.0 → 5.0.1 uygulama içi yükseltme](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42688518853) geçti: yeni sürüm yeniden açıldı; dil, tema, %135 arayüz ölçeği, %125 yazı boyutu, OpenDyslexic ve işlem geçmişi korundu. [Son Windows kontrolü](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42688246954) 6 tarayıcı senaryosu dahil başarılı. Paket: 128.250.297 bayt. Kaynak: `fc0e0dedc58e33041159b567e06acdc0671b55b9`. SHA-256: `9e687a2a8776de50c29350483c01b708c962ea2da8b758998d0c6a08e9b83d65`.
 
 ## English
 
