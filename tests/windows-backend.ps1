@@ -11,6 +11,15 @@ $health=Call-Backend 'health';if(-not $health.os -or $health.ramTotal -le 0){thr
 $drivers=@(Call-Backend 'drivers');if($drivers.Count -lt 1){throw 'No drivers enumerated'}
 $network=Call-Backend 'network';if($null -eq $network.adapters){throw 'Missing network output'}
 $plans=@(Call-Backend 'power-profiles');if($plans.Count -lt 1){throw 'No power plans'}
+$identity=[Security.Principal.WindowsIdentity]::GetCurrent()
+if((New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
+  $destination=Join-Path $env:LOCALAPPDATA ('WinOptimizer Aion\DriverBackups\integration-'+[guid]::NewGuid().ToString('N'))
+  $backup=Call-Backend 'driver-backup' @{destination=$destination}
+  if(-not (Test-Path (Join-Path $destination 'backup.json'))){throw 'Driver backup manifest missing'}
+  $manifest=Get-Content (Join-Path $destination 'backup.json') -Raw|ConvertFrom-Json
+  foreach($f in $manifest.files){if((Get-FileHash (Join-Path $destination $f.path) -Algorithm SHA256).Hash -ne $f.sha256){throw 'Driver backup hash mismatch'}}
+  Remove-Item $destination -Recurse -Force
+}
 $name='WinOptimizerIntegration-'+[guid]::NewGuid().ToString('N');$key='HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
 try{
   if(-not(Test-Path $key)){New-Item $key -Force|Out-Null}

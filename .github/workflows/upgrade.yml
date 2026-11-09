@@ -26,12 +26,12 @@ jobs:
       - name: Create real sample data in installed baseline
         shell: pwsh
         run: |
-          $exe = Join-Path $env:LOCALAPPDATA 'Programs\winoptimizer-aion\WinOptimizer Aion.exe'
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
           node scripts/windows-smoke.cjs "$exe" seed
       - name: Use in-app update and verify preserved data
         shell: pwsh
         run: |
-          $exe = Join-Path $env:LOCALAPPDATA 'Programs\winoptimizer-aion\WinOptimizer Aion.exe'
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
           node scripts/windows-smoke.cjs "$exe" upgrade
           $deadline = (Get-Date).AddMinutes(3)
           do {

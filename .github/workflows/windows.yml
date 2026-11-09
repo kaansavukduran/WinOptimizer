@@ -36,7 +36,7 @@ jobs:
       - name: Installed application real user flow
         shell: pwsh
         run: |
-          $exe = Join-Path $env:LOCALAPPDATA 'Programs\winoptimizer-aion\WinOptimizer Aion.exe'
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
           node scripts/windows-smoke.cjs "$exe" seed
       - name: Build next real package
         run: |
