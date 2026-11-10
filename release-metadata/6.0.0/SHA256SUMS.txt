@@ -1,0 +1,2 @@
+532a90c7932b4ad1a3b654aa5e7cea28d3a41c5328e2e1c23e262488ed98f1be  WinOptimizer-Aion-6.0.0-Windows-x64-Setup.exe
+4ed4e7e047e0096fb0f6f71dff08ea51c1b4be24558f46014ae616a27b4c0bf7  WinOptimizer-Aion-6.0.0-Windows-x64-Portable.exe

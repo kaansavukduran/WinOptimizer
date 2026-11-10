@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.0.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 93478533,
+  "sha256": "532a90c7932b4ad1a3b654aa5e7cea28d3a41c5328e2e1c23e262488ed98f1be",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.0.0/WinOptimizer-Aion-6.0.0-Windows-x64-Setup.exe",
+  "sourceCommit": "d5090af906b313eb8e63160c354bda54f7edda6b",
+  "notes": {
+    "tr": "Python/Qt yerel Windows arayüzü: Chromium gerekmez. Tümünü güncelle, gerçek işlem/atlama günlüğü, Setup ve Portable. Ayarlar ve geçmiş korunur.",
+    "en": "Native Python/Qt Windows GUI: no Chromium required. Update all, actual operation/skip logs, Setup and Portable. Existing settings/history remain."
+  },
+  "portable": {
+    "bytes": 93426145,
+    "sha256": "4ed4e7e047e0096fb0f6f71dff08ea51c1b4be24558f46014ae616a27b4c0bf7",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.0.0/WinOptimizer-Aion-6.0.0-Windows-x64-Portable.exe"
+  }
+}
