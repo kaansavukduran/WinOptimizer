@@ -1,93 +1,95 @@
 # WinOptimizer Aion
 
-[Son kararlı sürüm / Latest release](https://github.com/kaansavukduran/WinOptimizer/releases/latest) · Windows x64
+[Son kararlı sürüm / Latest release](https://github.com/kaansavukduran/WinOptimizer/releases/latest) · **Windows x64**
 
-Windows için pembe axolotl Aion eşliğinde, Türkçe ve İngilizce bakım uygulaması.
-Windows only. A bilingual, local-first care center with Kaan’s animated axolotl Aion.
+Pembe axolotl Aion ile Türkçe/English Windows bakım uygulaması. **6.x arayüzü Python + Qt Widgets kullanır. Electron, Chromium, Qt WebEngine veya kurulu bir tarayıcı gerekmez.** Python ve Node.js çalışma zamanları paketin içindedir; kullanıcı ayrıca kurmaz. Windows işlemleri mevcut, sınırlandırılmış Node.js/PowerShell katmanından yürütülür.
 
-## Kurulum / Installation
+A bilingual native Windows care app. The 6.x GUI uses Python/Qt Widgets, with a bundled headless Node.js and Windows PowerShell backend. It does not use a browser engine. Earlier releases and their source remain available.
 
-1. [Releases](https://github.com/kaansavukduran/WinOptimizer/releases) sayfasından `WinOptimizer-Aion-<sürüm>-Windows-x64-Setup.exe` dosyasını indirin.
-2. Dosyaya çift tıklayın, kurulum konumunu seçin, kurulumu tamamlayın. Başlat menüsünden **WinOptimizer Aion** uygulamasını açın.
-3. **Tara ve Düzelt → Taramayı başlat** ile kontrol edin. **Sıradaki adım** bölümünü okuyun. Sürücü güncellemesi varsa **Tümünü güncelle (sayı)** ile tek tek işaretlemeden devam edin ve listelenen sürücüleri onaylayın. Tarama kurulum başlatmaz; varsayılan çevrimiçi kontrol için internet gerekir. **Tarama seçenekleri** içinde çevrimiçi kontrolü kapatabilirsiniz.
-4. **Geçmiş ve yedekler** üzerinden geri alın. Alan kazanmak için ayrı **Kalıcı sil ve alan aç** işlemini seçin; bu işlem geri alınamaz.
-5. **Ayarlar** yan menünün en altındadır. **Genel ve Dil**, **Görünüm**, **Erişilebilirlik**, **Aion ve Bildirimler**, **Veri ve Yedekler**, **Güncellemeler**, **Hakkında** grupları vardır.
+## İndir ve aç / Download and open
 
-Download the Windows x64 Setup.exe from Releases, double-click it, finish setup, and open **WinOptimizer Aion** from Start. Use **Scan & Fix → Start scan → Next step → Update all (count)** and review/confirm the driver list. Online driver checks are on by default; choose a local scan under **Scan options** if needed. **Safe cleanup** separately previews files before **Move to safe vault**. **History & backups** lets you restore files or delete them permanently. Settings is the last navigation item. Choose **English** in **Genel ve Dil → Dil**.
+[Releases](https://github.com/kaansavukduran/WinOptimizer/releases) sayfasında aynı sürümün iki Windows x64 dosyası bulunur:
 
-Requires Windows 10 22H2 or Windows 11 x64 and built-in Windows PowerShell 5.1. Windows 10 support depends on the installed servicing/ESU channel; this app does not extend Microsoft support. No PowerShell Gallery module, account, API key, or subscription is needed. Installer Authenticode status is documented in release notes. Updates are separately authenticated by an embedded Ed25519 public key and SHA-256.
+| Dosya | Kullanım |
+| --- | --- |
+| `WinOptimizer-Aion-<sürüm>-Windows-x64-Setup.exe` | Çift tıkla, kurulum konumunu seç ve Başlat menüsünden **WinOptimizer Aion** uygulamasını aç. |
+| `WinOptimizer-Aion-<sürüm>-Windows-x64-Portable.exe` | Yazılabilir bir klasöre indir ve çift tıkla. Kurulum sihirbazı gerekmez. |
 
-### Portable / Kurulumsuz kullanım
+Windows 10 22H2 veya Windows 11 x64 ve Windows'un kendi PowerShell 5.1'i gerekir. Windows 10 servis/ESU desteğini uygulama uzatmaz. Kurucunun Authenticode sertifikası henüz yoktur. Uygulama içindeki Setup güncellemeleri gömülü Ed25519 anahtarı ve SHA-256 ile doğrulanır. Release'taki SHA256SUMS.txt iki paketi de listeler.
 
-Releases sayfasındaki **WinOptimizer-Aion-<sürüm>-Windows-x64-Portable.exe** dosyasını yazılabilir bir klasöre indir ve çift tıkla. Kurulum sihirbazı veya kurulu sürüm şartı yoktur. İlk açılışta EXE'nin yanında **Data** klasörü oluşur. Ayarlar, geçmiş, yedekler ve uygulama tarayıcı oturumu burada tutulur. Taşımak için EXE ile Data klasörünü birlikte taşı; kurulu sürümün kayıtları ayrıdır. Sistem işlemleri gerektiğinde Windows yine yönetici izni ister. Salt okunur klasörde sessizce başka konuma yazmak yerine hata gösterilir.
+Download either **Setup.exe** for installation or **Portable.exe** for direct use. Double-click the file. No separate Python, Node.js, Chrome, Chromium, account or subscription is required. The installer is not Authenticode-signed; authenticated in-app installer updates use Ed25519 metadata and SHA-256.
 
-Portable güncelleme şimdilik elle dosya değiştirmeyle yapılır: **Ayarlar → Güncellemeler → Güncellemeleri kontrol et → Portable dosyasını indir**. Uygulamayı kapat, yeni EXE'yi aynı Data klasörünün yanına koy ve yeni dosyayı aç. Data'yı silme. Portable sürüm Setup kurucusunu çalıştırmaz. Release'taki SHA256SUMS.txt, hem Setup hem Portable paket özetlerini içerir. Güncelleme üstverisinde iki paketin özeti de imzalanır; tarayıcıyla elle indirilen portable dosya uygulama tarafından otomatik kurulmaz/doğrulanmaz.
+## İlk kullanım / First use
 
-Download **Portable.exe** to a writable folder and double-click it. Keep the adjacent **Data** folder when moving or replacing the executable. Installed and portable data are separate. Portable updates currently download the new portable file through the browser; close the app, put the new EXE beside the same Data folder, and reopen it. Setup retains its authenticated in-app installer update flow. The self-extracting portable launcher uses Windows temporary storage while running.
+1. **Tara ve Düzelt → Taramayı başlat.** Sürücü teklifleri için çevrimiçi kontrol varsayılan açıktır. Tarama sistem ayarlarını değiştirmez, indirme/kurulum başlatmaz. İnternetsiz kontrol için **Tarama seçenekleri → Çevrimiçi kontrolleri de yap** seçeneğini kapat.
+2. **Sıradaki adım** bölümünü oku. Sürücü teklifleri varsa **Tümünü güncelle (sayı)** ile tek tek kutu işaretlemeden devam et. Sonuç filtreleri bu toplamı daraltmaz. İstersen Sürücü merkezinde yalnız seçtiğin teklifleri yükleyebilirsin.
+3. Onay penceresindeki sürücü listesini incele. Onaydan sonra Windows yönetici izni ister; mevcut üçüncü taraf sürücüler otomatik yedeklenir, ardından seçilen teklifler yüklenir. Sonuçlar sürücü başına gösterilir. Başarısız öğeler başarı sayılmaz. Gerekirse Windows'u yeniden başlat.
 
-## Özellikler / Features
+**Güvenli temizlik** ayrı bir işlemdir: tara, adayları incele, **Güvenli depoya taşı**. **Geçmiş ve yedekler → Geri al** dosyaları geri getirir; var olan yeni dosyaların üzerine yazılmaz. **Kalıcı sil ve alan aç** geri alınamaz.
 
-- **5.3.0 Etkileşimli Aion:** 16 çizilmiş yön ile fareye bakar; baş, gövde, kuyruk ve ayak dokunuşuna tepki verir. Enter/Boşluk ile de sevilebilir. Ayarlar → Aion ve Bildirimler içinde fare takibi, sevilme ve %75–%150 Aion boyutu bağımsızdır; azaltılmış hareket ve duraklatma desteklenir.
-- **Tara ve Düzelt / Scan & Fix:** aygıt hata kodları, ses servisleri, ağ, ekran ve oyun bileşeni göstergeleri; isteğe bağlı Windows Update/DNS kontrolleri. Tarama sonucundan güncellemeleri seç → onay → otomatik sürücü yedeği → yükleme → sürücü başına sonuç. Onaylı ses servisi başlatma, aygıt yeniden algılama ve DNS temizliği aynı sorunu yeniden denetler. [Kapsam ve sınırlar](docs/SCAN-FIX.md).
-- **Bakım atölyesi:** imzalı yerel sürücü klasörlerini ve yedeklerini inceleyip seçmeli uygulama; çevrimdışı donanım kimliklerini dışa aktarma; atlanan güncellemeler; seçili bağlı olmayan aygıt kayıtları; geri yükleme noktaları; geri alınabilir odak/güç planı. Microsoft'un resmî Visual C++ v14 x86/x64 ve DirectX June 2010 kurucuları indirilir, yayıncı imzası doğrulanır, ayrıca onayla kurulur ve son durum okunur. [Driver Booster for Steam karşılaştırması](docs/DRIVER-COVERAGE.md).
+English: **Scan & Fix → Start scan → Next step → Update all (count) → review and confirm**. Online driver checks are enabled by default; disable them under **Scan options** for a local scan. Windows asks for administrator permission before driver backup/installation. Review per-driver results rather than assuming all succeeded. Safe cleanup is a separate preview → vault → restore/permanent-delete flow.
 
-- Salt okunur sistem kontrolü: işletim sistemi, CPU, RAM, disk alanı, Windows’un sağladığı disk sağlığı, Defender, güvenlik duvarı, BitLocker. Erişilemeyen bilgi açıkça belirtilir.
-- Yedi gündür değişmeyen kullanıcı Temp dosyaları ve Chrome/Edge **Default/Cache/Cache_Data** önbellekleri. En fazla 10.000 aday, değişiklik kontrolü, bağlantı/junction koruması, dosya önizlemesi ve geri alınabilir depo.
-- Sürücü envanteri, aygıt hata kodları, imza bilgisi, Windows Update’in cihaza sunduğu seçmeli sürücü güncellemeleri. Yükleme ve üçüncü taraf sürücü deposu yedeği yönetici izni ister. Üretici uygulamaları, inbox sürücüler, BIOS/firmware yedeğe dahil değildir.
-- Kullanıcının HKCU Run başlangıç kayıtlarını kaldırma ve geçmişten geri yükleme. Diğer kullanıcıların kayıtları değiştirilmez.
-- Ağ/DNS bilgisi, yalnızca DNS önbelleğini temizleme, var olan güç planlarını seçme ve önceki plana geri dönme.
-- TR/EN, açık/koyu/sistem/yüksek kontrast, bağımsız %80–%200 arayüz ölçeği (%5 adım ve elle yüzde), %80–%160 yazı boyutu, sistem/Verdana/OpenDyslexic, satır/harf aralığı, vurgu rengi, yoğunluk, ayrı hareket ve ses tercihleri.
-- Gerçek karelerden Aion işlem animasyonları ve RealLife Aion paftasından fare/sevilme tepkileri. Gerçek tamamlanan üç kontrolü izleyen isteğe bağlı bakım yolculuğu; sevilme, kozmetik değişiklikler ve tekrarlar puan üretmez.
-- Ayar/geçmiş JSON dışa aktarma, görünüm içe aktarma, önceki ayarların otomatik kopyası ve rapor dışa aktarma. İçe aktarılan geçmiş sistem komutu olarak oynatılmaz.
-- Düğmeyle başlayan güncelleme kontrolü; kanal/mimari/sürüm, Ed25519 imzası ve paket SHA-256 doğrulanır. Bozuk/kesik indirme kurulmaz.
+## İşlem gerçekten çalışıyor mu? / Observable operations
 
-English: read-only health checks; scoped, age-filtered cleanup with recoverable quarantine; driver inventory, third-party backup and selected Windows Update drivers; reversible current-user startup management; DNS diagnostics/cache clearing and existing power plan selection; persistent bilingual appearance/accessibility settings; frame-by-frame Aion; optional real-check milestones; local exports; authenticated user-initiated updates.
+**İşlem adımları** bölümü Windows arka ucundan gelen gerçek aşamaları gösterir. Uygulama isteği ile Windows kaynaklı olaylar ayrılır. Her adımın son durumu, ölçülebilen adetleri, hata/sonuç kodu ve atlama nedeni görünür. Tamamlanan, başarısız olan ve atlanan adımlar ayrı sayılır. Toplam bilinmeyen işlerde uydurma yüzde gösterilmez; çalışan durum ve geçen süre gösterilir.
 
-## Veri ve geri alma / Data and recovery
+Örneğin çevrimiçi arama kapalıysa Windows Update **Atlandı: çevrimiçi kontrol kapalı** olarak kaydedilir. Aygıt/ses/ağ/ekran/bileşen sağlayıcı hataları görünür; erişilemeyen bilgi sağlıklı sayılmaz. Temizlikte yeni dosyalar, bağlantılar, bulunamayan/erişilemeyen klasörler ve tarama sınırı da nedenleriyle raporlanır. Bir dosya taşıma veya geri alma kısmen başarısız olursa sonuç bunu belirtir.
 
-Kayıtlar `%LOCALAPPDATA%\WinOptimizer Aion` içindedir. `settings.json` görünümü, `activity.json` geçmişi, `quarantine` geri alınabilir dosyaları, `DriverBackups` sürücü paketlerini içerir. Kaldırma ve güncelleme bunları silmez. Taşıma aynı diskte alan açmaz; kalıcı silme ayrıca yapılır. Geri alma yeni dosyaların üzerine yazmaz; çakışan dosyalar yedekte kalır.
+Ekran adımların son durumlarını özetler. **Günlüğü dışa aktar**, bütün zaman sıralı olayları JSON raporuna ekler. Son işlem günlüğü uygulama yeniden açıldığında korunur; beklenmedik kapanışta yarım kalan işlem tamamlandı sayılmaz. Bu, Windows'taki her donanım arızasını saptama veya her sorunu otomatik çözme garantisi değildir.
 
-Sürücü yedeği için **Aygıt Yöneticisi → ilgili aygıt → Sürücüyü güncelleştir → Bilgisayarımdaki sürücülere göz at** yolunda yedek klasörünü seçebilirsiniz. Windows uygun paketi seçer; eski sürüme geçiş her aygıtta garanti edilmez. Driver backup is not a complete system image or an automatic recovery guarantee.
+Operation steps show actual backend events, their source, latest state, counts, failures and skip reasons. The entire chronological log can be exported, and the last operation survives reopening. Unknown totals remain indeterminate. An accepted package or opened settings page is not proof that a device issue was repaired.
 
-Offline: local scans, history, settings and cleanup work. Windows Update, application update checks and downloads need internet. No automatic background updating or telemetry runs.
+## Portable veri ve güncelleme / Portable data and updates
 
-Automatic driver offers currently come from Windows Update for the current PC; the app does not operate an independent global/OEM driver database. Official vendor/catalog buttons are manual handoffs. See [catalog architecture and sources](docs/DRIVER-CATALOG.md). Firmware is excluded from driver installation. A higher version or older installed date alone does not prove compatibility.
+Portable EXE'nin yanında **Data/WinOptimizer Aion** klasörü oluşur. Ayarlar, geçmiş, günlük ve sürücü yedekleri burada tutulur. Taşırken EXE ile Data klasörünü birlikte taşı. Yazılamayan klasörde sessizce başka konuma geçmek yerine hata gösterilir. Self-extracting portable launcher çalışırken Windows geçici dizinini kullanır.
 
-## Gerçek Windows ekranları / Installed Windows screenshots
+Portable güncelleme şimdilik elle yapılır: **Ayarlar → Güncellemeler → Güncellemeleri kontrol et → Portable dosyasını indir**. Uygulamayı kapat, yeni `-Portable.exe` dosyasını aynı Data klasörünün yanına koy ve yeni dosyayı aç. Data'yı silme. Portable mod Setup kurucusunu çalıştırmaz. Tarayıcıyla elle indirilen portable dosya uygulama tarafından otomatik kurulmaz veya doğrulanmaz; Release SHA-256 özeti ayrıca kontrol edilebilir.
 
-[5.2.0 → 5.3.0 gerçek güncelleme doğrulaması](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42726691878). Görüntüler Windows sanal makinesinde kurulu uygulamadan alınmıştır; cihaz değerleri o makineye aittir.
+Kurulu sürümün verisi `%LOCALAPPDATA%\WinOptimizer Aion` içindedir ve portable verisinden ayrıdır. Setup güncellemesi ve kaldırma kullanıcı kayıtlarını silmez. Eski 5.3.x ayar/geçmiş biçimi yeni yerel sürümde kullanılmaya devam eder. Kurulu güncelleme: **Ayarlar → Güncellemeler → Güncellemeleri kontrol et → Güncelle ve yeniden başlat**.
 
-![Aion sevilme tepkisi](docs/screenshots/WinOptimizer-5.3.0-Windows-pet-tr.png)
+Keep the adjacent **Data** folder when moving or replacing the portable executable. Portable and installed records are separate. Portable updates currently use manual EXE replacement; installed updates retain the authenticated installer workflow. Keep the `-Portable.exe` filename suffix to select portable mode.
 
-[Fare takibi](docs/screenshots/WinOptimizer-5.3.0-Windows-pointer-tr.png) · [Tara ve Düzelt](docs/screenshots/WinOptimizer-5.3.0-Windows-scan-tr.png) · [Bakım atölyesi](docs/screenshots/WinOptimizer-5.3.0-Windows-workshop-tr.png) · [Koyu tema](docs/screenshots/WinOptimizer-5.3.0-Windows-dark-tr.png)
+## Gerçek Windows görüntüleri / Installed Windows screenshots
 
-## Development
+Kurulu 6.0.0 uygulaması, Windows sanal makinesi. Sayılar o makineye aittir. [5.3.0’dan yerel Qt sürümüne gerçek geçiş doğrulaması](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42737857096).
 
-Development requires Node.js 24. End users only need Setup.exe; Node.js is not required to run the installed app.
+![Yerel Windows taraması ve gerçek işlem adımları](docs/screenshots/WinOptimizer-6.0.0-Windows-native-scan.png)
+
+[Ayarlar korunarak güncellenmiş yerel uygulama](docs/screenshots/WinOptimizer-6.0.0-Windows-native-upgraded.png).
+
+## Özellikler ve sınırlar / Features and limits
+
+- Yerel Windows sağlık/aygıt/ses/ağ/ekran/oyun bileşeni kontrolleri; isteğe bağlı çevrimiçi Windows Update/DNS araması, onaylı dar kapsamlı düzeltme ve son kontrol.
+- Sürücü envanteri, Windows Update'in bu cihaza sunduğu seçmeli veya toplu sürücü güncellemeleri, otomatik üçüncü taraf sürücü yedeği, tek kullanımlık onay planları ve imzalı yerel INF/CAT klasörleri. 20'den büyük WUA seçimleri komut satırı sınırına takılmayan hash sabitlenmiş planla aktarılır. Firmware yüklenmez. Yedek tam sistem imajı veya garantili sürüm düşürme değildir.
+- Microsoft'un resmî Visual C++ v14 x86/x64 ve DirectX June 2010 kurucularını indirip yayıncı imzası/hash doğrulama; ayrı lisans/onay ve kurulum göstergesini yeniden okuma. Evrensel oyun DLL onarımı değildir.
+- Yaş filtreli kullanıcı Temp/Chrome/Edge Default önbellek temizliği; bağlantı koruması, önizleme, geri alınabilir depo ve ayrı kalıcı silme.
+- HKCU Run başlangıç yönetimi/geri alma, DNS bilgisi ve önbelleği, mevcut güç planları ve çakışma korumalı geri dönüş; geri yükleme noktaları, bağlı olmayan seçili aygıt kayıtları ve odak oturumu.
+- Türkçe/English, açık/koyu/sistem/yüksek kontrast, bağımsız arayüz ölçeği %80–%200, yazı boyutu, font, paketli Türkçe karakterli OpenDyslexic, satır/harf aralığı ve hareket/ses tercihleri. Ayarlar en sağdaki son gezinme öğesidir; alt kategoriler Ayarlar içindedir.
+- Aion'un çizilmiş 16 bakış yönü, baş/gövde/kuyruk/ayak tepkileri, klavyeyle sevme ve işlem kareleri. Sistem azaltılmış hareketi, duraklatma ve görünür alan desteği. Gerçek kontrollerden ilerleyen isteğe bağlı bakım yolculuğu; sevilme puan üretmez.
+
+**Eski terminal sürümünün bütün özellikleri taşınmış değildir.** Genel Windows OS güncellemesi yükleme, winget uygulama güncellemesi, tüm başlangıç görevleri, sıcaklık/ayrıntılı SMART/SFC/olay günlüğü analizi eksiktir. Geniş registry/hizmet/ağ değişiklikleri ve DISM ResetBase uygulanmaz. [Ayrıntılı terminal karşılaştırması](docs/LEGACY-COVERAGE.md), [Driver Booster for Steam kapsamı](docs/DRIVER-COVERAGE.md) ve [sürücü kaynakları/katalog tasarımı](docs/DRIVER-CATALOG.md).
+
+Otomatik sürücü kaynağı bugün Windows Update'tir; bağımsız global/OEM veya özel IObit kataloğu yoktur. Resmî üretici ve Microsoft Catalog bağlantıları elle yönlendirmedir. Yerel akışlar internetsiz çalışır; çevrimiçi teklifler, uygulama güncellemeleri ve indirmeler bağlantı ister. Telemetri ve kendiliğinden arka plan kurulumu çalışmaz.
+
+## Geliştirme / Development
+
+Normal kaynak girişi `native/app.py`; Node köprüsü `desktop/native-bridge.cjs`, sistem eylemleri `backend/Windows.ps1`. Qt Widgets/QPainter yerel arayüzdür; HTML/DOM/WebEngine kullanılmaz. Eski React/Electron kodu kaynak ve davranış referansı olarak korunur; 6.x paketine yüklenmez.
 
 ```sh
-npm ci
-npm run check
-npm run dev
-npm run build
-npm start
+# Python 3.12, Node.js 24
+python -m venv .venv
 # Windows:
-npm run dist:win
+.venv\Scripts\python -m pip install -r native/requirements.txt pytest==8.3.5
+npm ci
+.venv\Scripts\python native/app.py
+npm test
+.venv\Scripts\python -m pytest -q tests/native
+# Windows x64 + NSIS:
+.venv\Scripts\python scripts/build-native.py
 ```
 
-The browser development entry labels itself as a preview and never fabricates Windows data. Windows operations use the isolated preload/main bridge and a fixed PowerShell action allowlist, not arbitrary shell strings.
+Windows Actions gerçek PowerShell protokolünü, temiz Setup kurulumunu, kurulu Qt UI üzerinden sağlık/tarama/temizlik/geri alma ve portable yeniden açılış/veri ayrımını doğrular. Paket arşivi Electron/Chromium/Qt WebEngine girdileri için ayrıca denetlenir. Güncelleme akışı iki yayımlanmış paketi kullanır. [Doğrulama](docs/VALIDATION.md) ve [Forge kaydı](FORGE.md).
 
-```sh
-npx playwright install chromium
-npm run test:e2e
-```
+## Kaynak ve lisans / Origin and license
 
-`tests/windows-backend.ps1` runs the real Windows/PowerShell 5.1 path. CI installs a real NSIS package and exercises the installed app. A separate workflow tests in-app updating between two published packages and preservation of settings/history. See [FORGE.md](FORGE.md) and [docs/VALIDATION.md](docs/VALIDATION.md) for verified results and remaining work.
-
-## Origin and license
-
-Fork of [OguzhanDUYAR/WinOptimizer](https://github.com/OguzhanDUYAR/WinOptimizer). [Eski terminal sürümüyle özellik karşılaştırması / Legacy feature comparison](docs/LEGACY-COVERAGE.md).
-
-Upstream history and scripts are preserved in `legacy/`; they are not used or packaged by the desktop app. Broad deletion, registry cleaning, blanket service/network tweaks, Prefetch deletion and DISM `/ResetBase` are excluded. Root launchers open only the desktop app.
-
-The existing **GPLv3 LICENSE** is retained for the new code. Upstream README/script headers said MIT despite the GPLv3 LICENSE; this fork does not claim to relicense upstream work as MIT. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[OguzhanDUYAR/WinOptimizer](https://github.com/OguzhanDUYAR/WinOptimizer) fork'u. Eski betikler ve tarihçe `legacy/` içinde korunur; yeni uygulama bu betikleri çalıştırmaz. Mevcut **GPLv3 LICENSE** korunur; upstream README'nin farklı MIT ifadesi yeniden lisanslama olarak kullanılmaz. PySide6/Qt LGPL ve diğer paketlerin bildirimleri [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) ve `native/licenses` içindedir. Eski yayımlanmış sürümler değiştirilmez.

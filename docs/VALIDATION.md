@@ -1,6 +1,20 @@
 # Verification evidence
 
-Production release: [5.3.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v5.3.0). Production application source/tag: `d67947e2e172dfdab36103f52f164bd277596973`. Earlier evidence is retained below.
+Production release: [6.0.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.0.0). Production application source/tag: `d5090af906b313eb8e63160c354bda54f7edda6b`. Earlier evidence is retained below.
+
+## 6.0.0 native Windows GUI
+
+45 Node/backend tests and 10 native PySide6/Qt UI tests passed. The interface is Qt Widgets/QPainter, not a browser surface. The packaged application includes CPython and a SHA-pinned official Node24.22.1 runtime; no separately installed Python/Node/browser is required. PyInstaller archive entries were checked for Electron, Chromium and Qt WebEngine payloads and none were present. Previous Chromium UI tests describe earlier versions, not the 6.x native UI.
+
+[Source build/install](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42736382969), [PR validation](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42736390974), [merge](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42737067232) and [publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42737192913) succeeded. The opt-in packaged Qt UI self-test used the real native entry, clicked its controls, ran actual Windows health and local diagnostic inventory, moved/restored a real aged Temp file and reopened the portable executable. Portable settings were beside its EXE and installed settings remained byte-identical. These are hosted Windows VM/internal UI self-test results; they are not a claim of exhaustive physical hardware or external UI Automation certification.
+
+[Installed 5.3.0 → 6.0.0 migration](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42737857096) passed: the old app's update button downloaded/authenticated/ran the new Setup; the native app reopened; English/dark/135% UI/125% text/OpenDyslexic remained. The original cleanup and restore events and health/scan milestones remained. Exported receipts were downloaded with artifact SHA-256 and ZIP CRC checks, and their exact version/settings/history assertions were reread. A previous successful migration run was extended with a test-only history check; published binaries were not changed.
+
+Native UI fixtures verify bilingual Update all without individual checkboxes, confirmation/cancel, 24 offers, partial failures, native navigation, independent large appearance settings, explicit local scan/skip reasons, retained chronological export and latest-state display, per-driver outcomes with identical titles, portable update separation and primary-action visibility. Backend tests cover 32-item hash-pinned plans, ignored/firmware exclusion, cleanup protections and native progress line delivery. The PowerShell5.1 integration tests read actual progress events and reject tampered plans before Windows Update mutation. Driver installation failures and large offer lists use controlled fixtures; no device was deliberately damaged.
+
+Setup: 93,478,533 bytes, SHA-256 `532a90c7932b4ad1a3b654aa5e7cea28d3a41c5328e2e1c23e262488ed98f1be`. Portable: 93,426,145 bytes, SHA-256 `4ed4e7e047e0096fb0f6f71dff08ea51c1b4be24558f46014ae616a27b4c0bf7`. Both signed-manifest descriptors and all five GitHub release asset digests matched before/after publication. Whole Setup/Portable files, source ZIPs and Git bundles were downloaded from private Drive and compared byte-for-byte; ZIP CRC and Git bundle verification passed. Private signing keys were excluded.
+
+Authenticode remains unavailable. Portable updates currently use manual browser download/file replacement and are not an automatically verified self-update. The installed migration test crosses from 5.3 to native6; a future native6-to-native6 update pair does not yet exist. Full original CLI/Driver Booster parity is not claimed; see [legacy coverage](LEGACY-COVERAGE.md) and [driver coverage](DRIVER-COVERAGE.md). Actual native Windows screenshots are in [screenshots](screenshots/).
 
 ## 5.3.0 interactive companion and 5.2 workshop
 

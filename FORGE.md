@@ -1,8 +1,22 @@
 # WinOptimizer Aion Forge
 
-Durum: **ACTIVE, 5.3.0 kararlı; 6.0.0 Chromium kullanmayan yerel arayüz geliştiriliyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
+Durum: **COMPLETE, 6.0.0 yerel Windows kararlı/Latest yayımlandı.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Yalnız Windows x64; başka OS paketi üretme.
 
-## Güncel doğrulanmış yayın: 5.3.0
+## Güncel doğrulanmış yayın: 6.0.0 native Qt
+
+- [6.0.0 kararlı](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.0.0), yayın kimliği `439846022`. Kaynak/etiket `d5090af906b313eb8e63160c354bda54f7edda6b`. PR #5 native geçiş merge `e537d823eaa410fef4d83e3562a230b24d1391ed`, PR #6 son görünürlük merge `ddf2a9f124d33d1c35e1eebb2b97b6d13d98358e`; imzalı üstveri `3f2fd92e94cbab571caca45e4e8f462d4edf4dee`.
+- Setup: 93.478.533 bayt, SHA-256 `532a90c7932b4ad1a3b654aa5e7cea28d3a41c5328e2e1c23e262488ed98f1be`. Portable: 93.426.145 bayt, SHA-256 `4ed4e7e047e0096fb0f6f71dff08ea51c1b4be24558f46014ae616a27b4c0bf7`. Release'ta iki gerçek EXE + imzalı aion-update.json/.sig ve SHA256SUMS.txt var. Eski yayınlar korunur.
+- Gerçek giriş `native/app.py`, Python3.12/PySide6 Qt Widgets; `desktop/native-bridge.cjs` paketli headless Node24.22.1 ile mevcut Service/PowerShell5.1 iş kurallarını çağırır. Kullanıcının Python/Node/Chrome kurması gerekmez. Electron/Chromium/Qt WebEngine arşiv girdisi olmadığı derlemede ayrıca denetlendi. Eski React kaynakları çalışır 6.x paketine yüklenmez.
+- Tümünü güncelle iki sürücü akışında; tek onay/ad-sayı listesi, otomatik yedek, firmware/ignore filtresi, 20 üzeri WUA seçiminde hash sabitlenmiş plan; her sürücünün sonucu aynı ada sahip olsa bile ayrı gösterilir. Başlangıç/sonuç ekranındaki ana eylem ilk görünür alandadır.
+- Native Windows ilerleme JSONL; uygulama ve Windows kaynakları ayrı, gerçek aşama/son durum/adet/atlama nedeni, tamamlanan/başarısız/atlanan toplamı ve tam zaman sıralı JSON dışa aktarma. Son işlem kalıcıdır; kesinti tamamlandı sayılmaz. Temizlikte yeni/bağlantı/eksik/erişilemeyen öğeler ve tarama sınırı açıkça raporlanır. 16 yön Aion/pet/işlem kareleri, hareket azaltma ve görünür alan desteği korunur.
+- 45 Node/backend ve 10 native Qt UI testi. [Kaynak Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42736382969), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42736390974), [merge](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42737067232), [yayın](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42737192913): başarılı. Gerçek kurulu Qt arayüzü sağlık/tarama, 9 günlük gerçek Temp dosyasını taşıma/geri alma; portable ilk açılış/yeniden açılış/kurulu veri ayrımı geçti. Kaynak artifact SHA-256 ve ZIP CRC, iki EXE ve üç üstveri varlığının digestleri doğrulandı.
+- [Gerçek 5.3.0 → 6.0.0](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42737857096): başarılı. English/dark/135% UI/125% yazı/OpenDyslexic; eski cleanup/restore olayları ve health/scan ilerlemesi korundu. İlk güncelleme de `42737341398` başarılıydı; `dcee61279b93fe1afccdcdb3409e2013ba2bbe50` yalnız geçmiş/ilerleme doğrulamasını güçlendiren test değişikliğidir, yayımlanmış binary değiştirilmedi. Kanıt JSON/CRC/SHA doğrulandı.
+- [Özel Drive 6.0.0](https://drive.google.com/drive/folders/1ylGD_VjBdS0QmkfoF4fXlzgvqO7g-Dy_): kaynak, iki bütün EXE (her biri100MiB altında), imzalı üstveri/not/kanıt/makbuz. Kaynak/geçmiş ve paketler gerçek geri okuma byte/hash/ZIP/Gitbundle ile doğrulandı. Son belge commit'i ayrıca kaynak ve tüm erişilebilir geçmiş/etiketlerle yedeklenir; özel imzalama anahtarı hiçbir yedeğe girmez.
+- Sınırlar: Authenticode sertifikası yok; Windows VM kanıtı her fiziksel donanımın sertifikası değildir. Portable güncelleme elle yeni EXE indirip aynı Data yanında çalıştırmadır, Setup çalıştırmaz. Otomatik sürücü kaynağı Windows Update; bağımsız global/OEM/IObit katalog servisi yok. Eski terminalin bütün özellikleri taşınmadı: `docs/LEGACY-COVERAGE.md`. Sonraki işte yeni Qt kaynaklarından devam et; yeniden Electron'a dönme ve eski Release/tag/paketleri değiştirme.
+
+Aşağıdaki önceki sürüm/aktif notlar tarihsel kayıttır; güncel tamamlanma durumu bu bölümdür.
+
+## Önceki doğrulanmış yayın: 5.3.0
 
 - [5.3.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v5.3.0), yayın kimliği `439794172`. Kaynak/etiket `d67947e2e172dfdab36103f52f164bd277596973`, [PR #4](https://github.com/kaansavukduran/WinOptimizer/pull/4), merge `1b194777ee9acd95cbc6ed464fb52ecfe4ae47c7`, imzalı üstveri commit `95c8459d7fc2405fd714d299177de88e959e1d49`.
 - Paket `WinOptimizer-Aion-5.3.0-Windows-x64-Setup.exe`, 134.466.232 bayt, SHA-256 `c2635bf1980b0def3a612b40ecf25597213366138c30580dc922f815a28f185b`.

@@ -1,6 +1,6 @@
 # Terminal sürümünden grafik arayüze
 
-WinOptimizer Aion, Windows işlemleri PowerShell 5.1 arka ucuna bağlı gerçek Electron/React masaüstü uygulamasıdır. Terminal menüsünün bire bir kaplaması değildir. Eski betikler `legacy/` içinde tarihçeleriyle korunur; kurulan uygulama bu betikleri çalıştırmaz. Aşağıdaki karşılaştırma `legacy/WinOptimizer.ps1` ve güncel `backend/` / `desktop/` koduna dayanır.
+WinOptimizer Aion, Windows işlemleri PowerShell 5.1 arka ucuna bağlı 6.x sürümünde gerçek Python/Qt Widgets masaüstü uygulamasıdır. Terminal menüsünün bire bir kaplaması değildir. Eski betikler `legacy/` içinde tarihçeleriyle korunur; kurulan uygulama bu betikleri çalıştırmaz. Aşağıdaki karşılaştırma `legacy/WinOptimizer.ps1` ve güncel `backend/` / `desktop/` koduna dayanır.
 
 | Eski terminal sürümü | Grafik uygulamada durum |
 | --- | --- |
