@@ -55,16 +55,23 @@ def test_starting_request_and_disconnect_settle_once_without_pending_growth(appl
 
 def test_missing_process_fails_bootstrap_and_later_requests(application, tmp_path):
     bridge = Bridge(tmp_path, tmp_path, False, 'en', tmp_path / 'does-not-exist.exe')
+    # Windows may emit FailedToStart synchronously inside QProcess.start;
+    # Linux commonly reports it on the next event-loop turn.
+    failed_before_subscription = bridge.unavailable
     replies, failures = [], []
     bridge.failed.connect(failures.append)
     bridge.call('bootstrap', callback=replies.append)
     until(application, lambda: bool(replies))
     assert replies == [dict(ok=False, error='BACKEND_UNAVAILABLE')]
-    assert failures == ['BACKEND_UNAVAILABLE'] and not bridge.pending
+    expected_signals = [] if failed_before_subscription else ['BACKEND_UNAVAILABLE']
+    assert failures == expected_signals and not bridge.pending
     bridge.call('hardware', callback=replies.append)
     assert len(replies) == 2
-    bridge.close()
-    assert failures == ['BACKEND_UNAVAILABLE']
+    w = Window(bridge, tmp_path)
+    assert not w.ready and not w.poller.isActive()
+    assert w.scroll.widget().findChild(QPushButton, 'recovery-close')
+    w.close()
+    assert failures == expected_signals
 
 
 def test_bad_envelope_fails_pending_without_replaying(application, protocol_bridge):
@@ -162,7 +169,10 @@ def test_disconnect_retains_reports_stops_polling_and_keeps_mutation_context(win
     assert not w.poller.isActive() and w.backend_lost
     before = len(bridge.calls)
     w.poll()
+    w.go('history')
+    w.run('hardware')
     assert len(bridge.calls) == before
+    assert w.failure['request'] == request
     panel = w.scroll.widget().findChild(QGroupBox, 'operation-recovery')
     assert panel and not panel.findChild(QPushButton, 'recovery-retry')
     message, retry = guidance(w.failure, 'tr', True)

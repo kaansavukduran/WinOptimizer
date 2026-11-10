@@ -225,6 +225,8 @@ class Window(QMainWindow):
         self.page = page
         self.selected.clear()
         self.render()
+        if self.backend_lost:
+            return
         if page == 'history':
             self.run('history', callback=lambda r: self.store('history', r), silent=True)
         if page == 'workshop':
@@ -308,6 +310,9 @@ class Window(QMainWindow):
 
     def run(self, command, payload=None, callback=None, silent=False):
         if self.busy:
+            return
+        if self.backend_lost:
+            self.error(self.failure['code'] if self.failure and self.failure['code'] in recovery.BACKEND_ERRORS else 'BACKEND_DISCONNECTED')
             return
         self.busy, self.last_error, self.failure = True, None, None
         self.active_command = command
