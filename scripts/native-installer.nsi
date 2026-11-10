@@ -50,7 +50,26 @@ Section "WinOptimizer Aion"
     Abort
   ready:
   SetOutPath "$INSTDIR"
-  File "/oname=WinOptimizer Aion.exe" "..\release\WinOptimizer-Aion-${APP_VERSION}-Windows-x64-Portable.exe"
+  ClearErrors
+  SetOverwrite on
+  File "/oname=WinOptimizer Aion.installing.exe" "..\release\WinOptimizer-Aion-${APP_VERSION}-Windows-x64-Portable.exe"
+  IfErrors payload_failed
+  ; The GUI can close before its onefile launcher releases the mapped executable.
+  ; Stage first, then replace atomically; never advance registration after a skipped write.
+  StrCpy $1 0
+  replace_payload:
+    System::Call 'kernel32::MoveFileExW(w "$INSTDIR\WinOptimizer Aion.installing.exe", w "$INSTDIR\WinOptimizer Aion.exe", i 9)i.r0'
+    StrCmp $0 0 0 payload_ready
+    IntOp $1 $1 + 1
+    IntCmp $1 240 payload_failed
+    Sleep 500
+    Goto replace_payload
+  payload_failed:
+    Delete "$INSTDIR\WinOptimizer Aion.installing.exe"
+    SetErrorLevel 1
+    MessageBox MB_ICONSTOP "Uygulama dosyasi degistirilemedi. WinOptimizer Aion'u kapatip kurucuyu yeniden calistir. / Could not replace the app. Close WinOptimizer Aion and retry Setup."
+    Abort
+  payload_ready:
   WriteUninstaller "$INSTDIR\Uninstall WinOptimizer Aion.exe"
   WriteRegStr HKCU "Software\WinOptimizer Aion" "InstallDir" "$INSTDIR"
   ; Preserve the existing Electron installation's exact uninstall identity.
