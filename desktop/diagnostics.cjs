@@ -1,4 +1,5 @@
 const crypto=require('node:crypto');
+const {careFindings}=require('./care.cjs');
 const TTL=30*60*1000;
 function classify(raw,updates=null,updateError=false){
   const findings=[];
@@ -45,16 +46,19 @@ function verified(finding,raw){
   return null;
 }
 class Diagnostics {
-  constructor(native,record,now=Date.now,persist=()=>{},filterUpdates=offers=>offers){this.filterUpdates=filterUpdates;this.updates=[];this.native=native;this.record=record;this.now=now;this.persist=persist;this.report=null;}
+  constructor(native,record,now=Date.now,persist=()=>{},filterUpdates=offers=>offers,careReader=null){this.careReader=careReader;this.filterUpdates=filterUpdates;this.updates=[];this.native=native;this.record=record;this.now=now;this.persist=persist;this.report=null;}
   cancel(){const cancelled=!!this.controller;if(cancelled)this.controller.abort();return {cancelled};}
   async scan(payload={}){
     const online=payload.online===true;const controller=new AbortController();this.controller=controller;
     try {
       const raw=await this.native('diagnostics',{online},false,{signal:controller.signal});let updates=null,updateError=false;
+      if(controller.signal.aborted)throw Error('SCAN_CANCELLED');
+      let care=null,careUnavailable=false;
+      if(this.careReader)try{care=await this.careReader(controller.signal);if(!care||!Array.isArray(care.sections))throw Error('CARE_DATA_INVALID');}catch(error){if(controller.signal.aborted)throw Error('SCAN_CANCELLED');care=null;careUnavailable=true;}
       if(online)try{updates=await this.native('windows-updates',{},false,{signal:controller.signal})||[];}catch(error){if(controller.signal.aborted)throw Error('SCAN_CANCELLED');updateError=true;}
       if(controller.signal.aborted)throw Error('SCAN_CANCELLED');
       if(updates!==null)updates=this.filterUpdates(updates);this.updates=updates||[];
-      this.report={id:crypto.randomUUID(),at:new Date(this.now()).toISOString(),online,findings:classify(raw,updates,updateError)};
+      this.report={id:crypto.randomUUID(),at:new Date(this.now()).toISOString(),online,findings:[...classify(raw,updates,updateError),...careFindings(care,careUnavailable)],...(this.careReader?{care,careUnavailable,needsAttention:careUnavailable||care?.needsAttention===true}:{})};
       this.created=this.now();return this.report;
     }finally{this.controller=null;}
   }
@@ -85,7 +89,7 @@ class Diagnostics {
       const result={success:check===true,status:check===true?'fixed':check===false?'still-present':'unverified',findingId:finding.id,action:action.id,at:new Date(this.now()).toISOString()};
       Object.assign(event,result);this.persist();
       // Preserve the optional online update results. Only the local checks are refreshed here.
-      this.report={...report,id:crypto.randomUUID(),at:result.at,findings:[...classify(after),...report.findings.filter(f=>f.reason==='driverUpdate'||f.reason==='noUpdates'||f.reason==='updateUnavailable')]};this.created=this.now();
+      this.report={...report,id:crypto.randomUUID(),at:result.at,findings:[...classify(after),...careFindings(report.care,report.careUnavailable),...report.findings.filter(f=>f.reason==='driverUpdate'||f.reason==='noUpdates'||f.reason==='updateUnavailable')]};this.created=this.now();
       return {...result,report:this.report};
     }catch(error){event.status='failed';this.persist();throw error;}
   }

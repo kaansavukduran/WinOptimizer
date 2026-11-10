@@ -41,15 +41,20 @@ VRAM, DXGI'nin 64 bit değeridir; paylaşılan sistem belleği ayrıca gösteril
 
 [Gerçek Windows Donanım ekranı](docs/screenshots/WinOptimizer-6.2.0-Windows-Donanim.png) — test sanal makinesinin özelliklerini gösterir.
 
-## Windows Sağlığı / Windows Health
+## Ortak Windows taraması / Shared Windows scan
 
-**Windows Sağlığı → Windows sağlığını incele:** Windows/yeniden başlatma işaretleri, Defender, güvenlik duvarı, sistem/uygulama/çökme olayları, döküm dosyası bilgileri, yerel güncelleme geçmişi ve seçili servisler. Dokuz kategori yerel ve yönetici izni istemeden okunur; okunamayan sağlayıcılar açıkça belirtilir. Kayıt ayrıntılarını ara, kategori seç veya azaltılmış destek raporu al. Olay iletileri destek raporuna eklenmez; döküm içeriği okunmaz.
+**Tara ve Düzelt** artık sürücü/aygıt kontrolleriyle birlikte dokuz yerel Windows kayıt kaynağını da okur. Ayrı bir donor uygulaması veya Windows Sağlığı sekmesi yoktur. Aynı tamamlanmış tarama, mevcut sayfalarda kullanılır:
 
-**Bileşen deposunun kayıtlı durumunu denetle** ayrı bir onay ve Windows yönetici izni ister. Yalnız kayıtlı DISM durumunu okur; tam tarama, onarım veya yeniden başlatma yapmaz. Tarihsel hata/çökme kayıtları tek başına güncel arıza kanıtı değildir. [SysMender donor kapsamı ve lisansları](docs/SYSMENDER-DONOR.md).
+- **Tara ve Düzelt:** sistem/uygulama olayları, çökme ve döküm bilgileri; açılabilir ayrıntılar ve arama.
+- **Sistem araçları:** Defender, güvenlik duvarı ve seçili servisler. **Yerel bilgileri yenile** aynı taramayı çevrimdışı çalıştırır; çevrimiçi sürücü tercihini değiştirmez.
+- **Genel bakış:** son taramanın yeniden başlatma işaretleri ve zamanı.
+- **Geçmiş ve yedekler:** yerel Windows Update geçmişi ve azaltılmış destek raporu.
 
-The new native Windows Health view adapts selected SysMender/WinUtil MIT inspection workflows. It does not import the donor's executable or Linux app. Local evidence, provider availability and reduced support exports remain distinct from repair or comprehensive system health claims.
+Bilgiler aynı taramanın zaman damgasını taşır; sekme değiştirmek yeniden tarama başlatmaz. Okunamayan sağlayıcılar **Kontrol edilemedi** sayılır. Tarihsel hata/çökme kayıtları güncel arıza olarak sınıflandırılmaz. Destek raporlarında olay metinleri ve döküm içeriği yoktur. Yerel kayıtlar oturum boyunca tutulur.
 
-[Windows Sağlığı ekran görüntüsü](docs/screenshots/WinOptimizer-6.3.0-Windows-Sagligi.png) — Windows test makinesinden alınmıştır.
+**Sistem araçları → Bileşen deposunun kayıtlı durumunu denetle** ayrı onay ve Windows yönetici izni ister. Kayıtlı DISM durumunu okur; tam tarama veya onarım yapmaz. [SysMender donor kapsamı ve lisansları](docs/SYSMENDER-DONOR.md).
+
+Selected SysMender/WinUtil MIT inspection ideas are implemented in WinOptimizer's own Python/Qt, Node and Windows backend. One shared Scan & Fix snapshot feeds existing pages; no donor executable, nested application or separate donor tab runs. Unavailable providers remain unknown; historical records alone are not a current fault diagnosis.
 
 ## İşlem gerçekten çalışıyor mu? / Observable operations
 

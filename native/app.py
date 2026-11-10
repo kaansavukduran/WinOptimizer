@@ -171,7 +171,7 @@ class Window(QMainWindow):
         self.aion = None
         self.clear_layout(self.nav_layout)
         # Settings remains the last, rightmost navigation item at every window size.
-        for key in ('home', 'scanFix', 'cleanup', 'drivers', 'hardware', 'windowsCare', 'startup', 'workshop', 'tools', 'history', 'settings'):
+        for key in ('home', 'scanFix', 'cleanup', 'drivers', 'hardware', 'startup', 'workshop', 'tools', 'history', 'settings'):
             button = QPushButton(self.t(key))
             button.setObjectName('nav-' + key)
             button.setCheckable(True)
@@ -351,6 +351,7 @@ class Window(QMainWindow):
 
     def store(self, key, value):
         self.state[key] = value
+        if key=='report' and isinstance(value,dict) and 'care' in value:self.state['care']=value['care']
         self.render()
 
     def poll(self):
@@ -382,6 +383,10 @@ class Window(QMainWindow):
                     self.progress.setFormat(self.t('forge.categories').format(done=done,total=total)+' · %p%')
                     message=self.t('forge.finalizing') if done==total else self.t(prefix+current) if current else self.t('n.waiting')
                     self.notice.setText(self.t('n.running')+' · '+self.t('forge.categories').format(done=done,total=total)+' · '+message)
+                elif trace['command']=='diagnostics.scan':
+                    current=next((e for e in reversed(trace.get('events',[])) if e.get('origin')=='native' and e.get('step','').startswith('care-')),None)
+                    if current and current.get('status')=='running':
+                        self.notice.setText(self.t('n.running')+' · '+self.t('care.'+current['step'][5:])+' · '+self.t('n.waiting'))
             signature = json.dumps(trace, ensure_ascii=False)
             if signature == self.trace_signature:
                 return
@@ -421,7 +426,7 @@ class Window(QMainWindow):
         self.bridge.call('operation.status', callback=receive)
 
     def action_name(self, command):
-        keys = {'care.snapshot':'windowsCare','component-check':'care.component','hardware':'hardware','updates.check':'checkUpdates','updates.install':'installUpdate','diagnostics.scan':'scanFix', 'diagnostics.updates':'updateAllDrivers', 'diagnostics.repair':'d.repair', 'health':'healthScan', 'drivers':'inventory', 'windows-updates':'checkDrivers', 'windows-install':'updateAllDrivers', 'driver-backup':'driverBackup', 'scan':'scan', 'cleanup':'quarantine', 'restore':'restore', 'purge':'purge', 'startup':'startup', 'startup-disable':'disable', 'startup-restore':'restore', 'dns-flush':'dnsFlush', 'power-set':'power', 'power-profiles':'power', 'runtime.prepare':'w.download', 'runtime.install':'w.install', 'runtime.inventory':'w.runtimes', 'package.inspect':'w.inspect', 'package.apply':'w.apply', 'package.import':'w.import', 'focus.inventory':'w.pc', 'focus.start':'w.pc', 'focus.stop':'restore', 'restore-points':'w.pc', 'restore-point-create':'w.pc'}
+        keys = {'care':'care.scanRecords','care.snapshot':'windowsCare','component-check':'care.component','hardware':'hardware','updates.check':'checkUpdates','updates.install':'installUpdate','diagnostics.scan':'scanFix', 'diagnostics.updates':'updateAllDrivers', 'diagnostics.repair':'d.repair', 'health':'healthScan', 'drivers':'inventory', 'windows-updates':'checkDrivers', 'windows-install':'updateAllDrivers', 'driver-backup':'driverBackup', 'scan':'scan', 'cleanup':'quarantine', 'restore':'restore', 'purge':'purge', 'startup':'startup', 'startup-disable':'disable', 'startup-restore':'restore', 'dns-flush':'dnsFlush', 'power-set':'power', 'power-profiles':'power', 'runtime.prepare':'w.download', 'runtime.install':'w.install', 'runtime.inventory':'w.runtimes', 'package.inspect':'w.inspect', 'package.apply':'w.apply', 'package.import':'w.import', 'focus.inventory':'w.pc', 'focus.start':'w.pc', 'focus.stop':'restore', 'restore-points':'w.pc', 'restore-point-create':'w.pc'}
         return self.t(keys.get(command, 'n.step')) + (f' ({command})' if command not in keys else '')
 
     def table(self, rows, columns, layout=None, check=False):
@@ -476,6 +481,8 @@ class Window(QMainWindow):
             for key, value in health.get('security', {}).items():
                 rows.append(dict(name=key, value=self.t('unknown' if value is None else 'active' if value else 'inactive')))
             self.table(rows, [('name', self.t('n.step')), ('value', self.t('n.values'))])
+        from care import render_home
+        render_home(self)
         if self.settings.get('gamification', True):
             completed = self.state.get('milestones', [])
             bar = QProgressBar()
@@ -523,6 +530,8 @@ class Window(QMainWindow):
         self.aion.configure(self.settings)
         next_row.addWidget(self.aion)
         self.body.addLayout(next_row)
+        from care import render_scan
+        render_scan(self)
         self.scan_options()
         self.button('exportReport', lambda: self.export('report.export'))
         filter_box = QComboBox()
@@ -549,7 +558,7 @@ class Window(QMainWindow):
     def scan(self, online=None):
         if online is not None and isinstance(online,bool):
             self.scan_online = online
-        self.run('diagnostics.scan',dict(online=self.scan_online),lambda r:self.store('report',r),silent=True)
+        self.run('diagnostics.scan',dict(online=self.scan_online),lambda r:self.store('report',r))
 
     def finding(self, finding, report):
         box = QGroupBox(f'{finding["evidence"].get("name",self.t("d."+finding["category"]))} · {self.t("d."+finding["status"])}')
@@ -564,7 +573,7 @@ class Window(QMainWindow):
                 label={'audio-start':'d.audioStart','dns-flush':'d.dnsFlush','device-rescan':'d.rescan'}.get(key,'d.repair')
                 self.button(label,lambda _,f=finding,a=action:self.confirm(self.t('d.confirm'),self.t('d.admin'),[f['evidence'].get('name',f['id'])],lambda:self.run('diagnostics.repair',dict(reportId=report['id'],findingId=f['id'],actionId=a['id'],confirm=True),lambda r:self.repair_result(r))),layout=layout)
             elif kind=='navigate':
-                self.button('d.goRuntimes' if key=='runtimes' else 'd.goDrivers',lambda _,k=key:self.go('workshop' if k=='runtimes' else 'drivers'),layout=layout)
+                self.button('d.goSystemTools' if key=='system-tools' else 'd.goRuntimes' if key=='runtimes' else 'd.goDrivers',lambda _,k=key:self.go('tools' if k=='system-tools' else 'workshop' if k=='runtimes' else 'drivers'),layout=layout)
             else:
                 self.button('d.guide',lambda _,k=key:self.external(k),layout=layout)
         self.body.addWidget(box)
@@ -594,10 +603,6 @@ class Window(QMainWindow):
             detail+='\n'+self.t('reboot')
         if detail:
             QMessageBox.information(self,self.t('d.updateResults'),detail)
-
-    def page_windowsCare(self):
-        from care import render
-        render(self)
 
     def page_hardware(self):
         from hardware import render
@@ -659,6 +664,8 @@ class Window(QMainWindow):
             self.confirm(self.t('confirm'),self.t('startupIntro'),[row['name']],lambda:self.run('startup-disable',dict(id=row['id']),lambda _:self.store('startup',[r for r in self.state.get('startup',[]) if r['id']!=row['id']])))
 
     def page_tools(self):
+        from care import render_tools
+        render_tools(self)
         self.button('network',lambda:self.run('network',callback=lambda r:self.store('network',r)),True)
         self.button('dnsFlush',lambda:self.confirm(self.t('d.confirm'),self.t('d.dnsImpact'),[self.t('dnsFlush')],lambda:self.run('dns-flush')))
         self.button('power',lambda:self.run('power-profiles',callback=lambda r:self.store('power',r)))
@@ -672,6 +679,8 @@ class Window(QMainWindow):
     def page_history(self):
         self.button('refresh',lambda:self.run('history',callback=lambda r:self.store('history',r)))
         self.button('exportBackup',lambda:self.export('backup.export'))
+        from care import render_history
+        render_history(self)
         history=self.state.get('history',{})
         for item in history.get('cleanup',[]):
             layout=self.group('cleanup')

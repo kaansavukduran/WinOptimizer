@@ -310,7 +310,14 @@
       "levels": {
         "1": "Kritik",
         "2": "Hata"
-      }
+      },
+      "homeStatus": "Son taramadan Windows durumu",
+      "scanRecords": "Windows olay ve çökme kayıtları",
+      "scanDetails": "Olay ve çökme ayrıntıları",
+      "toolsStatus": "Koruma ve Windows servisleri",
+      "refreshLocal": "Yerel bilgileri yenile",
+      "sharedEmpty": "Bilgiler ortak taramadan gelir. Yerel bilgileri yenile ile Tara ve Düzelt denetimlerini çalıştırabilirsin.",
+      "sharedUnavailable": "Bu taramada Windows kayıtları okunamadı. Sonuçlar kısmi; bu durum sağlıklı olarak kabul edilmez."
     },
     "ready": "Kontrol sende",
     "localBadge": "Verilerin cihazında",
@@ -436,7 +443,13 @@
       "startType": "Başlangıç türü",
       "manufacturer": "Üretici",
       "bytes": "İndirme (bayt)",
-      "scope": "Tarama, yüklü aygıtların Windows hata kodlarını ve mevcut bileşen göstergelerini kullanır. DirectX denetimi, eski oyunların kullandığı D3DX9 ve XAudio 2.7 dosyalarını kapsar. Visual C++ denetimi yalnızca v14 x64/x86 kayıtlarını okur; daha eski sürümler ve oyunların özel DLL dosyaları kapsam dışıdır."
+      "scope": "Tarama, yüklü aygıtların Windows hata kodlarını ve mevcut bileşen göstergelerini kullanır. DirectX denetimi, eski oyunların kullandığı D3DX9 ve XAudio 2.7 dosyalarını kapsar. Visual C++ denetimi yalnızca v14 x64/x86 kayıtlarını okur; daha eski sürümler ve oyunların özel DLL dosyaları kapsam dışıdır.",
+      "windows": "Windows",
+      "windowsUnavailable": "Windows kayıtları okunamadı; tarama kısmi.",
+      "windowsProviderUnavailable": "Bir Windows bilgi kaynağı okunamadı. Ayrıntılardaki kaynağı incele.",
+      "windowsRestartUnknown": "Bazı yeniden başlatma işaretleri doğrulanamadı.",
+      "windowsRestartPending": "Windows yeniden başlatma işaretleri bildirdi. Uygulama yeniden başlatma başlatmadı.",
+      "goSystemTools": "Sistem araçlarında incele"
     },
     "w": {
       "title": "Bakım atölyesi",
@@ -671,7 +684,7 @@
       "software": "yazılım bağdaştırıcısı",
       "remote": "uzak bağdaştırıcı"
     },
-    "windowsCare": "Windows Sağlığı"
+    "windowsCare": "Windows kayıtları"
   },
   "en": {
     "followPointer": "Aion follows the pointer",
@@ -984,7 +997,14 @@
       "levels": {
         "1": "Critical",
         "2": "Error"
-      }
+      },
+      "homeStatus": "Windows status from the last scan",
+      "scanRecords": "Windows event and crash records",
+      "scanDetails": "Event and crash details",
+      "toolsStatus": "Protection and Windows services",
+      "refreshLocal": "Refresh local information",
+      "sharedEmpty": "Information comes from the shared scan. Refresh local information runs the Scan & Fix checks.",
+      "sharedUnavailable": "Windows records could not be read in this scan. Results are partial; this is not considered healthy."
     },
     "ready": "You’re in control",
     "localBadge": "Your data stays here",
@@ -1110,7 +1130,13 @@
       "startType": "Startup type",
       "manufacturer": "Manufacturer",
       "bytes": "Download (bytes)",
-      "scope": "The scan uses Windows device error codes and existing component indicators. The DirectX check covers legacy D3DX9 and XAudio 2.7 files. The Visual C++ check reads v14 x64/x86 registry entries only; older versions and game-specific DLL files are outside its scope."
+      "scope": "The scan uses Windows device error codes and existing component indicators. The DirectX check covers legacy D3DX9 and XAudio 2.7 files. The Visual C++ check reads v14 x64/x86 registry entries only; older versions and game-specific DLL files are outside its scope.",
+      "windows": "Windows",
+      "windowsUnavailable": "Windows records were unavailable; this scan is partial.",
+      "windowsProviderUnavailable": "A Windows information provider could not be read. Review the provider in details.",
+      "windowsRestartUnknown": "Some restart indicators could not be verified.",
+      "windowsRestartPending": "Windows reported pending-restart indicators. The app did not start a restart.",
+      "goSystemTools": "Review in System tools"
     },
     "w": {
       "title": "Care workshop",
@@ -1345,6 +1371,6 @@
       "software": "software adapter",
       "remote": "remote adapter"
     },
-    "windowsCare": "Windows Health"
+    "windowsCare": "Windows records"
   }
 }
