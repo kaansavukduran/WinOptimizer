@@ -259,7 +259,7 @@ class Window(QMainWindow):
                 for i in range(layout.count()):
                     if layout.itemAt(i).widget():layout.itemAt(i).widget().setVisible(value)
             group.toggled.connect(toggle)
-            QTimer.singleShot(0,group,lambda:toggle(checked))
+            QTimer.singleShot(0,group,lambda:toggle(group.isChecked()))
         return layout
 
     def details(self, key, content, layout=None):

@@ -339,3 +339,10 @@ def test_scan_feedback_respects_findings_even_without_an_attention_flag(window,s
     w.run('diagnostics.scan',dict(online=False),lambda r:w.store('report',r))
     assert w.aion.state==state
     if state=='help':assert w.t('care.review') in w.notice.text()
+
+def test_expanding_options_before_initial_callback_keeps_visible_controls(window,application):
+    from PySide6.QtWidgets import QCheckBox
+    w,bridge=window;w.go('scanFix')
+    check=w.scroll.widget().findChild(QCheckBox,'scan-online');group=check.parentWidget()
+    group.setChecked(True);application.processEvents()
+    assert group.isChecked() and not check.isHidden()
