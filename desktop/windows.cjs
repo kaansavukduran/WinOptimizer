@@ -1,6 +1,6 @@
 const {execFile,spawn}=require('node:child_process');
 const path=require('node:path');const fs=require('node:fs/promises');const os=require('node:os');
-const ACTIONS=new Set(['focus-apps','focus-close','package-inspect','package-apply','runtime-verify','runtime-install','restore-points','restore-point-create','ghosts','ghost-remove','diagnostics','diagnostic-repair','health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set']);
+const ACTIONS=new Set(['hardware','focus-apps','focus-close','package-inspect','package-apply','runtime-verify','runtime-install','restore-points','restore-point-create','ghosts','ghost-remove','diagnostics','diagnostic-repair','health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set']);
 function command(script,action,payload){if(!ACTIONS.has(action))throw Error('UNKNOWN_COMMAND');return ['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',script,'-Action',action,'-PayloadBase64',Buffer.from(JSON.stringify(payload||{})).toString('base64')];}
 function parse(stdout){const value=JSON.parse(stdout.replace(/^\uFEFF/,''));if(!value.ok)throw Error(value.error||'WINDOWS_FAILED');return value.data;}
 function environment(exe){
@@ -12,7 +12,7 @@ async function run(script,action,payload={},elevated=false,options={}){
   if(process.platform!=='win32')return Promise.reject(Error('WINDOWS_ONLY'));
   const exe=path.join(process.env.SystemRoot||'C:\\Windows','System32','WindowsPowerShell','v1.0','powershell.exe');
   if(elevated)return elevate(exe,script,action,payload,options);
-  return new Promise((resolve,reject)=>{execFile(exe,[...command(script,action,payload),...(options.progressFile?['-ProgressFile',options.progressFile]:[])],{env:environment(exe),signal:options.signal,windowsHide:true,maxBuffer:20*1024*1024,timeout:action==='windows-updates'?240000:120000,encoding:'utf8'},(error,stdout)=>{if(error?.name==='AbortError')return reject(Error('SCAN_CANCELLED'));if(error)return reject(Error(error.killed?'OPERATION_TIMEOUT':'WINDOWS_FAILED'));try{resolve(parse(stdout));}catch(e){reject(e);}});});
+  return new Promise((resolve,reject)=>{execFile(exe,[...command(script,action,payload),...(options.progressFile?['-ProgressFile',options.progressFile]:[])],{env:environment(exe),signal:options.signal,windowsHide:true,maxBuffer:20*1024*1024,timeout:['windows-updates','hardware'].includes(action)?240000:120000,encoding:'utf8'},(error,stdout)=>{if(error?.name==='AbortError')return reject(Error('SCAN_CANCELLED'));if(error)return reject(Error(error.killed?'OPERATION_TIMEOUT':'WINDOWS_FAILED'));try{resolve(parse(stdout));}catch(e){reject(e);}});});
 }
 async function elevate(exe,script,action,payload,options={}){
   const dir=await fs.mkdtemp(path.join(os.tmpdir(),'aion-uac-'));const result=path.join(dir,'result.json');const args=[...command(script,action,payload),'-ResultFile',result,...(options.progressFile?['-ProgressFile',options.progressFile]:[])];

@@ -15,10 +15,27 @@ function Call-Backend($Action,$Data=@{}){
     $raw=& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $file -Action $Action -PayloadBase64 $encoded -ProgressFile $progress
     $events=@(Get-Content -LiteralPath $progress|ForEach-Object {$_|ConvertFrom-Json})
     if(-not @($events|Where-Object {$_.status -eq 'running'}).Count){throw 'Native progress start missing'}
+    if($Action -eq 'hardware' -and @($events|Where-Object {$_.step -like 'hardware-*' -and $_.status -in @('complete','failed')}).Count -ne 14){throw 'Hardware section completion events missing'}
     if($Action -eq 'diagnostics' -and -not @($events|Where-Object {$_.step -eq 'devices' -and $_.status -in @('complete','failed')}).Count){throw 'Native provider progress missing'}
   } finally {Remove-Item -LiteralPath $progress -Force -ErrorAction SilentlyContinue}
   $r=$raw|ConvertFrom-Json;if(-not $r.ok){throw $r.error};return $r.data
 }
+$hwPath=Join-Path $PSScriptRoot '..\backend\Hardware.ps1'
+$hwTokens=$null;$hwErrors=$null;$null=[Management.Automation.Language.Parser]::ParseFile($hwPath,[ref]$hwTokens,[ref]$hwErrors)
+if($hwErrors.Count){$hwErrors|Format-List;throw 'Hardware PS 5.1 parser errors'}
+Add-Type -Path (Join-Path $PSScriptRoot '..\backend\HardwareDxgi.cs')
+if([AionHardware.Gpu].GetField('DedicatedVideoBytes').FieldType -ne [uint64]){throw 'VRAM must use 64-bit counts'}
+$hw=Call-Backend 'hardware'
+if($hw.readOnly -ne $true -or $hw.online -ne $false -or @($hw.sections).Count -ne 14){throw 'Invalid local inventory envelope'}
+foreach($id in @('system','cpu','storage')){
+  $section=$hw.sections|Where-Object {$_.id -eq $id}
+  if($section.status -ne 'available' -or @($section.items).Count -lt 1){throw ('Required Windows hardware provider failed: '+$id)}
+}
+foreach($section in $hw.sections){if($section.status -notin @('available','empty','unavailable')){throw 'Unknown hardware status'}}
+foreach($gpu in ($hw.sections|Where-Object {$_.id -eq 'gpu'}).items){
+  if($gpu.memorySource -ne 'DXGI' -and $null -ne $gpu.dedicatedVideoBytes){throw 'Unreliable CIM VRAM used'}
+}
+$hw|ConvertTo-Json -Depth 12|Set-Content (Join-Path $env:TEMP 'aion-hardware-inventory.json')
 $diag=Call-Backend 'diagnostics'
 if($diag.devices.Count -lt 1 -or $null -eq $diag.network -or $diag.runtimes.Count -ne 3){throw 'Invalid diagnostic inventory'}
 if(@($diag.unavailable).Count){throw ('Unavailable scan provider: '+($diag.unavailable -join ','))}

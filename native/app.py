@@ -155,7 +155,7 @@ class Window(QMainWindow):
         self.aion = None
         self.clear_layout(self.nav_layout)
         # Settings remains the last, rightmost navigation item at every window size.
-        for key in ('home', 'scanFix', 'cleanup', 'drivers', 'startup', 'workshop', 'tools', 'history', 'settings'):
+        for key in ('home', 'scanFix', 'cleanup', 'drivers', 'hardware', 'startup', 'workshop', 'tools', 'history', 'settings'):
             button = QPushButton(self.t(key))
             button.setObjectName('nav-' + key)
             button.setCheckable(True)
@@ -280,7 +280,7 @@ class Window(QMainWindow):
         for button in self.actions:
             button.setEnabled(False)
         if getattr(self, 'aion', None):
-            self.aion.set_state('read' if command in ('diagnostics.scan', 'health', 'drivers', 'windows-updates') else 'repair')
+            self.aion.set_state('read' if command in ('diagnostics.scan', 'hardware', 'health', 'drivers', 'windows-updates') else 'repair')
         def finished(reply):
             self.busy = False
             self.progress.hide()
@@ -356,8 +356,8 @@ class Window(QMainWindow):
                 reason = event.get('reason', '')
                 translated = self.t('n.' + reason) if reason in ('offline', 'no-link', 'excluded','missing','unavailable','links','recent','changed','limit') else reason
                 detail = ' · '.join(str(x) for x in (event.get('item'), translated, event.get('count')) if x is not None and x != '')
-                step = self.t('n.' + event.get('step', 'request').replace('-', '_'))
-                if event.get('step','').replace('-','_') not in NATIVE[self.settings['language']]:
+                step = self.t('hw.'+event['step'][9:]) if event.get('step','').startswith('hardware-') else self.t('n.' + event.get('step', 'request').replace('-', '_'))
+                if not event.get('step','').startswith('hardware-') and event.get('step','').replace('-','_') not in NATIVE[self.settings['language']]:
                     step = self.action_name(event.get('step') if event.get('step')=='windows-updates' else event.get('action', ''))
                 QTreeWidgetItem(self.log, [time, self.t('n.native_source' if event.get('origin') == 'native' else 'n.app'), step, ('Başladı' if self.settings['language']=='tr' else 'Started') if event.get('status')=='running' else self.t('n.' + event.get('status', 'running')), detail])
             self.log.resizeColumnToContents(0)
@@ -372,7 +372,7 @@ class Window(QMainWindow):
         self.bridge.call('operation.status', callback=receive)
 
     def action_name(self, command):
-        keys = {'updates.check':'checkUpdates','updates.install':'installUpdate','diagnostics.scan':'scanFix', 'diagnostics.updates':'updateAllDrivers', 'diagnostics.repair':'d.repair', 'health':'healthScan', 'drivers':'inventory', 'windows-updates':'checkDrivers', 'windows-install':'updateAllDrivers', 'driver-backup':'driverBackup', 'scan':'scan', 'cleanup':'quarantine', 'restore':'restore', 'purge':'purge', 'startup':'startup', 'startup-disable':'disable', 'startup-restore':'restore', 'dns-flush':'dnsFlush', 'power-set':'power', 'power-profiles':'power', 'runtime.prepare':'w.download', 'runtime.install':'w.install', 'runtime.inventory':'w.runtimes', 'package.inspect':'w.inspect', 'package.apply':'w.apply', 'package.import':'w.import', 'focus.inventory':'w.pc', 'focus.start':'w.pc', 'focus.stop':'restore', 'restore-points':'w.pc', 'restore-point-create':'w.pc'}
+        keys = {'hardware':'hardware','updates.check':'checkUpdates','updates.install':'installUpdate','diagnostics.scan':'scanFix', 'diagnostics.updates':'updateAllDrivers', 'diagnostics.repair':'d.repair', 'health':'healthScan', 'drivers':'inventory', 'windows-updates':'checkDrivers', 'windows-install':'updateAllDrivers', 'driver-backup':'driverBackup', 'scan':'scan', 'cleanup':'quarantine', 'restore':'restore', 'purge':'purge', 'startup':'startup', 'startup-disable':'disable', 'startup-restore':'restore', 'dns-flush':'dnsFlush', 'power-set':'power', 'power-profiles':'power', 'runtime.prepare':'w.download', 'runtime.install':'w.install', 'runtime.inventory':'w.runtimes', 'package.inspect':'w.inspect', 'package.apply':'w.apply', 'package.import':'w.import', 'focus.inventory':'w.pc', 'focus.start':'w.pc', 'focus.stop':'restore', 'restore-points':'w.pc', 'restore-point-create':'w.pc'}
         return self.t(keys.get(command, 'n.step')) + (f' ({command})' if command not in keys else '')
 
     def table(self, rows, columns, layout=None, check=False):
@@ -545,6 +545,10 @@ class Window(QMainWindow):
             detail+='\n'+self.t('reboot')
         if detail:
             QMessageBox.information(self,self.t('d.updateResults'),detail)
+
+    def page_hardware(self):
+        from hardware import render
+        render(self)
 
     def page_drivers(self):
         self.label(self.t('driversIntro'))

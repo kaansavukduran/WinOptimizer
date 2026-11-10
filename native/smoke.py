@@ -76,9 +76,24 @@ def start(window, scenario):
                     for key,value in [('scale',135),('theme','dark'),('font','dyslexic'),('textSize',125)]:
                         if settings.get(key)!=value:return
                 window.go('home');window.grab().save(str(evidence/'Windows-Qt-overview.png'))
+                state['settings']=settings
+                window.go('hardware');click('hardware-scan');state['stage']=9
+            elif stage==9:
+                report=window.state.get('hardware');assert report and report['readOnly'] is True and report['online'] is False
+                sections=report['sections'];assert len(sections)==14
+                for section_id in ('cpu','system','storage'):
+                    section=next(s for s in sections if s['id']==section_id)
+                    assert section['status']=='available' and section['items'],section
+                trace=window.trace or {}
+                if trace.get('command')!='hardware' or trace.get('status')=='running':return
+                terminal=[e for e in trace.get('events',[]) if e.get('origin')=='native' and e.get('step','').startswith('hardware-') and e.get('status') in ('complete','failed')]
+                assert len(terminal)==14,terminal
+                (evidence/'hardware-inventory.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+                (evidence/'operation-hardware.json').write_text(json.dumps(trace,ensure_ascii=False,indent=2),encoding='utf-8')
+                window.grab().save(str(evidence/'Windows-Qt-hardware.png'))
                 if scenario=='portable':
                     window.save_setting('theme','dark');state['stage']=8;return
-                finish(settings)
+                finish(state['settings'])
             elif stage==8:
                 settings=json.loads((window.data/'settings.json').read_text(encoding='utf-8'))
                 if settings.get('theme')!='dark':return
