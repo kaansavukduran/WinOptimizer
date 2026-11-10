@@ -18,3 +18,14 @@ test('corrupt and interrupted update downloads leave no installable file',async 
 });
 test('failed or partial Windows results never trigger success feedback',async()=>{const {hasIncompleteResult}=await import('../src/outcome.mts');assert.equal(hasIncompleteResult({success:false,items:[{success:false}]}),true);assert.equal(hasIncompleteResult({success:true,items:[{success:true},{success:false}]}),true);assert.equal(hasIncompleteResult({failed:1}),true);assert.equal(hasIncompleteResult({conflicts:1}),true);assert.equal(hasIncompleteResult({success:true,items:[{success:true}]}),false);assert.equal(hasIncompleteResult(null),false);});
 test('operation detail visibility persists without changing other appearance preferences',async t=>{const {dir}=await fixture(t);const s=new Settings(dir,'tr');s.save({...s.data,operationDetails:false,scale:135,textSize:125});const again=new Settings(dir,'tr');assert.equal(again.data.operationDetails,false);assert.equal(again.data.scale,135);assert.equal(normalize({operationDetails:'false'}).operationDetails,true);});
+
+test('care journey maps only to system check, cleanup candidate scan and nonempty driver backup',async t=>{
+ const {dir,root}=await fixture(t);let packages=0;
+ const s=new Service({dir:path.join(dir,'app'),local:dir,version:'6.4.0',platform:'win32',roots:[{id:'temp',path:root,days:7}],run:async(_script,action)=>action==='care'?{sections:[]}:action==='diagnostics'?{devices:[],unavailable:[]}:action==='driver-backup'?{packages}:action==='health'?{os:'fixture'}:[]});
+ await s.handle('drivers');await s.handle('windows-updates');await s.handle('diagnostics.scan',{online:false});assert.deepEqual(s.state.milestones,[]);
+ await s.handle('health');assert.deepEqual(s.state.milestones,['health']);
+ await s.handle('scan');assert.deepEqual(s.state.milestones,['health','scan']);
+ await s.handle('driver-backup');assert.deepEqual(s.state.milestones,['health','scan']);
+ packages=2;await s.handle('driver-backup');await s.handle('driver-backup');assert.deepEqual(s.state.milestones,['health','scan','drivers']);
+ assert.deepEqual((await s.handle('history')).milestones,['health','scan','drivers']);
+});

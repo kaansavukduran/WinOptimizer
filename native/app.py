@@ -473,8 +473,12 @@ class Window(QMainWindow):
         if button:button.setText(self.t('n.play' if self.aion.paused else 'n.pause'))
 
     def page_home(self):
+        from journey import render
+        render(self)
         self.button('scanFix', lambda: self.go('scanFix'), True, name='home-scan')
         self.hero()
+        from journey import render_return
+        render_return(self)
         self.button('healthScan', lambda: self.run('health', callback=lambda r: self.store('health', r)), name='health-scan')
         self.button('cleanup', lambda: self.go('cleanup'))
         health = self.state.get('health')
@@ -485,14 +489,6 @@ class Window(QMainWindow):
             self.table(rows, [('name', self.t('n.step')), ('value', self.t('n.values'))])
         from care import render_home
         render_home(self)
-        if self.settings.get('gamification', True):
-            completed = self.state.get('milestones', [])
-            bar = QProgressBar()
-            bar.setRange(0, 3)
-            bar.setValue(sum(key in completed for key in ('health', 'scan', 'drivers')))
-            bar.setFormat(self.t('carePath') + ' · %v / 3')
-            self.body.addWidget(bar)
-            self.label(self.t('careHelp'))
         self.label(self.t('n.local_data'))
 
     def scan_options(self):
@@ -612,9 +608,13 @@ class Window(QMainWindow):
 
     def page_drivers(self):
         self.label(self.t('driversIntro'))
+        from journey import render_return
+        render_return(self)
         self.button('checkDrivers',lambda:self.run('windows-updates',callback=lambda r:self.store('updates',r)),True)
         self.button('inventory',lambda:self.run('drivers',callback=lambda r:self.store('drivers',r)))
-        self.button('driverBackup',lambda:self.run('driver-backup'),name='driver-backup')
+        self.button('driverBackup',lambda:self.run('driver-backup',callback=lambda r:self.store('driverBackupResult',r)),name='driver-backup')
+        backup=self.state.get('driverBackupResult')
+        if isinstance(backup,dict):self.label(self.t('j.backupCreated').format(count=backup.get('packages',0)) if backup.get('packages',0)>0 else self.t('j.noPackages'))
         self.button('openDriverBackups',lambda:self.open_folder('drivers'))
         self.button('windowsUpdate',lambda:self.external('windows'))
         updates=self.state.get('updates')
@@ -638,6 +638,8 @@ class Window(QMainWindow):
 
     def page_cleanup(self):
         self.label(self.t('cleanupIntro'))
+        from journey import render_return
+        render_return(self)
         self.button('scan',lambda:self.run('scan',callback=lambda r:self.store('cleanup',r)),True,name='cleanup-scan')
         plan=self.state.get('cleanup')
         if not plan:
