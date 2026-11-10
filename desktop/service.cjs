@@ -1,10 +1,11 @@
 const fs=require('node:fs');const fsp=require('node:fs/promises');const path=require('node:path');const crypto=require('node:crypto');
+const {reducedCare,reducedComponent}=require('./care.cjs');
 const {Packages}=require('./packages.cjs');const {Runtimes}=require('./runtime.cjs');
 const {Diagnostics}=require('./diagnostics.cjs');
 const {Settings,atomicWrite}=require('./settings.cjs');const {Cleanup,rootsFor}=require('./cleanup.cjs');const windows=require('./windows.cjs');const {OperationTrace}=require('./operation-trace.cjs');
 class Service {
   constructor({dir,local,locale='tr',backend,version,platform=process.platform,run=windows.run,roots}){
-    this.dir=dir;this.trace=new OperationTrace(dir);this.backend=backend;this.version=version;this.platform=platform;this.run=run;const fresh=!fs.existsSync(path.join(dir,'settings.json'));this.settings=new Settings(dir,locale);if(fresh)this.settings.data.channel=version.includes('-')?'beta':'stable';this.cleanup=new Cleanup(dir,roots||rootsFor(local));this.busy=false;this.latestHealth=null;this.latestHardware=null;this.driverCandidates=[];this.startup=[];this.diagnostics=new Diagnostics((...args)=>this.native(...args),(...args)=>this.record(...args),Date.now,()=>this.save(),offers=>this.availableDriverOffers(offers));this.packages=new Packages(dir,(...args)=>this.native(...args),(...args)=>this.record(...args),()=>this.save());this.operation=null;this.runtimes=new Runtimes(dir,(...args)=>this.native(...args),(...args)=>this.record(...args),status=>{this.operation=status;},undefined,()=>this.save());this.offlineDevices=[];this.ghosts=[];this.focusApps=[];this.stateFile=path.join(dir,'activity.json');
+    this.dir=dir;this.trace=new OperationTrace(dir);this.backend=backend;this.version=version;this.platform=platform;this.run=run;const fresh=!fs.existsSync(path.join(dir,'settings.json'));this.settings=new Settings(dir,locale);if(fresh)this.settings.data.channel=version.includes('-')?'beta':'stable';this.cleanup=new Cleanup(dir,roots||rootsFor(local));this.busy=false;this.latestHealth=null;this.latestHardware=null;this.latestCare=null;this.latestComponent=null;this.driverCandidates=[];this.startup=[];this.diagnostics=new Diagnostics((...args)=>this.native(...args),(...args)=>this.record(...args),Date.now,()=>this.save(),offers=>this.availableDriverOffers(offers));this.packages=new Packages(dir,(...args)=>this.native(...args),(...args)=>this.record(...args),()=>this.save());this.operation=null;this.runtimes=new Runtimes(dir,(...args)=>this.native(...args),(...args)=>this.record(...args),status=>{this.operation=status;},undefined,()=>this.save());this.offlineDevices=[];this.ghosts=[];this.focusApps=[];this.stateFile=path.join(dir,'activity.json');
     try{this.state=JSON.parse(fs.readFileSync(this.stateFile,'utf8'));if(this.state.schema!==1||!Array.isArray(this.state.events)||!Array.isArray(this.state.milestones))throw Error();}catch{this.state={schema:1,events:[],milestones:[]};}
     if(!Array.isArray(this.state.ignoredUpdates))this.state.ignoredUpdates=[];
   }
@@ -28,6 +29,7 @@ class Service {
     if(command==='operation.status')return {...this.operation,trace:this.trace.snapshot()};
     if(command==='bootstrap')return {version:this.version,platform:this.platform,settings:this.settings.data,milestones:this.state.milestones,warning:this.settings.warning};
     if(command==='settings.save')return this.settings.save(payload);
+    if(command==='care.export'){if(!this.latestCare)throw Error('CARE_SCAN_REQUIRED');return {app:'WinOptimizer Aion',version:this.version,...reducedCare(this.latestCare),componentCheck:reducedComponent(this.latestComponent)};}
     if(command==='history')return {events:this.state.events,cleanup:await this.cleanup.journals(),milestones:this.state.milestones};
     if(this.busy)throw Error('OPERATION_BUSY');this.busy=true;
     this.trace.start(command);try{const value=await (async()=>{switch(command){
@@ -66,6 +68,8 @@ class Service {
       case 'cleanup':{if(!Array.isArray(payload.groups)||!payload.groups.length||!payload.groups.every(x=>['temp','chrome','edge'].includes(x)))throw Error('INVALID_SELECTION');const result=await this.cleanup.quarantine(payload.planId,payload.groups);if(result.skipped)this.trace.add({step:'cleanup-exclusion',status:'skipped',count:result.skipped,reason:'changed-or-unavailable'});if(result.bytes)this.record('cleanup',{backupId:result.id,bytes:result.bytes,skipped:result.skipped});return result;}
       case 'restore':{const result=await this.cleanup.restore(payload.id);this.record('restore',result);return result;}
       case 'purge':{if(payload.confirm!==true)throw Error('CONFIRM_REQUIRED');const result=await this.cleanup.purge(payload.id);this.record('purge',result);return result;}
+      case 'care.snapshot':{const r=await this.native('care');this.latestCare=r;return r;}
+      case 'component-check':{if(payload.confirm!==true)throw Error('CONFIRM_REQUIRED');const r=await this.native('component-check',{},true);this.latestComponent=r;return r;}
       case 'hardware':{const report=await this.native('hardware');this.latestHardware=report;return report;}
       case 'health':{this.latestHealth=await this.native('health');this.milestone('health');return this.latestHealth;}
       case 'drivers':return await this.native('drivers');

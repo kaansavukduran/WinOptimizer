@@ -43,6 +43,7 @@ class Window(QMainWindow):
         super().__init__()
         self.bridge, self.data, self.portable = bridge, data, portable
         self.settings = dict(language='tr', theme='system', scale=100, textSize=100, font='system', motion=True, companion=True, gamification=True)
+        self.resource_root=ROOT
         self.page, self.busy, self.ready = 'home', False, False
         self.state, self.selected, self.trace, self.trace_signature = {}, set(), None, None
         self.save_serial = 0
@@ -170,7 +171,7 @@ class Window(QMainWindow):
         self.aion = None
         self.clear_layout(self.nav_layout)
         # Settings remains the last, rightmost navigation item at every window size.
-        for key in ('home', 'scanFix', 'cleanup', 'drivers', 'hardware', 'startup', 'workshop', 'tools', 'history', 'settings'):
+        for key in ('home', 'scanFix', 'cleanup', 'drivers', 'hardware', 'windowsCare', 'startup', 'workshop', 'tools', 'history', 'settings'):
             button = QPushButton(self.t(key))
             button.setObjectName('nav-' + key)
             button.setCheckable(True)
@@ -303,15 +304,16 @@ class Window(QMainWindow):
         self.active_command = command
         self.last_request = (command, payload, callback, silent)
         self.notice.setText(self.t('n.waiting'))
-        self.progress.setRange(0,14 if command=='hardware' else 0)
+        total={'hardware':14,'care.snapshot':9}.get(command,0)
+        self.progress.setRange(0,total)
         self.progress.setValue(0)
-        self.progress.setFormat(self.t('forge.categories').format(done=0,total=14)+' · %p%' if command=='hardware' else '%p%')
+        self.progress.setFormat(self.t('forge.categories').format(done=0,total=total)+' · %p%' if total else '%p%')
         self.progress.show()
         self.cancel.setVisible(command == 'diagnostics.scan')
         for button in self.actions:
             button.setEnabled(False)
         if getattr(self, 'aion', None):
-            self.aion.set_state('read' if command in ('diagnostics.scan', 'hardware', 'health', 'drivers', 'windows-updates') else 'repair')
+            self.aion.set_state('read' if command in ('diagnostics.scan', 'care.snapshot', 'component-check', 'hardware', 'health', 'drivers', 'windows-updates') else 'repair')
         def finished(reply):
             self.busy = False
             self.progress.hide()
@@ -323,13 +325,14 @@ class Window(QMainWindow):
                 return
             result = reply.get('data')
             failed = isinstance(result, dict) and (result.get('success') is False or result.get('skipped',0)>0 or result.get('conflicts',0)>0 or any(i.get('success') is False for i in result.get('items', [])))
-            self.notice.setText('' if silent else self.t('partialFailure' if failed else 'n.done'))
+            attention=isinstance(result,dict) and result.get('needsAttention') is True
+            self.notice.setText('' if silent else self.t('care.review' if attention else 'partialFailure' if failed else 'n.done'))
             if callback:
                 callback(result)
             else:
                 self.render()
             if getattr(self, 'aion', None):
-                self.aion.set_state('help' if failed else 'idle' if silent else 'celebrate')
+                self.aion.set_state('help' if failed or attention else 'idle' if silent else 'celebrate')
             if self.settings.get('sound') and not failed and not silent:QApplication.beep()
             def milestones(reply):
                 if reply.get('ok'):
@@ -367,12 +370,17 @@ class Window(QMainWindow):
                     seconds=int((datetime.now().astimezone()-datetime.fromisoformat(trace['at'].replace('Z','+00:00'))).total_seconds())
                     self.notice.setText(f'{self.t("n.running")} · {self.t("n.elapsed")}: {seconds}s · {self.t("n.waiting")}')
                 except (ValueError,KeyError):pass
-                if trace.get('command')=='hardware':
-                    from hardware import progress_state
+                if trace.get('command') in ('hardware','care.snapshot'):
+                    if trace['command']=='hardware':
+                        from hardware import progress_state
+                        prefix='hw.'
+                    else:
+                        from care import progress_state
+                        prefix='care.'
                     done,total,current=progress_state(trace)
                     self.progress.setRange(0,total);self.progress.setValue(done)
                     self.progress.setFormat(self.t('forge.categories').format(done=done,total=total)+' · %p%')
-                    message=self.t('forge.finalizing') if done==total else self.t('hw.'+current) if current else self.t('n.waiting')
+                    message=self.t('forge.finalizing') if done==total else self.t(prefix+current) if current else self.t('n.waiting')
                     self.notice.setText(self.t('n.running')+' · '+self.t('forge.categories').format(done=done,total=total)+' · '+message)
             signature = json.dumps(trace, ensure_ascii=False)
             if signature == self.trace_signature:
@@ -396,7 +404,8 @@ class Window(QMainWindow):
                 translated = self.t('n.' + reason) if reason in ('offline', 'no-link', 'excluded','missing','unavailable','links','recent','changed','limit') else reason
                 detail = ' · '.join(str(x) for x in (event.get('item'), translated, event.get('count')) if x is not None and x != '')
                 step = self.t('hw.'+event['step'][9:]) if event.get('step','').startswith('hardware-') else self.t('n.' + event.get('step', 'request').replace('-', '_'))
-                if not event.get('step','').startswith('hardware-') and event.get('step','').replace('-','_') not in NATIVE[self.settings['language']]:
+                if event.get('step','').startswith('care-'):step=self.t('care.'+event['step'][5:])
+                if not event.get('step','').startswith(('hardware-','care-')) and event.get('step','').replace('-','_') not in NATIVE[self.settings['language']]:
                     step = self.action_name(event.get('step') if event.get('step')=='windows-updates' else event.get('action', ''))
                 QTreeWidgetItem(self.log, [time, self.t('n.native_source' if event.get('origin') == 'native' else 'n.app'), step, ('Başladı' if self.settings['language']=='tr' else 'Started') if event.get('status')=='running' else self.t('n.' + event.get('status', 'running')), detail])
             self.log.resizeColumnToContents(0)
@@ -412,7 +421,7 @@ class Window(QMainWindow):
         self.bridge.call('operation.status', callback=receive)
 
     def action_name(self, command):
-        keys = {'hardware':'hardware','updates.check':'checkUpdates','updates.install':'installUpdate','diagnostics.scan':'scanFix', 'diagnostics.updates':'updateAllDrivers', 'diagnostics.repair':'d.repair', 'health':'healthScan', 'drivers':'inventory', 'windows-updates':'checkDrivers', 'windows-install':'updateAllDrivers', 'driver-backup':'driverBackup', 'scan':'scan', 'cleanup':'quarantine', 'restore':'restore', 'purge':'purge', 'startup':'startup', 'startup-disable':'disable', 'startup-restore':'restore', 'dns-flush':'dnsFlush', 'power-set':'power', 'power-profiles':'power', 'runtime.prepare':'w.download', 'runtime.install':'w.install', 'runtime.inventory':'w.runtimes', 'package.inspect':'w.inspect', 'package.apply':'w.apply', 'package.import':'w.import', 'focus.inventory':'w.pc', 'focus.start':'w.pc', 'focus.stop':'restore', 'restore-points':'w.pc', 'restore-point-create':'w.pc'}
+        keys = {'care.snapshot':'windowsCare','component-check':'care.component','hardware':'hardware','updates.check':'checkUpdates','updates.install':'installUpdate','diagnostics.scan':'scanFix', 'diagnostics.updates':'updateAllDrivers', 'diagnostics.repair':'d.repair', 'health':'healthScan', 'drivers':'inventory', 'windows-updates':'checkDrivers', 'windows-install':'updateAllDrivers', 'driver-backup':'driverBackup', 'scan':'scan', 'cleanup':'quarantine', 'restore':'restore', 'purge':'purge', 'startup':'startup', 'startup-disable':'disable', 'startup-restore':'restore', 'dns-flush':'dnsFlush', 'power-set':'power', 'power-profiles':'power', 'runtime.prepare':'w.download', 'runtime.install':'w.install', 'runtime.inventory':'w.runtimes', 'package.inspect':'w.inspect', 'package.apply':'w.apply', 'package.import':'w.import', 'focus.inventory':'w.pc', 'focus.start':'w.pc', 'focus.stop':'restore', 'restore-points':'w.pc', 'restore-point-create':'w.pc'}
         return self.t(keys.get(command, 'n.step')) + (f' ({command})' if command not in keys else '')
 
     def table(self, rows, columns, layout=None, check=False):
@@ -585,6 +594,10 @@ class Window(QMainWindow):
             detail+='\n'+self.t('reboot')
         if detail:
             QMessageBox.information(self,self.t('d.updateResults'),detail)
+
+    def page_windowsCare(self):
+        from care import render
+        render(self)
 
     def page_hardware(self):
         from hardware import render
@@ -859,6 +872,8 @@ class Window(QMainWindow):
             self.label(self.t('n.current')+': '+VERSION)
             self.label(self.t('n.engine'))
             self.label(self.t('aboutText'))
+            self.label(self.t('care.donor'))
+            self.button('care.donorSource',lambda:self.external('sysmender'))
             self.button('source',lambda:self.external('github'))
         elif section=='updates':
             self.label(self.t('n.current')+': '+VERSION)

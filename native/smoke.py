@@ -107,6 +107,41 @@ def start(window, scenario):
                 window.notice.setText(window.t('n.done'))
                 window.grab().save(str(evidence/'Windows-Qt-hardware-tr-100.png'))
                 window.settings=state['hardwareViewSettings'];window.appearance();window.render()
+                window.go('windowsCare');click('care-scan');state['stage']=11
+            elif stage==11:
+                report=window.state.get('care');assert report and report['readOnly'] is True and report['online'] is False
+                assert len(report['sections'])==9
+                for section_id in ('readiness','services'):
+                    assert next(s for s in report['sections'] if s['id']==section_id)['status']=='available'
+                trace=window.trace or {}
+                if trace.get('command')!='care.snapshot' or trace.get('status')=='running':return
+                terminal=[e for e in trace.get('events',[]) if e.get('origin')=='native' and e.get('step','').startswith('care-') and e.get('status') in ('complete','failed')]
+                assert len(terminal)==9,terminal
+                (evidence/'operation-care.json').write_text(json.dumps(trace,indent=2),encoding='utf-8')
+                window.bridge.call('care.export',callback=lambda reply:state.update(careExport=reply))
+                state['stage']=12
+            elif stage==12:
+                reply=state.get('careExport')
+                if not reply:return
+                assert reply['ok'];safe=reply['data'];assert safe['eventMessagesOmitted'] is True
+                assert len(safe['sections'])==9
+                for section in safe['sections']:
+                    assert len(section['items'])<=100
+                    for row in section['items']:assert 'message' not in row
+                (evidence/'care-support.json').write_text(json.dumps(safe,ensure_ascii=False,indent=2),encoding='utf-8')
+                state['careViewSettings']=dict(window.settings)
+                window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system',operationDetails=False)
+                window.appearance();window.render();state['stage']=13
+            elif stage==13:
+                from care import summary,progress_state
+                assert progress_state(window.trace)[0]==9
+                click('care-copy');copied=QApplication.clipboard().text()
+                assert copied==summary(window.state['care'],'tr',window.t)
+                (evidence/'care-summary.txt').write_text(copied,encoding='utf-8')
+                window.scroll.verticalScrollBar().setValue(0)
+                window.notice.setText(window.t('care.review' if window.state['care'].get('needsAttention') else 'n.done'))
+                window.grab().save(str(evidence/'Windows-Qt-care-tr-100.png'))
+                window.settings=state['careViewSettings'];window.appearance();window.render()
                 if scenario=='portable':
                     window.save_setting('theme','dark');state['stage']=8;return
                 finish(state['settings'])

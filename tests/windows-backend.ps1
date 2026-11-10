@@ -18,6 +18,7 @@ function Call-Backend($Action,$Data=@{}){
     $raw=& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $file -Action $Action -PayloadBase64 $encoded -ProgressFile $progress
     $events=@(Get-Content -LiteralPath $progress|ForEach-Object {$_|ConvertFrom-Json})
     if(-not @($events|Where-Object {$_.status -eq 'running'}).Count){throw 'Native progress start missing'}
+    if($Action -eq 'care' -and @($events|Where-Object {$_.step -like 'care-*' -and $_.status -in @('complete','failed')}).Count -ne 9){throw 'Care section completion receipts missing'}
     if($Action -eq 'hardware' -and @($events|Where-Object {$_.step -like 'hardware-*' -and $_.status -in @('complete','failed')}).Count -ne 14){throw 'Hardware section completion events missing'}
     if($Action -eq 'diagnostics' -and -not @($events|Where-Object {$_.step -eq 'devices' -and $_.status -in @('complete','failed')}).Count){throw 'Native provider progress missing'}
   } finally {Remove-Item -LiteralPath $progress -Force -ErrorAction SilentlyContinue}
@@ -39,6 +40,15 @@ foreach($gpu in ($hw.sections|Where-Object {$_.id -eq 'gpu'}).items){
   if($gpu.memorySource -ne 'DXGI' -and $null -ne $gpu.dedicatedVideoBytes){throw 'Unreliable CIM VRAM used'}
 }
 $hw|ConvertTo-Json -Depth 12|Set-Content (Join-Path $env:TEMP 'aion-hardware-inventory.json')
+$carePath=Join-Path $PSScriptRoot '..\backend\Care.ps1'
+$careTokens=$null;$careErrors=$null;$null=[Management.Automation.Language.Parser]::ParseFile($carePath,[ref]$careTokens,[ref]$careErrors)
+if($careErrors.Count){$careErrors|Format-List;throw 'Care PS 5.1 parser errors'}
+$care=Call-Backend 'care'
+if($care.readOnly -ne $true -or $care.online -ne $false -or @($care.sections).Count -ne 9){throw 'Invalid local care envelope'}
+foreach($id in @('readiness','services')){if(($care.sections|Where-Object {$_.id -eq $id}).status -ne 'available'){throw ('Required care provider unavailable: '+$id)}}
+foreach($section in $care.sections){if($section.status -notin @('available','empty','unavailable') -or @($section.items).Count -gt 100){throw 'Invalid bounded care provider output'}}
+$component=Call-Backend 'component-check'
+if($component.mode -ne 'recorded-only' -or $component.state -notin @('healthy','repairable','nonRepairable') -or $component.readOnly -ne $true){throw 'DISM recorded-health state not verified'}
 $diag=Call-Backend 'diagnostics'
 if($diag.devices.Count -lt 1 -or $null -eq $diag.network -or $diag.runtimes.Count -ne 3){throw 'Invalid diagnostic inventory'}
 if(@($diag.unavailable).Count){throw ('Unavailable scan provider: '+($diag.unavailable -join ','))}
