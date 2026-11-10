@@ -28,19 +28,14 @@ def format_value(key,value,language,text):
 def render(window):
     t=window.t
     language=window.settings['language']
-    window.label(t('hw.intro'))
-    window.button('hw.scan',lambda:window.run('hardware',callback=lambda result:window.store('hardware',result)),True,name='hardware-scan')
     report=window.state.get('hardware')
+    if not report:window.label(t('hw.intro'))
+    window.button('hw.scan',lambda:window.run('hardware',callback=lambda result:window.store('hardware',result)),True,name='hardware-scan')
     if not report:
         window.label(t('hw.empty'));return
-    window.button('hw.export',lambda:window.export('hardware.export'),name='hardware-export')
     sections=report.get('sections',[])
     by_id={section['id']:section for section in sections}
     def items(name):return by_id.get(name,{}).get('items',[])
-    if report.get('at'):
-        try:at=datetime.fromisoformat(report['at'].replace('Z','+00:00')).astimezone().strftime('%d.%m.%Y %H:%M:%S' if language=='tr' else '%Y-%m-%d %H:%M:%S')
-        except ValueError:at=report['at']
-        window.label(t('hw.at')+': '+at)
     summary=window.group('hw.summary')
     for section in ['cpu','gpu','motherboard']:
         names=[item.get('name') for item in items(section) if item.get('name')]
@@ -89,4 +84,9 @@ def render(window):
     window.button('hw.expand',tree.expandAll)
     window.button('hw.collapse',tree.collapseAll)
     populate()
+    window.button('hw.export',lambda:window.export('hardware.export'),name='hardware-export')
+    if report.get('at'):
+        try:at=datetime.fromisoformat(report['at'].replace('Z','+00:00')).astimezone().strftime('%d.%m.%Y %H:%M:%S' if language=='tr' else '%Y-%m-%d %H:%M:%S')
+        except ValueError:at=report['at']
+        window.label(t('hw.at')+': '+at)
     window.label(t('hw.scope'))

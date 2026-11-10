@@ -91,6 +91,13 @@ def start(window, scenario):
                 (evidence/'hardware-inventory.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
                 (evidence/'operation-hardware.json').write_text(json.dumps(trace,ensure_ascii=False,indent=2),encoding='utf-8')
                 window.grab().save(str(evidence/'Windows-Qt-hardware.png'))
+                state['hardwareViewSettings']=dict(window.settings)
+                window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system')
+                window.appearance();window.render();state['stage']=10;return
+            elif stage==10:
+                window.scroll.verticalScrollBar().setValue(0)
+                window.grab().save(str(evidence/'Windows-Qt-hardware-tr-100.png'))
+                window.settings=state['hardwareViewSettings'];window.appearance();window.render()
                 if scenario=='portable':
                     window.save_setting('theme','dark');state['stage']=8;return
                 finish(state['settings'])
