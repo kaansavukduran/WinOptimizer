@@ -80,7 +80,7 @@ function Invoke-Action {
       $session=New-Object -ComObject Microsoft.Update.Session
       $searcher=$session.CreateUpdateSearcher()
       $result=$searcher.Search("IsInstalled=0 and IsHidden=0 and Type='Driver'")
-      return @($result.Updates|ForEach-Object{[pscustomobject]@{id=$_.Identity.UpdateID;revision=$_.Identity.RevisionNumber;name=$_.Title;bytes=[double]$_.MaxDownloadSize;manufacturer=$_.DriverManufacturer;model=$_.DriverModel;date=if($_.DriverVerDate){$_.DriverVerDate.ToUniversalTime().ToString('o')}else{$null};reboot=$_.RebootRequired}})
+      return @($result.Updates|Where-Object {[string]$_.DriverClass -ine 'Firmware'}|ForEach-Object{[pscustomobject]@{id=$_.Identity.UpdateID;revision=$_.Identity.RevisionNumber;name=$_.Title;bytes=[double]$_.MaxDownloadSize;driverClass=[string]$_.DriverClass;manufacturer=$_.DriverManufacturer;model=$_.DriverModel;date=if($_.DriverVerDate){$_.DriverVerDate.ToUniversalTime().ToString('o')}else{$null};reboot=$_.RebootRequired}})
     }
     'windows-install' {
       Assert-Admin
@@ -89,7 +89,7 @@ function Invoke-Action {
       $session=New-Object -ComObject Microsoft.Update.Session;$searcher=$session.CreateUpdateSearcher()
       $found=$searcher.Search("IsInstalled=0 and IsHidden=0 and Type='Driver'")
       $collection=New-Object -ComObject Microsoft.Update.UpdateColl
-      foreach($update in $found.Updates){if($ids -contains $update.Identity.UpdateID){if(-not $update.EulaAccepted){$update.AcceptEula()};$null=$collection.Add($update)}}
+      foreach($update in $found.Updates){if($ids -contains $update.Identity.UpdateID -and [string]$update.DriverClass -ine 'Firmware'){if(-not $update.EulaAccepted){$update.AcceptEula()};$null=$collection.Add($update)}}
       if($collection.Count -ne $ids.Count){throw 'UPDATE_CHANGED'}
       $backup=$null;if($payload.backupDestination){$backup=Get-DriverBackup ([string]$payload.backupDestination)}
       $downloader=$session.CreateUpdateDownloader();$downloader.Updates=$collection;$download=$downloader.Download()

@@ -10,7 +10,7 @@ async function showcase(app,page,settings){
  await page.getByRole('button',{name:'Erişilebilirlik',exact:true}).click();await page.getByLabel('Yazı tipi',{exact:true}).selectOption('system');
  const text=page.locator('#text-size').locator('..').locator('..').getByRole('spinbutton');await text.fill('100');await text.press('Enter');
  await page.getByRole('button',{name:'Genel bakış',exact:true}).click();await page.getByRole('button',{name:'Sistemi kontrol et',exact:true}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
- await page.screenshot({path:prefix+'overview-tr.png'});
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:prefix+'overview-tr.png'});
  if(/^5\.3\./.test(version)){
    const sprite=page.locator('.aion-sprite');await expect(sprite).toHaveAttribute('data-app-state','idle',{timeout:10000});const pet=page.getByRole('button',{name:'Aion’u sev',exact:true}),box=await pet.boundingBox();assert.ok(box);
    await page.mouse.move(box.x+box.width/2,Math.max(2,box.y-40));await expect(sprite).toHaveAttribute('data-direction','0');await page.screenshot({path:prefix+'pointer-tr.png'});
@@ -18,11 +18,11 @@ async function showcase(app,page,settings){
  }
 
  await page.locator('.nav-item').filter({hasText:'Tara ve Düzelt'}).click();await page.getByRole('button',{name:/^(Taramayı başlat|Yeniden tara)$/}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
- await page.screenshot({path:prefix+'scan-tr.png'});
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:prefix+'scan-tr.png'});
  await page.getByRole('button',{name:'Bakım atölyesi',exact:true}).click();await page.getByRole('button',{name:'Oyun bileşenleri',exact:true}).click();await page.getByRole('button',{name:'Bileşenleri kontrol et',exact:true}).click();await expect(page.locator('.busy-banner')).toHaveCount(0,{timeout:180000});
- await page.screenshot({path:prefix+'workshop-tr.png'});
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:prefix+'workshop-tr.png'});
  await page.getByRole('button',{name:'Ayarlar',exact:true}).click();await page.getByRole('button',{name:'Görünüm',exact:true}).click();await page.getByLabel('Tema',{exact:true}).selectOption('dark');await page.getByRole('button',{name:'Genel bakış',exact:true}).click();
- await page.screenshot({path:prefix+'dark-tr.png'});
+ await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:prefix+'dark-tr.png'});
  const restored=await page.evaluate(settings=>window.aion.invoke('settings.save',settings),settings);assert.equal(restored.ok,true);
 }
 (async()=>{
