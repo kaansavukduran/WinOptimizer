@@ -176,3 +176,24 @@ def test_collapsing_operation_details_preserves_live_failures_and_preference(win
     assert 'Başarısız: 1' in w.log_hint.text() and w.trace['events'][0]['status']=='failed'
     w.log_toggle.click();application.processEvents();assert not w.log_details.isHidden()
     assert w.log.topLevelItem(0).text(3)=='Başarısız'
+
+
+def test_native_installer_handoff_requests_fresh_onefile_payload(window,monkeypatch):
+    import app as native_app
+    w,_=window;calls=[]
+    monkeypatch.setenv('PYINSTALLER_RESET_ENVIRONMENT','0')
+    monkeypatch.setattr(native_app.subprocess,'Popen',lambda *args,**kwargs:calls.append((args,kwargs)))
+    monkeypatch.setattr(native_app.QTimer,'singleShot',lambda *args:None)
+    w.install_app({'installer':'C:/Verified/Setup.exe'})
+    args,kwargs=calls[0]
+    assert args[0]==['C:/Verified/Setup.exe','/S','--updated','--force-run']
+    assert kwargs['env']['PYINSTALLER_RESET_ENVIRONMENT']=='1' and kwargs['close_fds'] is True
+
+def test_native_installer_launch_failure_keeps_interface_available(window,monkeypatch):
+    import app as native_app
+    w,_=window
+    def reject(*args,**kwargs):raise OSError('Controlled launch failure')
+    monkeypatch.setattr(native_app.subprocess,'Popen',reject)
+    w.install_app({'installer':'C:/Verified/Setup.exe'})
+    assert w.last_error=='OPERATION_FAILED' and w.isVisible() and not w.busy
+    assert w.t('errorDefault') in w.notice.text()

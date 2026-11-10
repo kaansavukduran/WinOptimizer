@@ -211,11 +211,6 @@ class Window(QMainWindow):
         if changed:self.splitter.setSizes([620,200] if expanded else [1000,self.log_panel.maximumHeight()])
         if persist:self.save_setting('operationDetails',expanded)
 
-    def resizeEvent(self,event):
-        super().resizeEvent(event)
-        if hasattr(self,'log_details') and not self.details_expanded:
-            QTimer.singleShot(0,lambda:self.set_operation_details(self.settings.get('operationDetails',True)))
-
     def go(self, page):
         self.page = page
         self.selected.clear()
@@ -887,7 +882,11 @@ class Window(QMainWindow):
     def install_app(self,result):
         installer=result.get('installer')
         if installer:
-            subprocess.Popen([installer,'/S','--updated','--force-run'],close_fds=True)
+            # A new executable at the same path must not reuse the old onefile payload.
+            env={**os.environ,'PYINSTALLER_RESET_ENVIRONMENT':'1'}
+            try:subprocess.Popen([installer,'/S','--updated','--force-run'],close_fds=True,env=env)
+            except OSError:
+                self.last_error='OPERATION_FAILED';self.error(self.last_error);self.render();return
             QTimer.singleShot(500,self.close)
 
     def import_backup(self):
@@ -901,6 +900,8 @@ class Window(QMainWindow):
 
     def resizeEvent(self,event):
         super().resizeEvent(event)
+        if hasattr(self,'log_details') and not self.details_expanded:
+            QTimer.singleShot(0,lambda:self.set_operation_details(self.settings.get('operationDetails',True)))
 
     def closeEvent(self,event):
         if self.busy:

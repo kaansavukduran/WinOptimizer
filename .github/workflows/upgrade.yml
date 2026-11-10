@@ -51,6 +51,8 @@ jobs:
           } else { node scripts/windows-smoke.cjs "$exe" seed }
       - name: Use in-app update and verify preserved data
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
           if ($env:BASELINE_TAG -match '^v[6-9]\.') {
@@ -58,6 +60,18 @@ jobs:
             if ($LASTEXITCODE -ne 0) { throw 'Native update UI automation failed' }
             $uiReceipt = Get-Content 'work/native-evidence/native-update-ui/invoked-controls.json' -Raw | ConvertFrom-Json
             $baselineProcessId = $uiReceipt.baselineProcessId
+            $release = gh api "repos/kaansavukduran/WinOptimizer/releases/tags/v$env:EXPECTED_VERSION" | ConvertFrom-Json
+            $portableAsset = $release.assets | Where-Object { $_.name -eq "WinOptimizer-Aion-$env:EXPECTED_VERSION-Windows-x64-Portable.exe" }
+            if (-not $portableAsset.digest.StartsWith('sha256:')) { throw 'Expected installed payload digest missing' }
+            $expectedHash = $portableAsset.digest.Substring(7)
+            $deadline = (Get-Date).AddMinutes(5)
+            do {
+              Start-Sleep -Seconds 2
+              $actualHash = try { (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant() } catch { '' }
+              $registryVersion = (Get-ItemProperty 'HKCU:/Software/Microsoft/Windows/CurrentVersion/Uninstall/6adb52f1-8d9b-50c2-aa35-cea78349cdbd').DisplayVersion
+              @{baselinePid=$baselineProcessId;expectedHash=$expectedHash;actualHash=$actualHash;registryVersion=$registryVersion;processes=@(Get-Process -Name 'WinOptimizer Aion' -ErrorAction SilentlyContinue | Select-Object Id,MainWindowHandle,StartTime)} | ConvertTo-Json -Depth 5 | Set-Content 'work/native-evidence/native-update-ui/installed-payload.json' -Encoding utf8
+            } while (($actualHash -ne $expectedHash -or $registryVersion -ne $env:EXPECTED_VERSION) -and (Get-Date) -lt $deadline)
+            if ($actualHash -ne $expectedHash -or $registryVersion -ne $env:EXPECTED_VERSION) { throw 'Native installed payload was not replaced with expected release' }
           } else { node scripts/windows-smoke.cjs "$exe" upgrade }
           $deadline = (Get-Date).AddMinutes(5)
           do {

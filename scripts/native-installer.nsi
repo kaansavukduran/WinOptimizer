@@ -22,6 +22,8 @@ SetCompressor /SOLID lzma
 Var Parameters
 Var ForceRun
 Function .onInit
+  ; Also protect upgrades launched by older native clients with inherited onefile state.
+  System::Call 'kernel32::SetEnvironmentVariableW(w "PYINSTALLER_RESET_ENVIRONMENT", w "1")i.r0'
   ReadRegStr $0 HKCU "Software\WinOptimizer Aion" "InstallDir"
   StrCmp $0 "" 0 existing_directory
   ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\6adb52f1-8d9b-50c2-aa35-cea78349cdbd" "InstallLocation"
