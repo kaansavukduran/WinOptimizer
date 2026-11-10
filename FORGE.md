@@ -1,6 +1,6 @@
 # WinOptimizer Aion Forge
 
-Durum: **ACTIVE, 5.2.0 bakım atölyesi ve uygulamaya özel Aion seti geliştiriliyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
+Durum: **ACTIVE, 5.2.0 yayımlandı; 5.3.0 fare takibi ve sevilme etkileşimi geliştiriliyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
 
 ## Son doğrulanmış yayın: 5.1.0
 
@@ -55,3 +55,11 @@ Kullanıcı Driver Booster benzeri tarama/düzeltme istedi. `docs/SCAN-FIX.md` k
 ## Aktif 5.2.0 işi
 
 Yetkili hedef aynı Windows deposu. Kullanıcı Driver Booster işlevlerini geliştirme, uygulamaya özel Aion paftası ve gerçek ekran görüntüsü istedi. Drive ana/model/kuyruk referansları okundu; 4×6 yeni saydam kare paftası `public/assets/aion-optimizer.png`, envanter `docs/ASSETS.json`. Yeni bakım atölyesi: sürücü yedeği/paket inceleme, imzalı çevrimdışı klasör, uygulama öncesi yedek, gerçek paket kabulü/aygıt değişimi ayrımı, seçmeli ghost kayıt temizliği, atlanan güncellemeler, Windows geri yükleme noktaları, geçici güç planı ve kullanıcı pencerelerine normal kapatma isteği. Microsoft VC/DirectX indirme ve imza doğrulamalı onaylı kurulum eklendi; gerçek Windows testi bekliyor. Kareler gerçek tarama/onarım/başarı/odak durumlarına bağlı, görünmeyince duraklar. Kapsam ve açık kalan farklar `docs/DRIVER-COVERAGE.md`; tam IObit katalog eşitliği iddiası yok. Yayından önce Windows CI, gerçek runtime kurulumu ve 5.1.0 → 5.2.0 yükseltme, normal ölçekli Türkçe Windows ekran görüntüleri ve özel Drive yedeği tamamlanmalı.
+
+## 5.2.0 tamamlanan yayın ve aktif 5.3.0
+
+5.2.0 kaynak `f354f4b8c39f78b7c0b3e95043e559884e589b95`, PR #3, merge `26d30375971fca53b5d243cb665dc3e2a1a955fc`. Paket 131.007.565 bayt, SHA-256 `602ba4db4291b41ad84961beec4dac6b71a548a6c562467bd24c0f42284f4ab9`. Yayın `439771474` kararlı. Kaynak Windows CI `42721023776`, PR `42721029997`, yayın `42722077586`, gerçek 5.1.0 → 5.2.0 yükseltme ve Türkçe açık/koyu/atölye Windows ekranları `42722973347` başarılı. İlk yükseltme testi yalnız ekran görüntüsünde eski düğme adına takıldı; `ace85f162903abd4700a3856856c3741560d2990` test düzeltmesiyle başarılı tekrarlandı. 32 Node, 14 Chromium; gerçek Microsoft DirectX kurulum/imza/son kontrol geçti. Drive 5.2.0 klasörü `1aEExvJ6ipxCv3ydGCLyt_aE6kSf4WiYu`; metadata/parça geri okuma kapanışı devam ediyor.
+
+Kullanıcı ardından RealLife benzeri fare takibi ve sevilme istedi. `forge/interactive-aion` dalı bunun için açıldı. Kullanıcının açık izniyle `reallife-rpg/assets/companions/aion_pet.png` salt okunur alınarak `public/assets/aion-pet.png` olarak eklendi. 8×11, 1536×2288; 16 bakış yönü, 4 kare sevilme, 5 kare ayak tepkisi. SVG tüm hücreyi oranını koruyarak sabit noktada gösterir; gövde fareye taşınmaz. Baş/gövde/kuyruk/ayak tıklaması, Enter/Boşluk, kısa altyazı, bakım puanı vermeme; bağımsız kalıcı fare takibi/sevilme/boyut ayarları; azaltılmış hareket ve görünmezken durma eklendi. 35 Node ve 17 tarayıcı senaryosu yerelde geçti. 5.3.0 için gerçek Windows derleme, 5.2.0 → 5.3.0 güncelleme, bakış/sevilme ekranları, yeni ayrı Release ve özel Drive yedeği gerekli. Eski 5.2.0 dosyaları değiştirilmez.
+
+Son soru sürücü veri tabanının kaynaklarıydı; `docs/DRIVER-CATALOG.md` mevcut Windows Update kaynağını ve gelecekte resmî OEM adaptörleriyle imzalı üstveri kataloğu mimarisini ayırır. Henüz bağımsız global/OEM veri tabanı servisi kurulmadı; bu yönde yapılmış gibi yazma.

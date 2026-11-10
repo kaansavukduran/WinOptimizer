@@ -4,7 +4,7 @@ const {Diagnostics}=require('./diagnostics.cjs');
 const {Settings,atomicWrite}=require('./settings.cjs');const {Cleanup,rootsFor}=require('./cleanup.cjs');const windows=require('./windows.cjs');
 class Service {
   constructor({dir,local,locale='tr',backend,version,platform=process.platform,run=windows.run,roots}){
-    this.dir=dir;this.backend=backend;this.version=version;this.platform=platform;this.run=run;const fresh=!fs.existsSync(path.join(dir,'settings.json'));this.settings=new Settings(dir,locale);if(fresh)this.settings.data.channel=version.includes('-')?'beta':'stable';this.cleanup=new Cleanup(dir,roots||rootsFor(local));this.busy=false;this.latestHealth=null;this.driverCandidates=[];this.startup=[];this.diagnostics=new Diagnostics((...args)=>this.native(...args),(...args)=>this.record(...args),Date.now,()=>this.save(),offers=>offers.filter(c=>!this.state.ignoredUpdates.some(e=>e.id===c.id)));this.packages=new Packages(dir,(...args)=>this.native(...args),(...args)=>this.record(...args),()=>this.save());this.operation=null;this.runtimes=new Runtimes(dir,(...args)=>this.native(...args),(...args)=>this.record(...args),status=>{this.operation=status;},undefined,()=>this.save());this.offlineDevices=[];this.ghosts=[];this.focusApps=[];this.stateFile=path.join(dir,'activity.json');
+    this.dir=dir;this.backend=backend;this.version=version;this.platform=platform;this.run=run;const fresh=!fs.existsSync(path.join(dir,'settings.json'));this.settings=new Settings(dir,locale);if(fresh)this.settings.data.channel=version.includes('-')?'beta':'stable';this.cleanup=new Cleanup(dir,roots||rootsFor(local));this.busy=false;this.latestHealth=null;this.driverCandidates=[];this.startup=[];this.diagnostics=new Diagnostics((...args)=>this.native(...args),(...args)=>this.record(...args),Date.now,()=>this.save(),offers=>this.availableDriverOffers(offers));this.packages=new Packages(dir,(...args)=>this.native(...args),(...args)=>this.record(...args),()=>this.save());this.operation=null;this.runtimes=new Runtimes(dir,(...args)=>this.native(...args),(...args)=>this.record(...args),status=>{this.operation=status;},undefined,()=>this.save());this.offlineDevices=[];this.ghosts=[];this.focusApps=[];this.stateFile=path.join(dir,'activity.json');
     try{this.state=JSON.parse(fs.readFileSync(this.stateFile,'utf8'));if(this.state.schema!==1||!Array.isArray(this.state.events)||!Array.isArray(this.state.milestones))throw Error();}catch{this.state={schema:1,events:[],milestones:[]};}
     if(!Array.isArray(this.state.ignoredUpdates))this.state.ignoredUpdates=[];
   }
@@ -12,6 +12,7 @@ class Service {
   save(){atomicWrite(this.stateFile,this.state);}
   milestone(id){if(!this.state.milestones.includes(id)){this.state.milestones.push(id);this.save();}}
   async native(action,payload={},elevated=false,options={}){if(this.platform!=='win32')throw Error('WINDOWS_ONLY');return this.run(this.backend,action,payload,elevated,options);}
+  availableDriverOffers(offers){return (offers||[]).filter(c=>!/^firmware$/i.test(String(c.driverClass||''))&&!this.state.ignoredUpdates.some(e=>e.id===c.id));}
   async handle(command,payload={}){
     if(command==='diagnostics.cancel')return this.diagnostics.cancel();
     if(command==='operation.status')return this.operation;
@@ -63,7 +64,7 @@ class Service {
         // Persist the original value BEFORE registry modification, including interrupted operations.
         const event=this.record('startup-disable',{entry,status:'pending'});try{const result=await this.native(command,entry);event.status='complete';this.save();return result;}catch(e){event.status='failed';this.save();throw e;}}
       case 'startup-restore':{const event=this.state.events.find(e=>e.id===payload.id&&e.type==='startup-disable'&&e.status!=='restored');if(!event)throw Error('BACKUP_UNAVAILABLE');const result=await this.native(command,event.entry);event.status='restored';this.save();return result;}
-      case 'windows-updates':this.driverCandidates=(await this.native(command)||[]).filter(c=>!this.state.ignoredUpdates.some(e=>e.id===c.id));return this.driverCandidates;
+      case 'windows-updates':this.driverCandidates=this.availableDriverOffers(await this.native(command));return this.driverCandidates;
       case 'windows-install':{if(payload.confirm!==true||!Array.isArray(payload.ids)||!payload.ids.length||payload.ids.some(id=>!this.driverCandidates.some(c=>c.id===id)))throw Error('INVALID_SELECTION');const result=await this.native(command,{ids:payload.ids,backupDestination:path.join(this.dir,'DriverBackups',crypto.randomUUID())},true);this.record('windows-install',result);this.driverCandidates=[];return result;}
       case 'network':case 'power-profiles':return await this.native(command);
       case 'dns-flush':{const result=await this.native(command);this.record(command,result);return result;}

@@ -55,5 +55,29 @@
       "https://drive.google.com/file/d/1Ji766C3MG2Seg9fuPaarvMVhoxknrUyZ/view"
     ],
     "sha256": "517a1b4c43a68fb0a8dc857237a8208996314d3655f06e981fbe12819cf78d05"
+  },
+  "interactivePet": {
+    "path": "public/assets/aion-pet.png",
+    "source": "https://github.com/kaansavukduran/reallife-rpg/blob/main/assets/companions/aion_pet.png",
+    "authorization": "User explicitly requested reuse of the RealLife pointer-tracking and pet interaction artwork",
+    "sha256": "2bffee0a2dd747663caf2e1a8c85c2b152dad2862723f55da2d76bfd670a31b8",
+    "width": 1536,
+    "height": 2288,
+    "columns": 8,
+    "rows": 11,
+    "cell": [
+      192,
+      208
+    ],
+    "lookRows": [
+      9,
+      10
+    ],
+    "lookDirections": 16,
+    "petRow": 3,
+    "petFrames": 4,
+    "feetRow": 4,
+    "feetFrames": 5,
+    "rendering": "Complete SVG source cells, aspect preserved, fixed destination anchor; no body translation toward pointer"
   }
 }
