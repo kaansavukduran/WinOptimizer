@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.2.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 94171235,
+  "sha256": "e24f9ab650e54a46acbe8bf688ddb4cf642773015625ce9a186ee768d1f5b2e4",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.2.0/WinOptimizer-Aion-6.2.0-Windows-x64-Setup.exe",
+  "sourceCommit": "fc60edaed7aa75ae78b3deaac8ddccb20179248c",
+  "notes": {
+    "tr": "Yerel güncellemede kilitli EXE için güvenilir dosya değiştirme ve temiz yeniden başlatma. Daha okunur donanım özeti, kopyalama/metin raporu, gerçek kategori yüzdesi ve daraltılabilir işlem ayrıntıları.",
+    "en": "Reliable native update replacement while the old launcher releases its executable, plus clean restart. Readable hardware overview, copy/text reports, actual category progress and collapsible operation details."
+  },
+  "portable": {
+    "bytes": 94046497,
+    "sha256": "c57f9356d28ca451c4b277574e79c92a3175b8708c893ff679d9f0db105c407f",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.2.0/WinOptimizer-Aion-6.2.0-Windows-x64-Portable.exe"
+  }
+}
