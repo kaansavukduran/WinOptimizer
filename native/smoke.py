@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import time
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication, QPushButton, QCheckBox, QDialog, QDialogButtonBox
+from PySide6.QtWidgets import QApplication, QPushButton, QCheckBox, QComboBox, QDialog, QDialogButtonBox
 
 def start(window, scenario):
     evidence=Path(os.environ.get('AION_EVIDENCE',str(Path.cwd()/'work/native-evidence')))
@@ -220,11 +220,62 @@ def start(window, scenario):
                 (evidence/'backend-recovery.json').write_text(json.dumps(dict(verified=True,actualPackagedChild=True,intentionalIdleFailure=True,requestsFailImmediately=True,pending=0,pollingStopped=True,reportsPreserved=True,milestonesPreserved=True,noAutomaticReplay=True),indent=2),encoding='utf-8')
                 state['recoveryChecked']=True
                 finish(state['finalSettings'])
+            elif stage==22:
+                state['personalOriginal']=dict(window.settings)
+                state['personalMilestones']=list(window.state['milestones'])
+                window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system',motion=True,followPointer=False,operationDetails=False)
+                window.appearance();window.settings_section='appearance';window.page='settings';window.render()
+                combo=window.scroll.widget().findChild(QComboBox,'setting-font');assert combo
+                combo.setCurrentIndex(combo.findData('dyslexic'));click('accent-preset-blue');state['stage']=23
+            elif stage==23:
+                stored=json.loads((window.data/'settings.json').read_text(encoding='utf-8'))
+                if stored.get('font')!='dyslexic' or stored.get('accent')!='#066f82':return
+                assert window.font().family()=='OpenDyslexic'
+                from PySide6.QtGui import QRawFont
+                raw=QRawFont.fromFont(window.font());assert all(raw.supportsCharacter(ord(c)) for c in 'ÇĞİÖŞÜçğıöşü')
+                window.scroll.verticalScrollBar().setValue(0)
+                window.grab().save(str(evidence/'Windows-Qt-personalize-tr-100.png'))
+                state.update(galleryIndex=0,gallery=[],stage=24)
+            elif stage==24:
+                from mascot import PAGE_CLIPS
+                page=list(PAGE_CLIPS)[state['galleryIndex']]
+                window.page=page;window.render();window.activateWindow();window.raise_()
+                window.scroll.verticalScrollBar().setValue(0)
+                state.update(galleryPage=page,galleryAt=time.time(),galleryFirst=window.aion.frame_source()[1].x(),stage=25)
+            elif stage==25:
+                if time.time()-state['galleryAt']<.5:return
+                moving=window.aion.motion();changed=window.aion.frame_source()[1].x()!=state['galleryFirst']
+                if moving and not changed and time.time()-state['galleryAt']<3:return
+                assert not moving or changed
+                assert window.aion.page==state['galleryPage']
+                window.grab().save(str(evidence/('Windows-Qt-Aion-'+state['galleryPage']+'.png')))
+                state['gallery'].append(dict(page=state['galleryPage'],motionAvailable=moving,clockAdvanced=changed,visible=window.aion.isVisible()))
+                state['galleryIndex']+=1
+                if state['galleryIndex']<10:state['stage']=24;return
+                window.page='settings';window.settings_section='gameSettings';window.render()
+                window.scroll.widget().findChild(QCheckBox,'setting-motion').setChecked(False)
+                window.scroll.widget().findChild(QCheckBox,'setting-companion').setChecked(False)
+                state['stage']=26
+            elif stage==26:
+                stored=json.loads((window.data/'settings.json').read_text(encoding='utf-8'))
+                if stored.get('motion') is not False or stored.get('companion') is not False:return
+                assert window.aion.isHidden() and not window.aion.motion()
+                assert window.state['milestones']==state['personalMilestones']
+                window.settings=state['personalOriginal'];window.save_setting('theme',window.settings['theme']);state['stage']=27
+            elif stage==27:
+                stored=json.loads((window.data/'settings.json').read_text(encoding='utf-8'))
+                if stored!=state['personalOriginal']:return
+                (evidence/'personalization.json').write_text(json.dumps(dict(verified=True,bundledTurkishGlyphs=True,realFontAndAccentControls=True,settingsRestored=True,milestonesUnchanged=True,animationOffAndCompanionOffVerified=True,pages=state['gallery']),indent=2),encoding='utf-8')
+                window.appearance();window.render();state['personalizeChecked']=True
+                finish(state['personalFinalSettings'])
         except Exception as error:
             timer.stop()
             (evidence/'FAILED.json').write_text(json.dumps({'scenario':scenario,'stage':state['stage'],'error':repr(error),'notice':window.notice.text()},indent=2),encoding='utf-8')
             window.bridge.close();QApplication.exit(1)
     def finish(settings):
+        if not state.get('personalizeChecked'):
+            state.update(personalFinalSettings=settings,stage=22)
+            return
         if not state.get('recoveryChecked'):
             assert not window.busy
             state.update(finalSettings=settings,recoveryReport=window.state['report']['id'],

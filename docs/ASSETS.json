@@ -98,5 +98,29 @@
       128,
       256
     ]
+  },
+  "sectionSprite": {
+    "path": "public/assets/aion-sections.png",
+    "sha256": "0af7846b75212bfaa8953091b65fde203c0abe2a4fbe9a4f618efc4ff89292a7",
+    "width": 1024,
+    "height": 1536,
+    "columns": 4,
+    "rows": 6,
+    "cell": [
+      256,
+      256
+    ],
+    "clips": {
+      "cleanup": 0,
+      "drivers": 1,
+      "hardware": 2,
+      "startup": 3,
+      "tools": 4,
+      "history": 5
+    },
+    "frameMs": 360,
+    "source": "Generated for this user-requested WinOptimizer enhancement using the existing approved Aion optimizer atlas as character reference; original generation retained in workspace.",
+    "authorization": "User explicitly requested richer frame-by-frame sprite animation in every section.",
+    "transparent": true
   }
 }
