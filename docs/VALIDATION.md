@@ -1,8 +1,27 @@
 # Verification evidence
 
+## 6.5.0 operation recovery and clear next steps
+
+[v6.5.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.5.0) is stable/latest. Application/tag source `484f317286681816c3e939a481400827bf028500`, PR #16, merge `0a2da16a769292fb313f91b67b81c07b0af47f9f`, signed metadata `bad8e8194f90a09a32056c802429c2ff971e4716`.
+
+Unexpected backend exit, failed startup and malformed response envelopes settle pending requests once. Later requests fail immediately and status polling stops; navigation can display cached results. A readable TR/EN panel identifies the relevant screen/action, explains cancellation, stale selection, administrator cancellation or engine loss, and offers operation details, local diagnostic copy and navigation. Only an explicit allowlist of read operations can be retried with captured options and original screen/section. Mutations are never automatically replayed. An interrupted Windows operation may still be running; its outcome is not asserted. Cached reports are not promised to survive reopening the app. Existing maintenance milestones remain intact. See [recovery behavior](RECOVERY.md).
+
+69 Qt and 55 Node tests passed locally and on Windows. Coverage includes real QProcess startup/exit, missing executable, malformed IDs/status/error fields, callback-versus-protocol exceptions, exactly-once completion, no pending growth, original retry options, no mutation replay, disconnected navigation, startup failure shell, local copy without payloads, TR/EN and 200% UI + 125% text/OpenDyslexic. Initial source/PR tests expected a missing-process signal after subscription; Windows can emit it synchronously. The test now covers both timings and opens the real failure shell. The first final PR attempt reported an unavailable CIM services provider on its runner; the same source passed the full source run and unchanged PR tests passed on a fresh second attempt. Assertions were not weakened.
+
+[Source Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42849224849), [PR, successful attempt 2](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42849238917), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42851312163), [publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42851360524) and [actual installed 6.4.0 → 6.5.0 update](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42851646661) succeeded. Source artifact `13779049952`, SHA-256 `32afbd62c3076771efe300d24fd5bee6e7482c5ebe624949380cf10a1c68e227`; upgrade artifact `13781885063`, SHA-256 `d49d51fd4a8c5d81b42c6fcb2efa5898e11f1aaf50cb3530f50085fa1873d8e3`. Original archive hashes and ZIP CRC verified.
+
+Installed, portable, reopened portable and upgraded packages deliberately terminated only their own idle bundled Node after ordinary Windows work. Receipts verify immediate error, zero pending requests, stopped polling, no automatic replay, preserved reports/progress and a real recovery screenshot. No in-flight Windows installation was terminated in this test. Existing shared scan, hardware, cleanup/restore, reduced exports, journey navigation, portable data isolation and exact locked-EXE replacement passed. The real update used the app's UI controls, verified the installed payload hash against Portable, registry/runtime version, preferences, cleanup/restore history and existing `health`/`scan` milestones. Seven original icon sizes matched both EXEs; all five public asset digests and the Ed25519 manifest signature matched local verified files.
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Setup | 94,215,580 | `5468a32565f1a6a2202ae5d3131a8bb2a5a28c3d5c37e3b4537cc15fe52fe7ef` |
+| Portable | 94,090,849 | `7676454849d0d26dd4351c8b4e8f61edaf315bde4d183ae0a853c17a978cd547` |
+
+Private backup target: [6.5.0 folder](https://drive.google.com/drive/folders/1G5Rb5K8imWeNcem9fEDzdaL6lpxEesh1). Every pushed source/merge/metadata/closing commit gets a tracked-source ZIP, full reachable Git-history bundle and receipt; both EXEs and source/evidence are backed up whole. Raw downloads are compared by SHA-256/length, ZIP CRC and Git bundle verification. Signing keys are excluded. Older public assets/tags are unchanged.
+
 ## 6.4.0 explained care steps and guided actions
 
-[v6.4.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.4.0) is stable/latest. Final application/tag source `807c252a0eac0d4e8f1ccf41fa26a0f12cb3fa2c`, PR #15, merge `a6855cb4bc499bbea630bb21577af7c329e3ec31`, signed metadata `c27a82718f5bb2158933aa89ebde53ad21526c0b`.
+[v6.4.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.4.0) was the previous verified stable release. Final application/tag source `807c252a0eac0d4e8f1ccf41fa26a0f12cb3fa2c`, PR #15, merge `a6855cb4bc499bbea630bb21577af7c329e3ec31`, signed metadata `c27a82718f5bb2158933aa89ebde53ad21526c0b`.
 
 The old bare 2/3 bar did not identify its tasks. Overview now starts with the three existing milestone names, explanations, prior-completion states and a prominent first-missing-step action. The meanings are unchanged: `health` is system information, `scan` is cleanup candidate scanning (not Scan & Fix), and `drivers` is a nonempty third-party driver backup. Opening a step only navigates, reveals/focuses its real button and explains what to press. A return action takes the user back to the guide; navigation grants no progress. All-done, historical-versus-health meaning, gamification-off and zero-package backup outcomes are explicit. Saved milestones are preserved.
 

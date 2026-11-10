@@ -1,6 +1,16 @@
 # WinOptimizer Aion Forge
 
-Durum: **6.4.0 kararlı/latest; açıklamalı bakım rehberi tamamlandı.** Yetkili depo https://github.com/kaansavukduran/WinOptimizer, dal main, yalnız Windows x64/Qt Widgets/Chromiumsuz. Kaynak/etiket `807c252a0eac0d4e8f1ccf41fa26a0f12cb3fa2c`, PR #15, merge `a6855cb4bc499bbea630bb21577af7c329e3ec31`, imzalı metadata `c27a82718f5bb2158933aa89ebde53ad21526c0b`, yayın `440476184`.
+Durum: **6.5.0 kararlı/latest; anlaşılır hata sonrası devam ekranı tamamlandı.** Windows x64, Python/Qt Widgets, bundled headless Node/Windows PowerShell; Chromium veya ayrı donor EXE yok. Kaynak/etiket `484f317286681816c3e939a481400827bf028500`, PR #16, merge `0a2da16a769292fb313f91b67b81c07b0af47f9f`, imzalı metadata `bad8e8194f90a09a32056c802429c2ff971e4716`, yayın `440584318`.
+
+İşlem motoru açılamadığında/koptuğunda bekleyen istekler tek kez hata verir, sonraki istekler anında döner, sorgulama durur. TR/EN açıklama, etkilenen işlem/ekran, ilgili ekrana dönüş, yerel hata kopyası ve ayrıntılar gösterilir. Yalnız açıkça izin verilen okuma işlemleri aynı seçeneklerle yeniden denenebilir; değişiklikler otomatik tekrarlanmaz. Çalışmış bir Windows işleminin sonucu doğrulanamadıysa devam ediyor olabilir. Raporlar o pencerede ve önceki bakım ilerlemesi korunur. Açılış hatası kullanılabilir açıklama ekranı verir.
+
+69 Qt/55 Node geçti. Windows kaynak `42849224849`, PR `42849238917` (2. deneme), main `42851312163`, yayın `42851360524`, gerçek 6.4.0 → 6.5.0 güncelleme `42851646661` başarılı. İlk eksik-motor testi Windows'un eşzamanlı sinyalini varsaymadığından düzeltildi. PR'nin ilk son-kaynak denemesinde CIM servis sağlayıcısı okunamadı; aynı kaynak full-source Windows'ta geçti, testler değiştirilmeden yeni ortamda PR de geçti. Gerçek paketlerin boşta kendi Node'u kapatılarak hata/rapor/ilerleme davranışı sınandı. Çalışan kurulum öldürülmedi. Hash/registry/çalışan sürüm, ayarlar/geçmiş, portable izolasyon, kilitli EXE ve ikonlar korundu. Ayrıntılar docs/VALIDATION.md ve docs/RECOVERY.md içinde.
+
+Özel Drive klasörü `1G5Rb5K8imWeNcem9fEDzdaL6lpxEesh1`. Üç kaynak gönderimi, merge, metadata, son belgeler, tüm Git geçmişi/etiketler, iki bütün EXE ve kanıtlar yedeklenir ve ham geri okuma ile doğrulanır. Özel anahtar yüklenmez. Eski yayınları/etiketleri değiştirme. Aion, donanım ve ortak SysMender entegrasyonu korunur. Yeni döngüde bu doğrulanmış sürümden devam et; sınırsız hatasızlık iddiası kullanma.
+
+## Önceki 6.4.0 kaydı
+
+Durum: **6.4.0 önceki doğrulanmış kararlı sürüm; açıklamalı bakım rehberi tamamlandı.** Yetkili depo https://github.com/kaansavukduran/WinOptimizer, dal main, yalnız Windows x64/Qt Widgets/Chromiumsuz. Kaynak/etiket `807c252a0eac0d4e8f1ccf41fa26a0f12cb3fa2c`, PR #15, merge `a6855cb4bc499bbea630bb21577af7c329e3ec31`, imzalı metadata `c27a82718f5bb2158933aa89ebde53ad21526c0b`, yayın `440476184`.
 
 Kullanıcı 2/3 sayacının neyi saydığını ve sıradaki işi bulamadığını bildirdi. Ana sayfanın başında üç işin adı/açıklaması/geçmiş tamamlanma durumu ve ilk eksik adım önerisi gösterilir. health=sistem durumu, scan=temizlik aday taraması (Tara ve Düzelt değil), drivers=gerçek, sıfırdan büyük üçüncü taraf sürücü yedeği. Eski anahtarlar/veri korunur. Aç düğmesi doğru sayfaya gider, gerçek eylemi kaydırıp odaklar; gezinme işlem çalıştırmaz/puan vermez. Geri dönme, 3/3, oyunlaştırma kapalı hali ve sıfır paketli yedek sonucu açıklanır.
 

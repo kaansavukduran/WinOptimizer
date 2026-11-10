@@ -8,6 +8,8 @@ A bilingual native Windows care app. The 6.x GUI uses Python/Qt Widgets, with a 
 
 ## İndir ve aç / Download and open
 
+**6.5.0:** Hata sonrası ne olduğunu ve nasıl devam edeceğini açıklayan ekran; bilgi okuma işlemleri için yeniden deneme, ilgili işleme dönüş ve motor bağlantısı kopunca sonsuz beklemeyi önleme. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.5.0) · [Hata sonrası devam](docs/RECOVERY.md) · [Windows doğrulaması](docs/VALIDATION.md). / Clear recovery guidance, explicit read retries and preserved results after engine disconnection.
+
 **6.4.0:** Bakım yolculuğu hangi üç işi saydığını, tamamlananları ve sıradaki adımı açıklar. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.4.0) · [Windows doğrulaması](docs/VALIDATION.md). / Explained care steps with guided actions and preserved progress.
 
 **6.3.3:** hızlı sekme/görünüm geçişlerinde sağlamlık, klavye ile ölçek kaydı ve doğru tarama geri bildirimi. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.3) · [Doğrulama](docs/VALIDATION.md). / Native UI stability, keyboard scale persistence and accurate scan feedback.
