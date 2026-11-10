@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "version": "5.3.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 134466232,
+  "sha256": "c2635bf1980b0def3a612b40ecf25597213366138c30580dc922f815a28f185b",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v5.3.0/WinOptimizer-Aion-5.3.0-Windows-x64-Setup.exe",
+  "sourceCommit": "d67947e2e172dfdab36103f52f164bd277596973",
+  "notes": {
+    "tr": "Aion fareye bakıyor; baş, gövde, kuyruk ve ayak dokunuşlarına tepki veriyor. Ayrı takip, sevilme ve boyut ayarları; firmware sürücü kurulum kapsamından çıkarıldı.",
+    "en": "Aion follows the pointer and reacts to petting. Independent gaze, petting and mascot-size settings; firmware excluded from driver installation."
+  }
+}
