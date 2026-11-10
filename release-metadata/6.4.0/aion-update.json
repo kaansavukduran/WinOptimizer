@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.4.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 94206450,
+  "sha256": "123faed04869e5cf5f89375eab6c13e3e602b50b63d278046ea7e331f023505b",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.4.0/WinOptimizer-Aion-6.4.0-Windows-x64-Setup.exe",
+  "sourceCommit": "807c252a0eac0d4e8f1ccf41fa26a0f12cb3fa2c",
+  "notes": {
+    "tr": "Bakım yolculuğu artık üç işin adını ve durumunu gösterir: sistem kontrolü, temizlik aday taraması ve sürücü yedeği. Eksik adım önerilir; ilgili düğmeye götürülür ve adımlara dönüş sunulur. Önceki ilerleme korunur.",
+    "en": "The care journey names and explains its three tasks: system check, cleanup candidate scan and driver backup. It recommends the missing step, reveals its actual action and provides a return to the guide. Existing progress is retained."
+  },
+  "portable": {
+    "bytes": 94081082,
+    "sha256": "29a80519578215418701fd17ac51e4c54a5c1ccda4e943ca527dd3f16830b7ff",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.4.0/WinOptimizer-Aion-6.4.0-Windows-x64-Portable.exe"
+  }
+}
