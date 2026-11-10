@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.3.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 94189573,
+  "sha256": "e09ace7bbc7fdd18a5b1bbdc37be3c3eb3ccf0ba1553f86dc6009a369e47ae74",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.3.0/WinOptimizer-Aion-6.3.0-Windows-x64-Setup.exe",
+  "sourceCommit": "e102bcac9bd50932c07d6e8c1981fa041338c830",
+  "notes": {
+    "tr": "SysMender donor uyarlaması: yeni Windows Sağlığı sekmesi, dokuz yerel kanıt kategorisi, azaltılmış destek raporu ve ayrı onaylı kayıtlı bileşen deposu denetimi. Tam tarama veya otomatik onarım değildir.",
+    "en": "SysMender donor adaptation: Windows Health with nine local evidence categories, reduced support reports and a separately confirmed recorded component-store check. Not a full scan or automatic repair."
+  },
+  "portable": {
+    "bytes": 94065931,
+    "sha256": "bd610799a6b5b9d5b3e503c6bce4fd25de6beea9517472e1ef15316c9b72f952",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.3.0/WinOptimizer-Aion-6.3.0-Windows-x64-Portable.exe"
+  }
+}
