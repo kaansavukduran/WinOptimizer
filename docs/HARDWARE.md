@@ -20,3 +20,9 @@ DXGI `DedicatedVideoMemory` is pointer-sized, represented as unsigned 64-bit byt
 RAM module totals and Windows-usable RAM are shown separately. Firmware-provided slot, memory-speed and maximum-capacity values are reported values, not a guarantee of upgrade compatibility. This inventory does not universally expose PSU/cooler models, temperatures, fan speeds, RAM timings, SMART health, monitor panel characteristics or hardware serial numbers. It does not infer failing hardware from an old driver date or generic status. Windows/provider availability and virtualized devices vary by machine.
 
 Windows 10/11 x64, native Python/Qt interface; existing headless Node and Windows PowerShell 5.1 layer. No Chromium or browser engine dependency.
+
+## 6.2.0 readability
+
+The overview uses compact capacity values; exact byte counts remain in expanded fields and full JSON/text reports. Software/remote adapters are labelled when DXGI provides their flags. Copy summary uses the local clipboard; Save text report writes UTF-8 using the existing scan, with no network or rescan. Search/category choices survive tab changes within the session. A visible no-match message and Clear action explain empty filtered results. Match counts count report entries, not unique physical devices.
+
+Hardware progress counts the latest terminal Windows receipt for each of the fourteen known categories, once per category. Failure/skip receipts advance completed work while remaining failures/skips in the log; the percentage is work processed, not a health score. Unbounded operations retain indeterminate progress. Operation detail visibility is saved independently; collapsing the table preserves live summary counts, trace collection and full-log export.

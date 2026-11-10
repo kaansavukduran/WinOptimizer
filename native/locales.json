@@ -559,6 +559,20 @@
         "windowsErrorCode": "Windows hata kodu",
         "present": "Bağlı / mevcut"
       }
+    },
+    "forge": {
+      "show": "İşlem ayrıntılarını aç",
+      "hide": "İşlem ayrıntılarını daralt",
+      "categories": "{done}/{total} kategori",
+      "finalizing": "Kategoriler okundu; sonuç hazırlanıyor.",
+      "copy": "Özeti kopyala",
+      "copied": "Donanım özeti panoya kopyalandı.",
+      "textExport": "Metin raporunu kaydet",
+      "matches": "{shown} / {total} kayıt gösteriliyor",
+      "noMatches": "Bu arama ve kategoriyle eşleşen aygıt yok.",
+      "clear": "Aramayı ve filtreyi temizle",
+      "software": "yazılım bağdaştırıcısı",
+      "remote": "uzak bağdaştırıcı"
     }
   },
   "en": {
@@ -1121,6 +1135,20 @@
         "windowsErrorCode": "Windows error code",
         "present": "Connected / present"
       }
+    },
+    "forge": {
+      "show": "Expand operation details",
+      "hide": "Collapse operation details",
+      "categories": "{done}/{total} categories",
+      "finalizing": "Categories read; preparing results.",
+      "copy": "Copy summary",
+      "copied": "Hardware summary copied to clipboard.",
+      "textExport": "Save text report",
+      "matches": "{shown} / {total} entries shown",
+      "noMatches": "No devices match this search and category.",
+      "clear": "Clear search and filter",
+      "software": "software adapter",
+      "remote": "remote adapter"
     }
   }
 }

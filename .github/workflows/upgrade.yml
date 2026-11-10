@@ -39,16 +39,30 @@ jobs:
         shell: pwsh
         run: |
           $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
-          node scripts/windows-smoke.cjs "$exe" seed
+          if ($env:BASELINE_TAG -match '^v[6-9]\.') {
+            $env:AION_EVIDENCE = Join-Path $pwd 'work/native-evidence/baseline'
+            $p = Start-Process -FilePath $exe -ArgumentList '--smoke','seed' -Wait -PassThru
+            if ($p.ExitCode -ne 0) { throw 'Native baseline seed failed' }
+            # Test-only preview channel preference in the runner's own sample data.
+            $settings = Join-Path $env:LOCALAPPDATA 'WinOptimizer Aion/settings.json'
+            $data = Get-Content $settings -Raw | ConvertFrom-Json
+            $data.channel = 'beta'
+            $data | ConvertTo-Json -Depth 6 | Set-Content $settings -Encoding utf8NoBOM
+          } else { node scripts/windows-smoke.cjs "$exe" seed }
       - name: Use in-app update and verify preserved data
         shell: pwsh
         run: |
           $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
-          node scripts/windows-smoke.cjs "$exe" upgrade
+          if ($env:BASELINE_TAG -match '^v[6-9]\.') {
+            powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows-native-update.ps1 -Exe "$exe"
+            if ($LASTEXITCODE -ne 0) { throw 'Native update UI automation failed' }
+            $uiReceipt = Get-Content 'work/native-evidence/native-update-ui/invoked-controls.json' -Raw | ConvertFrom-Json
+            $baselineProcessId = $uiReceipt.baselineProcessId
+          } else { node scripts/windows-smoke.cjs "$exe" upgrade }
           $deadline = (Get-Date).AddMinutes(5)
           do {
             Start-Sleep -Seconds 3
-            $restarted = Get-Process -Name 'WinOptimizer Aion' -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1
+            $restarted = Get-Process -Name 'WinOptimizer Aion' -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 -and $_.Id -ne $baselineProcessId } | Select-Object -First 1
           } while (-not $restarted -and (Get-Date) -lt $deadline)
           if (-not $restarted) { throw 'Application did not restart after update' }
           if (-not $restarted.CloseMainWindow()) { throw 'Could not close restarted app normally' }
@@ -57,6 +71,8 @@ jobs:
           $p = Start-Process -FilePath $exe -ArgumentList '--smoke','verify' -Wait -PassThru
           if ($p.ExitCode -ne 0) { throw 'Native upgrade verification failed' }
           if (-not (Test-Path "$env:AION_EVIDENCE/verified-verify.json")) { throw 'Native upgrade receipt missing' }
+          $verified = Get-Content "$env:AION_EVIDENCE/verified-verify.json" -Raw | ConvertFrom-Json
+          if ($verified.version -ne $env:EXPECTED_VERSION -or $verified.verified -ne $true) { throw 'Updated native app version mismatch' }
       - name: Verify original activity and milestones after native migration
         shell: pwsh
         run: |

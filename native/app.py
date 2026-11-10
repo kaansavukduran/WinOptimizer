@@ -79,13 +79,29 @@ class Window(QMainWindow):
         self.cancel.hide()
         self.outer.addWidget(self.cancel)
         splitter = QSplitter(Qt.Vertical)
+        self.splitter = splitter
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
         splitter.addWidget(self.scroll)
         log = QWidget()
         layout = QVBoxLayout(log)
+        self.log_panel = log
+        header = QHBoxLayout()
         self.log_title = QLabel(self.t('n.trace'))
-        layout.addWidget(self.log_title)
+        self.log_title.setWordWrap(True)
+        header.addWidget(self.log_title,1)
+        self.log_toggle = QPushButton()
+        self.log_toggle.setObjectName('operation-details-toggle')
+        self.log_toggle.setCheckable(True)
+        self.log_toggle.clicked.connect(lambda checked:self.set_operation_details(checked,True))
+        header.addWidget(self.log_toggle)
+        layout.addLayout(header)
+        self.log_hint = QLabel()
+        self.log_hint.setWordWrap(True)
+        layout.addWidget(self.log_hint)
+        self.log_details = QWidget()
+        detail_layout = QVBoxLayout(self.log_details)
+        detail_layout.setContentsMargins(0,0,0,0)
         self.log = QTreeWidget()
         self.log.setColumnCount(5)
         self.log.setHeaderLabels([self.t('n.time'), self.t('n.source'), self.t('n.step'), self.t('n.result'), self.t('n.reason')])
@@ -93,13 +109,11 @@ class Window(QMainWindow):
         self.log.setRootIsDecorated(False)
         self.log.setWordWrap(True)
         self.log.setMinimumHeight(170)
-        layout.addWidget(self.log)
-        self.log_hint = QLabel()
-        self.log_hint.setWordWrap(True)
-        layout.addWidget(self.log_hint)
+        detail_layout.addWidget(self.log)
         self.export_log = QPushButton(self.t('n.export_log'))
         self.export_log.clicked.connect(lambda: self.export('report.export'))
-        layout.addWidget(self.export_log)
+        detail_layout.addWidget(self.export_log)
+        layout.addWidget(self.log_details)
         splitter.addWidget(log)
         splitter.setSizes([620, 200])
         self.outer.addWidget(splitter, 1)
@@ -140,6 +154,7 @@ class Window(QMainWindow):
         self.nav_scroll.setFixedHeight(round(64*scale))
         self.setStyleSheet(f'QWidget{{color:{fg};background:{bg};}} QGroupBox,QTreeWidget,QLineEdit,QComboBox,QSpinBox,QDoubleSpinBox{{background:{surface};border:1px solid {line};border-radius:8px;padding:{pad}px;}} QGroupBox{{margin-top:14px;padding-top:24px;}} QGroupBox::title{{subcontrol-origin:margin;left:12px;}} QPushButton{{background:{surface};border:1px solid {line};border-radius:8px;padding:{pad}px;min-height:{round(20*scale)}px;}} QPushButton:focus{{border:3px solid {accent};}} QPushButton:disabled{{color:#888888;}} QPushButton[primary="true"]{{background:{accent};color:{"#000000" if high else "#ffffff"};font-weight:bold;}} QPushButton:checked{{border:2px solid {accent};}} QHeaderView::section{{background:{surface};padding:{pad}px;}} QProgressBar{{border:1px solid {line};min-height:12px;}} QProgressBar::chunk{{background:{accent};}} QCheckBox{{spacing:8px;padding:6px;}} QLabel{{background:transparent;}}')
         self.outer.setSpacing(round(10 * scale))
+        self.set_operation_details(self.settings.get('operationDetails',True))
         if hasattr(self,'body'):self.body.setSpacing(round((10 if self.settings.get('density')=='compact' else 14)*scale))
         self.footer.setText(f'{VERSION} · Windows x64 · {self.t("n.port") if self.portable else "Setup"} · {self.t("n.native")}')
 
@@ -182,6 +197,24 @@ class Window(QMainWindow):
         self.log.setHeaderLabels([self.t('n.time'), self.t('n.source'), self.t('n.step'), self.t('n.result'), self.t('n.reason')])
         self.export_log.setText(self.t('n.export_log'))
         self.trace_signature = None
+        self.set_operation_details(self.settings.get('operationDetails',True))
+
+    def set_operation_details(self, expanded, persist=False):
+        changed=getattr(self,'details_expanded',None)!=expanded
+        self.details_expanded=expanded
+        self.log_details.setVisible(expanded)
+        self.log_toggle.setChecked(expanded)
+        self.log_toggle.setText(self.t('forge.hide' if expanded else 'forge.show'))
+        self.log_toggle.setAccessibleName(self.log_toggle.text())
+        self.log_panel.layout().activate()
+        self.log_panel.setMaximumHeight(16777215 if expanded else max(self.log_panel.sizeHint().height(),self.log_panel.minimumSizeHint().height(),self.log_panel.layout().totalHeightForWidth(self.log_panel.width())))
+        if changed:self.splitter.setSizes([620,200] if expanded else [1000,self.log_panel.maximumHeight()])
+        if persist:self.save_setting('operationDetails',expanded)
+
+    def resizeEvent(self,event):
+        super().resizeEvent(event)
+        if hasattr(self,'log_details') and not self.details_expanded:
+            QTimer.singleShot(0,lambda:self.set_operation_details(self.settings.get('operationDetails',True)))
 
     def go(self, page):
         self.page = page
@@ -272,9 +305,12 @@ class Window(QMainWindow):
         if self.busy:
             return
         self.busy, self.last_error = True, None
+        self.active_command = command
         self.last_request = (command, payload, callback, silent)
         self.notice.setText(self.t('n.waiting'))
-        self.progress.setRange(0, 0)
+        self.progress.setRange(0,14 if command=='hardware' else 0)
+        self.progress.setValue(0)
+        self.progress.setFormat(self.t('forge.categories').format(done=0,total=14)+' · %p%' if command=='hardware' else '%p%')
         self.progress.show()
         self.cancel.setVisible(command == 'diagnostics.scan')
         for button in self.actions:
@@ -331,11 +367,18 @@ class Window(QMainWindow):
                 self.progress.setRange(0, max(1, data['total']))
                 self.progress.setValue(data.get('bytes', 0))
                 self.progress.setFormat(f'{data.get("bytes", 0)} / {data["total"]} bytes')
-            if trace and self.busy:
+            if trace and self.busy and trace.get('command')==getattr(self,'active_command',None) and trace.get('status')=='running':
                 try:
                     seconds=int((datetime.now().astimezone()-datetime.fromisoformat(trace['at'].replace('Z','+00:00'))).total_seconds())
                     self.notice.setText(f'{self.t("n.running")} · {self.t("n.elapsed")}: {seconds}s · {self.t("n.waiting")}')
                 except (ValueError,KeyError):pass
+                if trace.get('command')=='hardware':
+                    from hardware import progress_state
+                    done,total,current=progress_state(trace)
+                    self.progress.setRange(0,total);self.progress.setValue(done)
+                    self.progress.setFormat(self.t('forge.categories').format(done=done,total=total)+' · %p%')
+                    message=self.t('forge.finalizing') if done==total else self.t('hw.'+current) if current else self.t('n.waiting')
+                    self.notice.setText(self.t('n.running')+' · '+self.t('forge.categories').format(done=done,total=total)+' · '+message)
             signature = json.dumps(trace, ensure_ascii=False)
             if signature == self.trace_signature:
                 return
@@ -343,6 +386,7 @@ class Window(QMainWindow):
             self.log.clear()
             if not trace:
                 self.log_hint.setText(self.t('n.no_trace'))
+                self.set_operation_details(self.settings.get('operationDetails',True))
                 return
             events = trace.get('events', [])
             latest={}
@@ -369,6 +413,7 @@ class Window(QMainWindow):
             counts={status:sum(e.get('status')==status for e in display) for status in ('complete','failed','skipped')}
             summary=' · '.join(f'{self.t("n."+status)}: {count}' for status,count in counts.items())
             self.log_hint.setText(summary+' · '+self.t('n.more_events').format(shown=min(60,len(display)),total=len(events)))
+            self.set_operation_details(self.settings.get('operationDetails',True))
         self.bridge.call('operation.status', callback=receive)
 
     def action_name(self, command):
