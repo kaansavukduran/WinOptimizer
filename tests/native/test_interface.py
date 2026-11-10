@@ -20,6 +20,7 @@ class FixtureBridge(QObject):
         if command=='bootstrap':data=dict(settings=self.settings,version='6.0.0',portable=self.portable,milestones=[])
         elif command=='settings.save':self.settings=payload;data=self.settings
         elif command=='operation.status':data=dict(trace=self.trace)
+        elif command=='hardware':data=dict(schema=1,readOnly=True,online=False,at='2026-11-10T12:00:00Z',sections=[dict(id='gpu',status='available',source='Fixture DXGI',items=[dict(name='Fixture GPU',dedicatedVideoBytes=12*1024**3,sharedSystemBytes=16*1024**3,memorySource='DXGI'),dict(name='Fixture fallback',dedicatedVideoBytes=None,memorySource='unavailable')]),dict(id='memory',status='available',source='Fixture CIM',items=[dict(name='DIMM A',capacityBytes=32*1024**3,memoryType=34)]),dict(id='battery',status='empty',source='Fixture CIM',items=[]),dict(id='bios',status='unavailable',source='Fixture CIM',items=[])])
         elif command=='diagnostics.scan':data=dict(id='fixture-report',online=payload['online'],at='2026-11-10T12:00:00Z',findings=[dict(id=f'update:{i}',category='devices',status='update',reason='driverUpdate',evidence=dict(name=f'Fixture driver {i}'),actions=[dict(id='update-driver',kind='update')]) for i in range(24)])
         elif command=='diagnostics.updates':data=dict(success=False,reboot=True,items=[dict(id=i,name='Fixture driver',success=False,code=4) for i in payload['ids']])
         elif command in ('history','workshop.library'):data=dict(events=[],cleanup=[],packages=[],ignored=[])
@@ -61,7 +62,7 @@ def test_native_scan_cancel_never_installs(window,application):
 
 def test_native_routes_and_scaled_preferences_remain_available(window,application):
     w,bridge=window
-    for page in ('home','scanFix','cleanup','drivers','startup','workshop','tools','history','settings'):
+    for page in ('home','scanFix','cleanup','drivers','hardware','startup','workshop','tools','history','settings'):
         w.page=page;w.render();application.processEvents()
     for key,value in [('language','en'),('theme','contrast'),('font','dyslexic'),('scale',200),('textSize',125)]:w.save_setting(key,value)
     w.settings_section='accessibility';w.resize(540,900);w.render();application.processEvents()
@@ -107,3 +108,28 @@ def test_native_errors_use_human_translations_instead_of_missing_translation_key
 def test_native_log_preserves_distinct_driver_results_even_with_identical_titles(window):
     w,bridge=window;bridge.trace=dict(command='windows-install',status='attention',events=[dict(at='2026-11-10T12:00:00Z',origin='native',action='windows-install',step='install-item',status='failed',item='Same driver title',count=1),dict(at='2026-11-10T12:00:01Z',origin='native',action='windows-install',step='install-item',status='complete',item='Same driver title',count=2)])
     w.poll();assert w.log.topLevelItemCount()==2;assert w.log.topLevelItem(0).text(3)=='Başarısız';assert 'Başarısız: 1' in w.log_hint.text()
+
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_hardware_scan_search_unknowns_and_export_existing_report(window,application,tmp_path,monkeypatch,language):
+    from PySide6.QtWidgets import QTreeWidget, QLineEdit, QFileDialog
+    from hardware import format_value
+    w,bridge=window;w.settings['language']=language;w.go('hardware')
+    assert w.nav_layout.itemAt(4).widget().text()==text(language,'hardware')
+    w.findChild(QPushButton,'hardware-scan').click()
+    assert len([c for c,_ in bridge.calls if c=='hardware'])==1
+    assert format_value('dedicatedVideoBytes',12*1024**3,language,w.t).startswith('12,0' if language=='tr' else '12.0')
+    assert format_value('dedicatedVideoBytes',None,language,w.t)==w.t('hw.unknown')
+    tree=w.findChild(QTreeWidget,'hardware-tree');assert tree.topLevelItemCount()==4
+    assert w.t('hw.emptyStatus') in tree.topLevelItem(2).text(1)
+    assert w.t('hw.unavailable') in tree.topLevelItem(3).text(1)
+    search=w.findChild(QLineEdit,'hardware-search');search.setText('fixture gpu')
+    assert tree.topLevelItemCount()==1 and tree.topLevelItem(0).childCount()==1
+    search.setText('');category=w.findChild(QComboBox,'hardware-category');category.setCurrentIndex(category.findData('memory'))
+    assert tree.topLevelItemCount()==1 and tree.topLevelItem(0).child(0).child(2).text(1)=='DDR5'
+    saved=copy.deepcopy(w.state['hardware']);w.save_setting('theme','dark');w.go('home');w.go('hardware')
+    assert w.state['hardware']==saved
+    monkeypatch.setattr(w,'export',lambda command:bridge.call(command))
+    w.findChild(QPushButton,'hardware-export').click()
+    assert ('hardware.export',{}) in bridge.calls
+    assert len([c for c,_ in bridge.calls if c=='hardware'])==1

@@ -29,6 +29,14 @@ Download either **Setup.exe** for installation or **Portable.exe** for direct us
 
 English: **Scan & Fix → Start scan → Next step → Update all (count) → review and confirm**. Online driver checks are enabled by default; disable them under **Scan options** for a local scan. Windows asks for administrator permission before driver backup/installation. Review per-driver results rather than assuming all succeeded. Safe cleanup is a separate preview → vault → restore/permanent-delete flow.
 
+## Donanım / Hardware
+
+**Donanım → Donanımı tara** bilgisayarın yerel özelliklerini okur: işlemci/çekirdekler, ekran kartı ve ayrılmış VRAM, RAM modülleri/türü, anakart, BIOS, disk/birimler, ekran, ağ, ses, pil ve Windows aygıtları. Arama ve kategori filtresiyle bul; ayrıntıları genişlet veya JSON raporunu dışa aktar. İnternet veya yönetici izni gerekmez. Her kategorinin gerçek okuma sonucu işlem günlüğünde görünür.
+
+VRAM, DXGI'nin 64 bit değeridir; paylaşılan sistem belleği ayrıca gösterilir. Okunamayan bilgi tahmin edilmez. Sensör sıcaklığı, fan/PSU modeli gibi Windows'un standart olarak sunmadığı bilgiler her bilgisayarda bulunamaz. [Kaynaklar ve sınırlar](docs/HARDWARE.md).
+
+**Hardware → Scan hardware** reads local specifications, supports search/category filtering and exports JSON. Missing providers and absent devices have different labels. Dedicated GPU memory uses DXGI 64-bit counts; shared RAM stays separate. This is a read-only inventory, not a hardware benchmark or health diagnosis.
+
 ## İşlem gerçekten çalışıyor mu? / Observable operations
 
 **İşlem adımları** bölümü Windows arka ucundan gelen gerçek aşamaları gösterir. Uygulama isteği ile Windows kaynaklı olaylar ayrılır. Her adımın son durumu, ölçülebilen adetleri, hata/sonuç kodu ve atlama nedeni görünür. Tamamlanan, başarısız olan ve atlanan adımlar ayrı sayılır. Toplam bilinmeyen işlerde uydurma yüzde gösterilmez; çalışan durum ve geçen süre gösterilir.

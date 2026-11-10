@@ -14,7 +14,8 @@ async function invoke(command,p={}){
  if(command==='bootstrap')return {...await service.handle(command),portable,engine:'Qt Widgets',dataDirectory:dir};
  if(command==='external'){if(!Object.hasOwn(sources,p.id))throw Error('INVALID_SELECTION');return {url:sources[p.id]};}
  if(command==='folder.open'){const folders={data:dir,drivers:path.join(dir,'DriverBackups')};if(!folders[p.id])throw Error('INVALID_SELECTION');fs.mkdirSync(folders[p.id],{recursive:true});return {folder:folders[p.id]};}
- if(command==='report.export')return {app:'WinOptimizer Aion',version,created:new Date().toISOString(),health:service.latestHealth,diagnostics:service.diagnostics.report,activity:service.state,operation:service.trace.snapshot()};
+ if(command==='report.export')return {app:'WinOptimizer Aion',version,created:new Date().toISOString(),health:service.latestHealth,hardware:service.latestHardware,diagnostics:service.diagnostics.report,activity:service.state,operation:service.trace.snapshot()};
+ if(command==='hardware.export'){if(!service.latestHardware)throw Error('HARDWARE_SCAN_REQUIRED');return {app:'WinOptimizer Aion',version,...service.latestHardware};}
  if(command==='backup.export')return service.exportData();
  if(command==='backup.import')return service.importData(p);
  if(command==='updates.check')return tracedUpdate(command,()=>updater.check(service.settings.data.channel));

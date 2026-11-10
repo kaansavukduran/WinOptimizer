@@ -18,11 +18,11 @@
     },
     {
       "path": "public/assets/aion-icon.png",
-      "sha256": "cf9836e3c2bf0f35146d2ee726a885440869db9534d792c8241dff092598b59d"
+      "sha256": "7903bb19af22265c89bc9a37a8052520223e2765c385d811a43e363d8f9b5388"
     },
     {
       "path": "public/assets/aion.ico",
-      "sha256": "990f5fb167750a09ee264b7a53ec182c7b1bb76fd749f638fd49a945976cb450"
+      "sha256": "91ca21ab3c89aaa56dd79c2dea673a83e97e9eae56f84ba0c0e18dad4a5fb8c1"
     }
   ],
   "optimizerSprite": {
@@ -84,11 +84,11 @@
     "master": "public/assets/aion-icon.png",
     "windows": "public/assets/aion.ico",
     "generatedFor": "WinOptimizer Aion",
-    "design": "Original Aion close-up on plum/pink tile with cyan maintenance gear; related to but distinct from RealLife RPG branding.",
+    "design": "Front-facing symmetric pink Aion head with direct eye contact, plum/pink tile and lower-right gear in light blue, pastel pink and white; generated revision explicitly requested by the user.",
     "referenceRepository": "https://github.com/kaansavukduran/reallife-rpg",
     "referencePath": "assets/branding/aion-icon.png",
     "referenceBlob": "31762628a2cbf2d024df949088a1a04cdb5112b3",
-    "authorization": "User explicitly requested a similar, application-related logo rather than a copy. Generated with image_gen; ICO is a format conversion of that artwork.",
+    "authorization": "User requested a symmetric direct front view and blue/pink/white transgender palette on the gear, preserving the pink face and existing tile.",
     "iconSizes": [
       16,
       24,
