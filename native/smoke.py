@@ -45,7 +45,7 @@ def start(window, scenario):
                 assert window.state['report']['online'] is False
                 trace=window.trace or {}
                 # Poll once after completion; then inspect actual native events, not a UI fixture.
-                if trace.get('status')=='running':return
+                if trace.get('command')!='diagnostics.scan' or trace.get('status')=='running':return
                 events=trace.get('events',[])
                 assert any(e.get('origin')=='native' and e.get('step')=='devices' and e.get('status') in ('complete','failed') for e in events),events
                 assert any(e.get('step')=='windows-updates' and e.get('status')=='skipped' and e.get('reason')=='offline' for e in events),events

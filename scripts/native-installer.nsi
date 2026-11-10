@@ -22,6 +22,13 @@ SetCompressor /SOLID lzma
 Var Parameters
 Var ForceRun
 Function .onInit
+  ReadRegStr $0 HKCU "Software\WinOptimizer Aion" "InstallDir"
+  StrCmp $0 "" 0 existing_directory
+  ReadRegStr $0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\6adb52f1-8d9b-50c2-aa35-cea78349cdbd" "InstallLocation"
+  existing_directory:
+  StrCmp $0 "" no_existing_directory
+  StrCpy $INSTDIR $0
+  no_existing_directory:
   ${GetParameters} $Parameters
   ${GetOptions} $Parameters "--force-run" $ForceRun
 FunctionEnd

@@ -84,3 +84,11 @@ def test_portable_native_update_never_calls_setup(window,application):
     button=w.findChild(QPushButton,'portableDownload');assert button;button.click()
     assert any(c=='updates.portable' for c,_ in bridge.calls)
     assert not any(c=='updates.install' for c,_ in bridge.calls)
+
+
+def test_primary_scan_action_is_visible_before_scrolling_and_trace_keeps_latest_step_status(window,application):
+    w,bridge=window;w.resize(1024,750);w.go('scanFix');application.processEvents()
+    button=w.findChild(QPushButton,'start-scan')
+    assert w.scroll.viewport().rect().contains(button.mapTo(w.scroll.viewport(),button.rect().center()))
+    bridge.trace=dict(command='diagnostics.scan',status='complete',events=[dict(at='2026-11-10T12:00:00Z',origin='native',action='diagnostics',step='devices',status='running'),dict(at='2026-11-10T12:00:01Z',origin='native',action='diagnostics',step='devices',status='complete',count=12)])
+    w.poll();assert w.log.topLevelItemCount()==1;assert w.log.topLevelItem(0).text(3)=='Tamamlandı';assert len(w.trace['events'])==2

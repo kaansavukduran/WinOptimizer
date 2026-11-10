@@ -92,7 +92,7 @@ class Window(QMainWindow):
         self.log.setAccessibleName(self.t('n.trace'))
         self.log.setRootIsDecorated(False)
         self.log.setWordWrap(True)
-        self.log.setMinimumHeight(100)
+        self.log.setMinimumHeight(170)
         layout.addWidget(self.log)
         self.log_hint = QLabel()
         self.log_hint.setWordWrap(True)
@@ -345,7 +345,12 @@ class Window(QMainWindow):
                 self.log_hint.setText(self.t('n.no_trace'))
                 return
             events = trace.get('events', [])
-            for event in events[-60:]:
+            latest={}
+            for event in events:
+                if event.get('step') in ('request','launch','response'):continue
+                latest[(event.get('origin'),event.get('action'),event.get('step'))]=event
+            display=list(latest.values())
+            for event in display[-60:]:
                 time = event.get('at', '')[11:19]
                 reason = event.get('reason', '')
                 translated = self.t('n.' + reason) if reason in ('offline', 'no-link', 'excluded','missing','unavailable','links','recent','changed','limit') else reason
@@ -357,9 +362,12 @@ class Window(QMainWindow):
             self.log.resizeColumnToContents(0)
             self.log.resizeColumnToContents(1)
             self.log.resizeColumnToContents(2)
-            self.log.scrollToBottom()
+            if trace.get('status')=='running':self.log.scrollToBottom()
+            else:self.log.scrollToTop()
             self.log_title.setText(f'{self.t("n.trace")} · {self.action_name(trace.get("command", ""))} · {self.t("n." + trace.get("status", "running"))}')
-            self.log_hint.setText(self.t('n.more_events').format(shown=min(60, len(events)), total=len(events)))
+            counts={status:sum(e.get('status')==status for e in display) for status in ('complete','failed','skipped')}
+            summary=' · '.join(f'{self.t("n."+status)}: {count}' for status,count in counts.items())
+            self.log_hint.setText(summary+' · '+self.t('n.more_events').format(shown=min(60,len(display)),total=len(events)))
         self.bridge.call('operation.status', callback=receive)
 
     def action_name(self, command):
@@ -408,8 +416,8 @@ class Window(QMainWindow):
         if button:button.setText(self.t('n.play' if self.aion.paused else 'n.pause'))
 
     def page_home(self):
-        self.hero()
         self.button('scanFix', lambda: self.go('scanFix'), True, name='home-scan')
+        self.hero()
         self.button('healthScan', lambda: self.run('health', callback=lambda r: self.store('health', r)), name='health-scan')
         self.button('cleanup', lambda: self.go('cleanup'))
         health = self.state.get('health')
@@ -428,8 +436,7 @@ class Window(QMainWindow):
             self.label(self.t('careHelp'))
         self.label(self.t('n.local_data'))
 
-    def page_scanFix(self):
-        self.hero()
+    def scan_options(self):
         options = self.group('d.scanOptions', True, False)
         online = QCheckBox(self.t('d.online'))
         online.setObjectName('scan-online')
@@ -437,9 +444,13 @@ class Window(QMainWindow):
         online.toggled.connect(lambda value: setattr(self, 'scan_online', value))
         options.addWidget(online)
         self.label(self.t('d.onlineHelp'), layout=options)
+
+    def page_scanFix(self):
         self.button('d.again' if self.state.get('report') else 'd.scan', lambda:self.scan(), True, name='start-scan')
         report = self.state.get('report')
         if not report:
+            self.hero()
+            self.scan_options()
             self.label(self.t('d.empty'))
             return
         findings = report.get('findings', [])
@@ -454,6 +465,15 @@ class Window(QMainWindow):
             self.label(self.t('d.updateAllHelp'), layout=layout)
         if not report.get('online'):
             self.button('d.scanUpdates', lambda: self.scan(True), layout=layout)
+        group=layout.parentWidget()
+        self.body.removeWidget(group)
+        next_row=QHBoxLayout()
+        next_row.addWidget(group,1)
+        self.aion=Aion(ROOT,lambda key:self.t('n.'+key))
+        self.aion.configure(self.settings)
+        next_row.addWidget(self.aion)
+        self.body.addLayout(next_row)
+        self.scan_options()
         self.button('exportReport', lambda: self.export('report.export'))
         filter_box = QComboBox()
         for key in ('all','issue','update','optional','unknown','info'):

@@ -49,6 +49,11 @@ def main():
         '--exclude-module', 'PySide6.QtQml', '--exclude-module', 'PySide6.QtQuick', '--exclude-module', 'PySide6.QtWebChannel',
         str(ROOT / 'native/app.py')]
     subprocess.run(command, cwd=ROOT, check=True)
+    from PyInstaller.archive.readers import CArchiveReader
+    entries=list(CArchiveReader(str(ROOT/'release'/f'{name}.exe')).toc)
+    forbidden=[entry for entry in entries if any(token in entry.lower() for token in ['qtwebengine','chromium','electron','chrome_100','chrome_200'])]
+    if forbidden:raise SystemExit('Unexpected browser engine payload: '+repr(forbidden))
+    print('Verified native package: no Electron, Chromium or Qt WebEngine payload')
     nsis = shutil.which('makensis') or str(Path(os.environ.get('ProgramFiles(x86)', r'C:\Program Files (x86)')) / 'NSIS/makensis.exe')
     subprocess.run([nsis, f'/DAPP_VERSION={version}', str(ROOT / 'scripts/native-installer.nsi')], cwd=ROOT, check=True)
     files = list((ROOT / 'release').glob(f'*{version}*exe'))
