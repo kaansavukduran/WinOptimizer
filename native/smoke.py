@@ -199,11 +199,40 @@ def start(window, scenario):
                 settings=json.loads((window.data/'settings.json').read_text(encoding='utf-8'))
                 if settings.get('theme')!='dark':return
                 finish(settings)
+            elif stage==20:
+                if not window.backend_lost:return
+                from PySide6.QtWidgets import QGroupBox
+                panel=window.scroll.widget().findChild(QGroupBox,'operation-recovery')
+                assert panel and not window.busy and not window.poller.isActive()
+                assert panel.findChild(QPushButton,'recovery-retry') is None
+                assert window.state['report']['id']==state['recoveryReport']
+                assert window.state['milestones']==state['recoveryMilestones']
+                # A new request after the child died must fail immediately, not spin forever.
+                window.run('hardware')
+                assert not window.busy and window.last_error=='BACKEND_DISCONNECTED'
+                assert not window.bridge.pending
+                assert window.state['hardware']==state['recoveryHardware']
+                window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system',operationDetails=False)
+                window.appearance();window.render();window.scroll.verticalScrollBar().setValue(0)
+                state['stage']=21
+            elif stage==21:
+                window.grab().save(str(evidence/'Windows-Qt-recovery-tr-100.png'))
+                (evidence/'backend-recovery.json').write_text(json.dumps(dict(verified=True,actualPackagedChild=True,intentionalIdleFailure=True,requestsFailImmediately=True,pending=0,pollingStopped=True,reportsPreserved=True,milestonesPreserved=True,noAutomaticReplay=True),indent=2),encoding='utf-8')
+                state['recoveryChecked']=True
+                finish(state['finalSettings'])
         except Exception as error:
             timer.stop()
             (evidence/'FAILED.json').write_text(json.dumps({'scenario':scenario,'stage':state['stage'],'error':repr(error),'notice':window.notice.text()},indent=2),encoding='utf-8')
             window.bridge.close();QApplication.exit(1)
     def finish(settings):
+        if not state.get('recoveryChecked'):
+            assert not window.busy
+            state.update(finalSettings=settings,recoveryReport=window.state['report']['id'],
+                recoveryHardware=window.state['hardware'],recoveryMilestones=list(window.state['milestones']),stage=20)
+            # Test only: terminate this app's own bundled Node after all Windows work finished.
+            # Never terminate PowerShell or an in-flight installation/cleanup operation.
+            window.bridge.process.kill()
+            return
         timer.stop()
         from app import VERSION
         (evidence/f'verified-{scenario}.json').write_text(json.dumps(dict(version=VERSION,scenario=scenario,engine='Qt Widgets',portable=window.portable,data=str(window.data),settings=settings,verified=True),ensure_ascii=False,indent=2),encoding='utf-8')

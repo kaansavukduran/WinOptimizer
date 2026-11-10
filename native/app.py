@@ -1,5 +1,6 @@
 """Native Windows Qt Widgets interface. No Chromium, WebEngine, HTML or Electron."""
 import json
+from copy import deepcopy
 import os
 from pathlib import Path
 import subprocess
@@ -16,13 +17,14 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
 from bridge import Bridge
 from mascot import Aion
 from widgets import Paragraph
+import recovery
 
 ROOT = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parents[1]))
 VERSION = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
 LOCALES = json.loads((ROOT / 'native/locales.json').read_text(encoding='utf-8'))
 NATIVE = {
- 'tr': dict(native='Yerel Windows uygulaması · Chromium gerekmez', trace='İşlem adımları', source='Kaynak', step='Adım', result='Durum', time='Saat', running='Çalışıyor', complete='Tamamlandı', failed='Başarısız', skipped='Atlandı', cancelled='İptal edildi', interrupted='Önceki işlem yarıda kesildi', attention='İncelenecek sonuçlar var', app='Uygulama', native_source='Windows', waiting='Windows yanıtı bekleniyor. İşlem sürüyor; henüz sonuç yok.', no_trace='Henüz işlem yapılmadı. Başlamak için Tara ve Düzelt’i kullan.', export_log='Günlüğü dışa aktar', elapsed='Geçen süre', more_events='Son {shown} / {total} adım gösteriliyor. Dışa aktarma bütün günlüğü içerir.', request='İşlem isteği', launch='Windows işlemini başlat', response='Windows yanıtı', devices='Aygıtlar ve sürücüler', audio='Ses servisleri', network='Ağ bağlantıları', display='Ekran bilgileri', runtimes='Oyun bileşenleri', dns='DNS denetimi', backup='Sürücü yedeği', download='Paket indirme', install='Sürücü kurulumu', install_item='Sürücü başına kurulum sonucu', offline='Çevrimiçi kontrol kapalı', no_link='Etkin ağ bağlantısı yok', excluded='Firmware kapsam dışında', firmware='Firmware teklifleri', ignored='Kullanıcının atladığı teklifler', default='Varsayılana dön', choices='Ayrıntılı seçenekler', issues='Sorunlar ve öneriler', other='Diğer sonuçlar', all_results='Bütün sonuçları göster', local_data='Kayıtlar yalnız bu cihazda tutulur.', error='İşlem tamamlanamadı', retry='Yeniden dene', done='İşlem tamamlandı. Sonuçları ve işlem adımlarını incele.', close_busy='İşlem sürerken uygulamayı kapatamazsın. Bitmesini bekle; taramayı İptal ile durdurabilirsin.', confirm_count='{count} öğe için devam edilsin mi?', select='Seç', language='Dil', current='Yüklü sürüm', values='Ayrıntılar', no_items='Gösterilecek öğe yok.', port='Portable sürüm', pet='Aion’u sev', pet_head='Aion başının sevilmesine mutlu oldu.', pet_belly='Aion gülümsedi!', pet_tail='Aion kuyruğunu oynattı.', pet_feet='Aion’un ayakları gıdıklandı!', pause='Aion animasyonunu duraklat', play='Aion animasyonunu oynat', read_only='Yazılabilir bir klasör seç. Data klasörü oluşturulamadı.', backend_error='Windows işlem katmanı açılamadı. Uygulamayı kapatıp yeniden dene.', save='Kaydedildi', steps='1. Tara → 2. Sonuçları incele → 3. Onayla ve uygula', ready='Hazır', scope='Bir tarama her sorunu saptayamaz. Kontrol edilemeyen sonuçlar sağlıklı sayılmaz.', restore_note='Windows daha uygun sürücüyü korumuş olabilir; paket kabulü aygıt sürümünün değiştiği anlamına gelmez.', files='Dosya', reason='Neden / sonuç kodu', automatic_backup='Mevcut üçüncü taraf sürücüler önce otomatik yedeklenir.', choose_plan='Mevcut güç planı', normal_close='Seçilen kullanıcı pencerelerine normal kapatma isteği gönderilir. Açık çalışmalarını kaydet.', accepted='Microsoft lisans koşullarını kabul ediyorum', preview='Kaynak önizlemesi: Windows işlemleri yalnız Windows üzerinde çalışır.', show_details='Ayrıntıları göster', recent='Son işlem', no_background='Tarama ve güncelleme sen başlatınca çalışır.', filter='Sonuç filtresi', amount='Adet', report_saved='Dosya kaydedildi.', choose_color='Vurgu rengi', engine='Arayüz: Python + Qt Widgets; Windows işlemleri: Node.js + PowerShell. Gerekli çalışma zamanları paketin içindedir.'),
- 'en': dict(native='Native Windows app · No Chromium required', trace='Operation steps', source='Source', step='Step', result='Status', time='Time', running='Running', complete='Completed', failed='Failed', skipped='Skipped', cancelled='Cancelled', interrupted='Previous operation was interrupted', attention='Some results need attention', app='Application', native_source='Windows', waiting='Waiting for a Windows response. The operation is running; no result yet.', no_trace='No operations yet. Start with Scan & Fix.', export_log='Export operation log', elapsed='Elapsed', more_events='Showing the last {shown} / {total} steps. Export includes the entire log.', request='Operation request', launch='Launch Windows operation', response='Windows response', devices='Devices and drivers', audio='Audio services', network='Network connections', display='Display information', runtimes='Game runtimes', dns='DNS check', backup='Driver backup', download='Package download', install='Driver installation', install_item='Per-driver installation result', offline='Online checks are off', no_link='No active network link', excluded='Firmware is outside scope', firmware='Firmware offers', ignored='Offers skipped by the user', default='Reset to default', choices='Advanced options', issues='Issues and suggestions', other='Other results', all_results='Show all results', local_data='Records stay on this device.', error='The operation could not finish', retry='Try again', done='Operation completed. Review its results and steps.', close_busy='An operation is running. Wait for it to finish; Cancel can stop a read-only scan.', confirm_count='Continue with {count} items?', select='Select', language='Language', current='Installed version', values='Details', no_items='No items to display.', port='Portable mode', pet='Pet Aion', pet_head='Aion enjoyed the head pats.', pet_belly='Aion smiles!', pet_tail='Aion wiggles its tail.', pet_feet='Aion has ticklish feet!', pause='Pause Aion animation', play='Play Aion animation', read_only='Choose a writable folder. Data could not be created.', backend_error='The Windows operation layer could not start. Close the app and try again.', save='Saved', steps='1. Scan → 2. Review → 3. Confirm and apply', ready='Ready', scope='One scan cannot detect every issue. Unavailable checks are not treated as healthy.', restore_note='Windows may retain a better driver; package acceptance does not prove a device version changed.', files='Files', reason='Reason / result code', automatic_backup='Current third-party drivers are backed up automatically first.', choose_plan='Existing power plan', normal_close='Selected user windows receive normal close requests. Save your open work.', accepted='I accept Microsoft license terms', preview='Source preview: Windows operations run on Windows only.', show_details='Show details', recent='Last operation', no_background='Scanning and updates start when you request them.', filter='Result filter', amount='Count', report_saved='File saved.', choose_color='Accent color', engine='Interface: Python + Qt Widgets; Windows operations: Node.js + PowerShell. Required runtimes are included in the package.')
+ 'tr': dict(native='Yerel Windows uygulaması · Chromium gerekmez', trace='İşlem adımları', source='Kaynak', step='Adım', result='Durum', time='Saat', running='Çalışıyor', complete='Tamamlandı', failed='Başarısız', skipped='Atlandı', cancelled='İptal edildi', interrupted='Önceki işlem yarıda kesildi', attention='İncelenecek sonuçlar var', app='Uygulama', native_source='Windows', waiting='Windows yanıtı bekleniyor. İşlem sürüyor; henüz sonuç yok.', no_trace='Henüz işlem yapılmadı. Başlamak için Tara ve Düzelt’i kullan.', export_log='Günlüğü dışa aktar', elapsed='Geçen süre', more_events='Son {shown} / {total} adım gösteriliyor. Dışa aktarma bütün günlüğü içerir.', request='İşlem isteği', launch='Windows işlemini başlat', response='Windows yanıtı', devices='Aygıtlar ve sürücüler', audio='Ses servisleri', network='Ağ bağlantıları', display='Ekran bilgileri', runtimes='Oyun bileşenleri', dns='DNS denetimi', backup='Sürücü yedeği', download='Paket indirme', install='Sürücü kurulumu', install_item='Sürücü başına kurulum sonucu', offline='Çevrimiçi kontrol kapalı', no_link='Etkin ağ bağlantısı yok', excluded='Firmware kapsam dışında', firmware='Firmware teklifleri', ignored='Kullanıcının atladığı teklifler', default='Varsayılana dön', choices='Ayrıntılı seçenekler', issues='Sorunlar ve öneriler', other='Diğer sonuçlar', all_results='Bütün sonuçları göster', local_data='Kayıtlar yalnız bu cihazda tutulur.', error='İşlem tamamlanamadı', retry='Yeniden dene', done='İşlem tamamlandı. Sonuçları ve işlem adımlarını incele.', close_busy='İşlem sürerken uygulamayı kapatamazsın. Bitmesini bekle; taramayı İptal ile durdurabilirsin.', confirm_count='{count} öğe için devam edilsin mi?', select='Seç', language='Dil', current='Yüklü sürüm', values='Ayrıntılar', no_items='Gösterilecek öğe yok.', port='Portable sürüm', pet='Aion’u sev', pet_head='Aion başının sevilmesine mutlu oldu.', pet_belly='Aion gülümsedi!', pet_tail='Aion kuyruğunu oynattı.', pet_feet='Aion’un ayakları gıdıklandı!', pause='Aion animasyonunu duraklat', play='Aion animasyonunu oynat', read_only='Yazılabilir bir klasör seç. Data klasörü oluşturulamadı.', backend_error='Windows işlem motoruyla bağlantı kurulamadı. Aşağıdaki açıklamayı incele.', save='Kaydedildi', steps='1. Tara → 2. Sonuçları incele → 3. Onayla ve uygula', ready='Hazır', scope='Bir tarama her sorunu saptayamaz. Kontrol edilemeyen sonuçlar sağlıklı sayılmaz.', restore_note='Windows daha uygun sürücüyü korumuş olabilir; paket kabulü aygıt sürümünün değiştiği anlamına gelmez.', files='Dosya', reason='Neden / sonuç kodu', automatic_backup='Mevcut üçüncü taraf sürücüler önce otomatik yedeklenir.', choose_plan='Mevcut güç planı', normal_close='Seçilen kullanıcı pencerelerine normal kapatma isteği gönderilir. Açık çalışmalarını kaydet.', accepted='Microsoft lisans koşullarını kabul ediyorum', preview='Kaynak önizlemesi: Windows işlemleri yalnız Windows üzerinde çalışır.', show_details='Ayrıntıları göster', recent='Son işlem', no_background='Tarama ve güncelleme sen başlatınca çalışır.', filter='Sonuç filtresi', amount='Adet', report_saved='Dosya kaydedildi.', choose_color='Vurgu rengi', engine='Arayüz: Python + Qt Widgets; Windows işlemleri: Node.js + PowerShell. Gerekli çalışma zamanları paketin içindedir.'),
+ 'en': dict(native='Native Windows app · No Chromium required', trace='Operation steps', source='Source', step='Step', result='Status', time='Time', running='Running', complete='Completed', failed='Failed', skipped='Skipped', cancelled='Cancelled', interrupted='Previous operation was interrupted', attention='Some results need attention', app='Application', native_source='Windows', waiting='Waiting for a Windows response. The operation is running; no result yet.', no_trace='No operations yet. Start with Scan & Fix.', export_log='Export operation log', elapsed='Elapsed', more_events='Showing the last {shown} / {total} steps. Export includes the entire log.', request='Operation request', launch='Launch Windows operation', response='Windows response', devices='Devices and drivers', audio='Audio services', network='Network connections', display='Display information', runtimes='Game runtimes', dns='DNS check', backup='Driver backup', download='Package download', install='Driver installation', install_item='Per-driver installation result', offline='Online checks are off', no_link='No active network link', excluded='Firmware is outside scope', firmware='Firmware offers', ignored='Offers skipped by the user', default='Reset to default', choices='Advanced options', issues='Issues and suggestions', other='Other results', all_results='Show all results', local_data='Records stay on this device.', error='The operation could not finish', retry='Try again', done='Operation completed. Review its results and steps.', close_busy='An operation is running. Wait for it to finish; Cancel can stop a read-only scan.', confirm_count='Continue with {count} items?', select='Select', language='Language', current='Installed version', values='Details', no_items='No items to display.', port='Portable mode', pet='Pet Aion', pet_head='Aion enjoyed the head pats.', pet_belly='Aion smiles!', pet_tail='Aion wiggles its tail.', pet_feet='Aion has ticklish feet!', pause='Pause Aion animation', play='Play Aion animation', read_only='Choose a writable folder. Data could not be created.', backend_error='The Windows operation engine is unavailable. Review the guidance below.', save='Saved', steps='1. Scan → 2. Review → 3. Confirm and apply', ready='Ready', scope='One scan cannot detect every issue. Unavailable checks are not treated as healthy.', restore_note='Windows may retain a better driver; package acceptance does not prove a device version changed.', files='Files', reason='Reason / result code', automatic_backup='Current third-party drivers are backed up automatically first.', choose_plan='Existing power plan', normal_close='Selected user windows receive normal close requests. Save your open work.', accepted='I accept Microsoft license terms', preview='Source preview: Windows operations run on Windows only.', show_details='Show details', recent='Last operation', no_background='Scanning and updates start when you request them.', filter='Result filter', amount='Count', report_saved='File saved.', choose_color='Accent color', engine='Interface: Python + Qt Widgets; Windows operations: Node.js + PowerShell. Required runtimes are included in the package.')
 }
 
 NATIVE['tr'].update(cleanup_scan='Temizlik adaylarını tara', cleanup_exclusion='Temizlik kapsamı dışında', missing='Klasör bulunamadı', unavailable='Dosya veya klasöre erişilemedi', links='Bağlantı/junction koruması', recent='Son 7 gün içinde değişmiş dosya', changed='Tarama sırasında değişmiş öğe', limit='10.000 aday sınırına ulaşıldı')
@@ -45,6 +47,7 @@ class Window(QMainWindow):
         self.settings = dict(language='tr', theme='system', scale=100, textSize=100, font='system', motion=True, companion=True, gamification=True)
         self.resource_root=ROOT
         self.page, self.busy, self.ready = 'home', False, False
+        self.backend_lost, self.failure = False, None
         # Qt can resize the window before the asynchronous bootstrap replies.
         self.details_expanded = True
         self.state, self.selected, self.trace, self.trace_signature = {}, set(), None, None
@@ -122,18 +125,20 @@ class Window(QMainWindow):
         self.outer.addWidget(splitter, 1)
         self.footer = QLabel()
         self.outer.addWidget(self.footer)
-        bridge.failed.connect(lambda _: self.error('n.backend_error'))
+        bridge.failed.connect(self.backend_failed)
         bridge.call('bootstrap', callback=self.bootstrap)
         self.poller = QTimer(self)
         self.poller.timeout.connect(self.poll)
-        self.poller.start(700)
+        if not self.backend_lost:
+            self.poller.start(700)
 
     def t(self, key):
         return text(self.settings.get('language', 'tr'), key)
 
     def bootstrap(self, reply):
         if not reply.get('ok'):
-            self.error('n.backend_error')
+            self.error(reply.get('error', 'BACKEND_UNAVAILABLE'))
+            self.appearance()
             return
         data = reply['data']
         self.settings, self.portable = data['settings'], data.get('portable', self.portable)
@@ -168,12 +173,12 @@ class Window(QMainWindow):
                 item.widget().deleteLater()
 
     def render(self):
-        if not self.ready:
+        if not self.ready and not self.failure:
             return
         self.aion = None
         self.clear_layout(self.nav_layout)
         # Settings remains the last, rightmost navigation item at every window size.
-        for key in ('home', 'scanFix', 'cleanup', 'drivers', 'hardware', 'startup', 'workshop', 'tools', 'history', 'settings'):
+        for key in (('home', 'scanFix', 'cleanup', 'drivers', 'hardware', 'startup', 'workshop', 'tools', 'history', 'settings') if self.ready else ()):
             button = QPushButton(self.t(key))
             button.setObjectName('nav-' + key)
             button.setCheckable(True)
@@ -188,9 +193,11 @@ class Window(QMainWindow):
         body = QWidget()
         self.body = QVBoxLayout(body)
         self.body.setSpacing(round(14 * self.settings.get('scale', 100) / 100))
-        self.label(self.t(self.page), heading=True)
+        self.label(self.t(self.page) if self.ready else 'WinOptimizer Aion', heading=True)
         self.actions = []
-        getattr(self, 'page_' + self.page)()
+        recovery.render(self)
+        if self.ready:
+            getattr(self, 'page_' + self.page)()
         self.body.addStretch()
         old = self.scroll.takeWidget()
         self.scroll.setWidget(body)
@@ -218,6 +225,8 @@ class Window(QMainWindow):
         self.page = page
         self.selected.clear()
         self.render()
+        if self.backend_lost:
+            return
         if page == 'history':
             self.run('history', callback=lambda r: self.store('history', r), silent=True)
         if page == 'workshop':
@@ -302,9 +311,14 @@ class Window(QMainWindow):
     def run(self, command, payload=None, callback=None, silent=False):
         if self.busy:
             return
-        self.busy, self.last_error = True, None
+        if self.backend_lost:
+            self.error(self.failure['code'] if self.failure and self.failure['code'] in recovery.BACKEND_ERRORS else 'BACKEND_DISCONNECTED')
+            return
+        self.busy, self.last_error, self.failure = True, None, None
         self.active_command = command
         self.last_request = (command, payload, callback, silent)
+        request = dict(command=command, payload=deepcopy(payload), callback=callback,
+                       silent=silent, page=self.page, settings_section=self.settings_section)
         self.notice.setText(self.t('n.waiting'))
         total={'hardware':14,'care.snapshot':9}.get(command,0)
         self.progress.setRange(0,total)
@@ -322,8 +336,7 @@ class Window(QMainWindow):
             self.cancel.hide()
             if not reply.get('ok'):
                 self.last_error = reply.get('error', 'OPERATION_FAILED')
-                self.error(self.last_error)
-                self.render()
+                self.error(self.last_error, request)
                 return
             result = reply.get('data')
             failed = isinstance(result, dict) and (result.get('success') is False or result.get('skipped',0)>0 or result.get('conflicts',0)>0 or any(i.get('success') is False for i in result.get('items', [])))
@@ -346,10 +359,25 @@ class Window(QMainWindow):
             self.poll()
         self.bridge.call(command, payload, finished)
 
-    def error(self, code):
-        key = {'WINDOWS_ONLY': 'n.preview', 'BACKEND_UNAVAILABLE': 'n.backend_error', 'SCAN_EXPIRED': 'errorScan', 'ADMIN_CANCELLED': 'errorAdmin', 'INVALID_SELECTION': 'errorDefault', 'UPDATE_SIGNATURE_INVALID': 'errorSignature', 'UPDATE_HASH_INVALID': 'errorSignature', 'SCAN_CANCELLED': 'cancel', 'OPERATION_TIMEOUT': 'errorTimeout'}.get(code, code if code.startswith('n.') else 'errorDefault')
+    def backend_failed(self, code):
+        self.backend_lost = True
+        if hasattr(self, 'poller'):
+            self.poller.stop()
+        self.error(code)
+
+    def error(self, code, request=None):
+        if code in recovery.BACKEND_ERRORS:
+            self.backend_lost = True
+            if hasattr(self, 'poller'):
+                self.poller.stop()
+        # Preserve the affected operation when the disconnect signal follows its callback.
+        if not (request is None and self.failure and self.failure['code'] in recovery.BACKEND_ERRORS):
+            self.failure = dict(code=code, request=request)
+        self.last_error = code
+        key = {'WINDOWS_ONLY': 'n.preview', 'BACKEND_UNAVAILABLE': 'n.backend_error', 'BACKEND_DISCONNECTED': 'n.backend_error', 'BACKEND_PROTOCOL_FAILED': 'n.backend_error', 'SCAN_EXPIRED': 'errorScan', 'ADMIN_CANCELLED': 'errorAdmin', 'INVALID_SELECTION': 'errorDefault', 'UPDATE_SIGNATURE_INVALID': 'errorSignature', 'UPDATE_HASH_INVALID': 'errorSignature', 'SCAN_CANCELLED': 'cancel', 'OPERATION_TIMEOUT': 'errorTimeout'}.get(code, code if code.startswith('n.') else 'errorDefault')
         self.notice.setText(f'{self.t(key)}  ({code})')
         self.notice.setAccessibleName(self.t('n.error'))
+        self.render()
 
     def store(self, key, value):
         self.state[key] = value
@@ -357,7 +385,7 @@ class Window(QMainWindow):
         self.render()
 
     def poll(self):
-        if not self.ready:
+        if not self.ready or self.backend_lost:
             return
         def receive(reply):
             if not reply.get('ok'):
@@ -920,7 +948,7 @@ class Window(QMainWindow):
             env={**os.environ,'PYINSTALLER_RESET_ENVIRONMENT':'1'}
             try:subprocess.Popen([installer,'/S','--updated','--force-run'],close_fds=True,env=env)
             except OSError:
-                self.last_error='OPERATION_FAILED';self.error(self.last_error);self.render();return
+                self.last_error='OPERATION_FAILED';self.error(self.last_error);return
             QTimer.singleShot(500,self.close)
 
     def import_backup(self):
@@ -942,6 +970,8 @@ class Window(QMainWindow):
             self.notice.setText(self.t('n.close_busy'))
             event.ignore()
             return
+        if hasattr(self, 'poller'):
+            self.poller.stop()
         self.bridge.close()
         event.accept()
 
