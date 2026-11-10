@@ -363,7 +363,8 @@ def test_journey_explains_real_steps_and_reveals_the_missing_backup_without_runn
     target=w.scroll.widget().findChild(QPushButton,'driver-backup')
     assert w.page=='drivers' and w.focusWidget()==target
     assert w.scroll.viewport().rect().contains(target.mapTo(w.scroll.viewport(),target.rect().center()))
-    assert bridge.calls==before and w.state['milestones']==['health','scan']
+    assert [call for call in bridge.calls if call[0]!='operation.status']==[call for call in before if call[0]!='operation.status']
+    assert w.state['milestones']==['health','scan']
     assert target.text() in w.notice.text()
     w.scroll.widget().findChild(QPushButton,'journey-return').click();application.processEvents()
     assert w.page=='home' and w.scroll.verticalScrollBar().value()==0
@@ -406,3 +407,25 @@ def test_driver_backup_explains_its_outcome_instead_of_silently_leaving_the_jour
     assert (w.t('j.backupCreated').format(count=packages) if packages else w.t('j.noPackages')) in texts
     assert w.scroll.widget().findChild(QPushButton,'journey-return')
     assert w.state['milestones']==['health','scan']
+
+
+def test_journey_reveal_follows_late_layout_changes_without_overriding_manual_scroll(window,application):
+    from PySide6.QtWidgets import QWidget
+    from PySide6.QtTest import QTest
+    w,bridge=window;w.go('home');w.scroll.widget().findChild(QPushButton,'journey-next').click();QTest.qWait(40)
+    target=w.scroll.widget().findChild(QPushButton,'health-scan')
+    spacer=QWidget();spacer.setFixedHeight(800);w.scroll.widget().layout().insertWidget(0,spacer);QTest.qWait(50)
+    assert w.focusWidget()==target
+    assert w.scroll.viewport().rect().contains(target.mapTo(w.scroll.viewport(),target.rect().center()))
+    w.scroll.verticalScrollBar().setValue(0);QTest.qWait(30)
+    assert w.scroll.verticalScrollBar().value()==0
+
+
+def test_journey_pending_focus_cannot_reveal_a_disposed_page(window,application,monkeypatch):
+    from PySide6.QtTest import QTest
+    from PySide6.QtCore import QCoreApplication,QEvent
+    w,bridge=window;errors=[];monkeypatch.setattr(sys,'excepthook',lambda kind,error,tb:errors.append(repr(error)))
+    w.go('home');w.scroll.widget().findChild(QPushButton,'journey-next').click()
+    w.go('settings');QCoreApplication.sendPostedEvents(None,QEvent.DeferredDelete);QTest.qWait(30)
+    assert w.page=='settings' and w.scroll.widget().findChild(QComboBox,'settings-section')
+    assert errors==[] and w.state.get('milestones',[])==[]

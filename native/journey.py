@@ -1,9 +1,41 @@
 """Explain the three existing, persistent care milestones and reveal their actions."""
-from PySide6.QtCore import Qt,QTimer
+from PySide6.QtCore import Qt,QTimer,QObject,QEvent,Slot
 from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QProgressBar,QPushButton,QFrame
 
 ACTIONS={'health':'healthScan','scan':'scan','drivers':'driverBackup'}
 STEPS=(('health','stepHealth','home','health-scan'),('scan','stepScan','cleanup','cleanup-scan'),('drivers','stepDrivers','drivers','driver-backup'))
+
+class RevealedAction(QObject):
+    """Keep the focused action visible as wrapped text finishes laying out."""
+    def __init__(self,window,target):
+        super().__init__(target)
+        self.window,self.target,self.page=window,target,window.page
+        self.timer=QTimer(self);self.timer.setSingleShot(True);self.timer.timeout.connect(self.ensure_visible)
+        target.installEventFilter(self)
+        window.scroll.verticalScrollBar().rangeChanged.connect(self.queue)
+        QTimer.singleShot(0,target,self.activate)
+
+    def on_current_page(self):
+        body=self.window.scroll.widget()
+        return body is not None and self.window.page==self.page and body.isAncestorOf(self.target)
+
+    @Slot()
+    def activate(self):
+        if self.on_current_page():
+            self.target.setFocus(Qt.OtherFocusReason)
+            self.queue()
+
+    @Slot()
+    def queue(self,*_):
+        if self.on_current_page() and self.window.focusWidget()==self.target:self.timer.start(0)
+
+    @Slot()
+    def ensure_visible(self):
+        if self.on_current_page() and self.window.focusWidget()==self.target:self.window.scroll.ensureWidgetVisible(self.target,0,24)
+
+    def eventFilter(self,obj,event):
+        if event.type() in (QEvent.Move,QEvent.Resize,QEvent.Show):self.queue()
+        return False
 
 def reveal_step(window,key):
     if window.busy:return
@@ -12,10 +44,7 @@ def reveal_step(window,key):
     window.go(item[2])
     target=window.scroll.widget().findChild(QPushButton,item[3])
     window.notice.setText(window.t('j.locate.'+key).format(action=window.t(ACTIONS[key])))
-    def reveal():
-        window.scroll.ensureWidgetVisible(target,0,24)
-        target.setFocus(Qt.OtherFocusReason)
-    QTimer.singleShot(0,target,reveal)
+    target._journeyReveal=RevealedAction(window,target)
 
 def render_return(window):
     key=window.state.get('journeyActiveStep')
