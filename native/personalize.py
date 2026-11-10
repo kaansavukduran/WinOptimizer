@@ -26,9 +26,9 @@ def ink(hex_color):
     luminance=sum(a*b for a,b in zip(channels,(.2126,.7152,.0722)))
     return '#000000' if (luminance+.05)/.05 >= 1.05/(luminance+.05) else '#ffffff'
 
-def header(window):
+def header(window,title=True):
     wrapper=ResponsiveRow(window.body.parentWidget(),window);window.companion_header=wrapper;row=wrapper.row;copy=QVBoxLayout()
-    window.label(window.t(window.page),heading=True,layout=copy)
+    if title:window.label(window.t(window.page),heading=True,layout=copy)
     caption=QLabel(window.t('look.pages.'+window.page));caption.setWordWrap(True);caption.setTextFormat(Qt.PlainText);copy.addWidget(caption)
     row.addLayout(copy,1)
     window.aion=Aion(window.resource_root,lambda key:window.t('n.'+key),window.page,compact=True,parent=wrapper)

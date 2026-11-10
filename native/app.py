@@ -206,7 +206,13 @@ class Window(QMainWindow):
         self.body = QVBoxLayout(body)
         self.body.setSpacing(round(14 * self.settings.get('scale', 100) / 100))
         self.actions = []
-        if self.ready:personalize.header(self)
+        if self.ready:
+            guided_home=self.page=='home' and not self.failure
+            if guided_home:
+                self.label(self.t('home'),heading=True)
+                from journey import render
+                render(self)
+            personalize.header(self,title=not guided_home)
         else:self.label('WinOptimizer Aion',heading=True)
         recovery.render(self)
         if self.ready:
@@ -511,8 +517,6 @@ class Window(QMainWindow):
         personalize.sync(self)
 
     def page_home(self):
-        from journey import render
-        render(self)
         self.button('scanFix', lambda: self.go('scanFix'), True, name='home-scan')
         self.hero()
         from journey import render_return
