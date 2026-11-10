@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.0.1",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 94111207,
+  "sha256": "4a5944840469a8b3721a1bb4fb625a412ca1bb686924dff64a8ebd78573ce05e",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.0.1/WinOptimizer-Aion-6.0.1-Windows-x64-Setup.exe",
+  "sourceCommit": "e4ac8b23834747bb78d3909a1919a6b847acbffd",
+  "notes": {
+    "tr": "WinOptimizer’a özel yeni Aion logosu: bakım çarkı, daha okunaklı Windows simgeleri; uygulama, Setup, portable ve kısayollarda yenilendi.",
+    "en": "A dedicated Aion maintenance logo with clearer Windows icons across the app, Setup, portable and shortcuts."
+  },
+  "portable": {
+    "bytes": 93980708,
+    "sha256": "aa04a15338da64106837048051fda732fc81449c78eda12b035caa9324656b74",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.0.1/WinOptimizer-Aion-6.0.1-Windows-x64-Portable.exe"
+  }
+}
