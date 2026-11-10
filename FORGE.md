@@ -1,6 +1,6 @@
 # WinOptimizer Aion Forge
 
-Durum: **ACTIVE, 5.3.0 kararlı; 5.3.1 toplu güncelleme ve ilk kullanım akışı doğrulanıyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
+Durum: **ACTIVE, 5.3.0 kararlı; 6.0.0 Chromium kullanmayan yerel arayüz geliştiriliyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
 
 ## Güncel doğrulanmış yayın: 5.3.0
 
@@ -80,3 +80,7 @@ Son soru sürücü veri tabanının kaynaklarıydı; `docs/DRIVER-CATALOG.md` me
 Kullanıcı tek tek kutu işaretlemeden Tümünü güncelle ve teknik bilgi gerektirmeyen arayüz istedi. Yetkili dal `forge/update-all`. İki sürücü ekranında tüm uygun teklifleri kapsayan düğme, sayı/ad listeli mevcut onay, otomatik yedek ve sonuçlar; 20 üzeri seçimler için hash sabitlenmiş yerel plan eklendi. Tara ve Düzelt çevrimiçi sürücü aramasını varsayılan açar, değişiklik yapmayan taramayı açıklar, üç adım ve dinamik Sıradaki adım gösterir; seçenek/filtreler açılır ayrıntıdır. Yerel tarama tercihi ve tek sürücü seçimi korunur. Eski terminal kapsamı `docs/LEGACY-COVERAGE.md`; tam eşitlik yoktur. Yerelde39Node,22Chromium ve TypeScript/Vite geçti; üretim audit sıfır. Windows PS5.1 gerçek plan reddi, kurulum ve 5.3.0→5.3.1 güncelleme/yayın/yedek bekliyor. Eski etiket/paketler değiştirilmez.
 
 Kullanıcı ayrıca Release içinde Windows portable istedi. Portable.exe hedefi, EXE yanındaki Data ile bağımsız veri/oturum/log, yazılamayan klasörde açık hata, Setup çalıştırmayan portable güncelleme yönlendirmesi eklendi. Tek imzalı manifest iki paket hash/URL/boyutunu kapsar; yayın her ikisini de doğrular. Portable güncelleme tarayıcıdan yeni EXE indirip Data yanına elle koyma yoludur; otomatik kendini değiştirme iddiası yok. CI gerçek Portable.exe açılışı, yerel tarama, ayar kalıcılığı ve kurulu veri ayrımını kontrol eder. Yerelde41Node/23Chromium başarılı; yeni kaynak Windows CI kapısı bekliyor.
+
+## Aktif kapsam değişikliği: yerel 6.0.0
+
+Kullanıcı işlem adımlarının atlanmadığını görünür kılma ve Chromium motoru olmadan C/Python benzeri yerel uygulama istedi. Yayımlanmamış 5.3.1 işini 6.0.0'a taşı. Eski5.3kararlı korunur. Python3.12/PySide6QtWidgets native/app.py gerçek giriş, NodeService+PowerShellişkatmanı aynenkorunur; Electron veya WebEngine paketlenmez. NodeWindows24.22.1resmîexeSHA256pinlidir. SetupNSISvePortablePyInstalleronefileaynıbinaryfarklıisimleveriyeriniayırteder. PortableData/WinOptimizer Aionklasörü eski nativeyolkorumalarıylauyumludur. 44Node ve6nativeQtUItestyereldegeçti; yeniWindowsCIpaketvegüncellemedoğrulamasıkapısıbekliyor. powershell ilerlemejsonl, uygulama/Windowskaynağıayrıgerçekadımlar,başarısız/skippedreasonvekalıcısonişlemgünlüğüeklendi. FulllogJSONdışaaktarılır. Kurulumdata%LOCALAPPDATA%/WinOptimizerAionkorunur. Güncelleme5.3.0→6.0.0denenmeli. NativeQt görüntüleri gerçekWindowskoşusundanalınmalı. Eski67c503portablerunları bu6paketinekanıtsayılmaz.

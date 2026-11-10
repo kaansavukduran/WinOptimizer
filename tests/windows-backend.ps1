@@ -10,7 +10,13 @@ $tokens=$null;$errors=$null;$null=[Management.Automation.Language.Parser]::Parse
 if($errors.Count){$errors|Format-List;throw 'PowerShell parser errors'}
 function Call-Backend($Action,$Data=@{}){
   $encoded=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($Data|ConvertTo-Json -Compress)))
-  $raw=& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $file -Action $Action -PayloadBase64 $encoded
+  $progress=Join-Path $env:TEMP ('aion-progress-'+[guid]::NewGuid().ToString('N')+'.jsonl')
+  try {
+    $raw=& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $file -Action $Action -PayloadBase64 $encoded -ProgressFile $progress
+    $events=@(Get-Content -LiteralPath $progress|ForEach-Object {$_|ConvertFrom-Json})
+    if(-not @($events|Where-Object {$_.status -eq 'running'}).Count){throw 'Native progress start missing'}
+    if($Action -eq 'diagnostics' -and -not @($events|Where-Object {$_.step -eq 'devices' -and $_.status -in @('complete','failed')}).Count){throw 'Native provider progress missing'}
+  } finally {Remove-Item -LiteralPath $progress -Force -ErrorAction SilentlyContinue}
   $r=$raw|ConvertFrom-Json;if(-not $r.ok){throw $r.error};return $r.data
 }
 $diag=Call-Backend 'diagnostics'

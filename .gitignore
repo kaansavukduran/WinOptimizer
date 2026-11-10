@@ -14,3 +14,9 @@ work/
 Logs/
 Backups/
 Reports/
+
+__pycache__/
+.pytest_cache/
+native-build/
+vendor/
+*.spec
