@@ -258,3 +258,34 @@ def test_shared_scan_shows_native_provider_failures_without_claiming_whole_scan_
     w.poll();assert w.progress.maximum()==0
     assert w.t('care.firewall') in w.notice.text()
     assert 'Başarısız: 1' in w.log_hint.text()
+
+@pytest.mark.parametrize('language',['tr','en'])
+@pytest.mark.parametrize('expanded',[True,False])
+def test_window_resizes_before_delayed_bootstrap_and_retains_log_preference(window,application,tmp_path,monkeypatch,language,expanded):
+    from PySide6.QtGui import QResizeEvent
+    from PySide6.QtCore import QSize
+    class DeferredBootstrapBridge(FixtureBridge):
+        def call(self,command,payload=None,callback=None):
+            if command=='bootstrap':
+                self.bootstrap_callback=callback
+                self.calls.append((command,copy.deepcopy(payload or {})))
+            else:super().call(command,payload,callback)
+        def complete(self):self.bootstrap_callback(dict(ok=True,data=dict(settings=copy.deepcopy(self.settings),portable=True,milestones=[])))
+    settings=copy.deepcopy(window[0].settings);settings.update(language=language,operationDetails=expanded,scale=200 if not expanded else 100)
+    bridge=DeferredBootstrapBridge(settings,portable=True);startup=Window(bridge,tmp_path/'delayed',portable=True);errors=[]
+    monkeypatch.setattr(sys,'excepthook',lambda kind,error,tb:errors.append(repr(error)))
+    try:
+        assert not startup.ready
+        # This exact event used to access an attribute created only by bootstrap.
+        startup.resizeEvent(QResizeEvent(QSize(1240,900),QSize(480,560)))
+        startup.show()
+        for width,height in [(480,560),(960,750),(1240,900)]:startup.resize(width,height);application.processEvents()
+        assert not startup.ready and startup.isVisible()
+        bridge.complete();application.processEvents()
+        assert startup.ready and startup.details_expanded is expanded
+        assert startup.log_details.isHidden() is (not expanded)
+        startup.resize(800,700);application.processEvents()
+        assert startup.settings['operationDetails'] is expanded and startup.settings['language']==language
+        assert not any(command=='settings.save' for command,_ in bridge.calls)
+        assert errors==[]
+    finally:startup.close();application.processEvents()

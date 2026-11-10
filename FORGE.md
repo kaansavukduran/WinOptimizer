@@ -132,3 +132,7 @@ KullanıcıOguzhanDUYAR/sysmenderdonorincelemevegeliştirmeistedi. Sabitcommitf1
 ## 6.3.1 ortak tarama ve bütünleşik arayüz
 
 Kullanıcının açıklaması: donor işlevleri mevcut WinOptimizer ekranlarına uygun yerlerde entegre edilmeli. Ayrı Windows Sağlığı sekmesi kaldırıldı. Tek diagnostics.scan; olay/çökme Tara ve Düzelt'te, Defender/firewall/servis/CheckHealth Sistem araçları'nda, yeniden başlatma Genel bakış'ta, WU geçmişi ve azaltılmış rapor Geçmiş ve yedekler'de. Ortak iptal sinyali, son tamamlanmış kayıt ve zaman damgası; tarama başarısızsa eski veri sağlıklı gösterilmez. Donor EXE/C# taşınmadı. Node/Qt ve gerçek Windows paket/upgrade doğrulaması yayın öncesinde tamamlanacak. 6.3.0 varlıkları ve etiketi değişmez.
+
+## 6.3.2 açılış hatası düzeltmesi
+
+Kullanıcı 6.3.1 Portable açılışında `Window object has no attribute details_expanded` bildirdi. Gerçek Bridge yanıtı asenkron; senkron FixtureBridge açılış sırasını gizliyordu. Geciktirilmiş bootstrap sırasında resizeEvent, gösterme ve dar/geniş boyutlandırma regresyonu dört TR/EN ve açık/kapalı ayrıntı koşulunda eski kodda aynı hatayı üretti. Arayüz durumu Qt olaylarından önce başlatıldı; bootstrap tamamlanmadan resize düzenlemesi çalışmaz. Tercih ve veri sıfırlanmaz. 6.3.2 Setup/Portable ve Windows doğrulaması hazırlanıyor; eski yayınlar korunur.
