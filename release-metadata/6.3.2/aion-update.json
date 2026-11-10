@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.3.2",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 94195586,
+  "sha256": "8aab33cdaced2ee26c167b0b8f4f2d3a2d0341c624cb03e2dd8ebea6889a986e",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.3.2/WinOptimizer-Aion-6.3.2-Windows-x64-Setup.exe",
+  "sourceCommit": "322ab8e59089e6c89b9e4b1ee082ecfdc0d2c319",
+  "notes": {
+    "tr": "Açılışta pencere boyutlanırken oluşan details_expanded hatası düzeltildi. Arka plan motoru beklenirken pencere güvenle açılır; kayıtlı görünüm ve işlem ayrıntıları tercihi korunur.",
+    "en": "Fixes the details_expanded startup crash when the window resizes before the backend is ready. Saved appearance and log expansion preferences are preserved."
+  },
+  "portable": {
+    "bytes": 94071833,
+    "sha256": "5cddddc2149de8719fd629ed8662fc9f85fefeb0330fee52691cc33e6f294d6d",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.3.2/WinOptimizer-Aion-6.3.2-Windows-x64-Portable.exe"
+  }
+}
