@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.1.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 94160972,
+  "sha256": "fdf23af1e99e1f618a49b4e8d0aa2b67c5003c18c2971d49309b822365c8c9a9",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.1.0/WinOptimizer-Aion-6.1.0-Windows-x64-Setup.exe",
+  "sourceCommit": "350a93c4751d283a57cca72fe95077d5028e7786",
+  "notes": {
+    "tr": "Yeni Donanım sekmesi: işlemci, ekran kartı/64 bit VRAM, RAM modülleri, anakart ve diğer aygıtlar; arama, ayrıntılar ve JSON raporu. Tam karşıdan Aion logosu, mavi/pembe/beyaz çark.",
+    "en": "New Hardware tab: CPU, GPU/64-bit VRAM, RAM modules, motherboard and other devices, searchable details and JSON export. Front-facing Aion icon with blue/pink/white gear."
+  },
+  "portable": {
+    "bytes": 94037141,
+    "sha256": "79227d0401dcd571ce6e9b27dca0c0e6be439e0dbe3a7a157173358bad2387bc",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.1.0/WinOptimizer-Aion-6.1.0-Windows-x64-Portable.exe"
+  }
+}
