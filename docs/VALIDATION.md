@@ -1,5 +1,25 @@
 # Verification evidence
 
+## 6.1.0 Hardware and front-facing Aion
+
+Application/tag source `350a93c4751d283a57cca72fe95077d5028e7786`, merged through PR #8. 46 Node checks and 12 native Qt checks passed. [Source Windows build](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745105796), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745111433), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745759295), [immutable publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745776245) and [installed 5.3.0 → 6.1.0 upgrade](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745955196) succeeded. Release [v6.1.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.1.0) is stable/latest; prior 6.0.1 angled-icon preview remains a historical prerelease.
+
+Actual Windows PowerShell 5.1 parsed the inventory and compiled the DXGI C# helper. Both installed and portable packages scanned fourteen categories through their native Qt Hardware tab and recorded actual category completion events. The runner reported system, CPU, GPU, memory/arrays, motherboard, BIOS, storage/volumes, display, network and PnP devices; audio and battery correctly reported no devices. Reopening, installed/portable data isolation, real cleanup/restore and official Microsoft runtime checks passed. [Turkish 100% view](screenshots/WinOptimizer-6.1.0-Windows-Donanim.png) shows the Windows runner's hardware, not the user's computer.
+
+UI/service fixtures check a 12 GiB dedicated GPU value, unknown fallback VRAM, DDR5, category/search behavior, missing providers versus absent devices, read-only unelevated invocation, retained session results and export without rescanning. DXGI fields are uint64; the Windows VM supplied values above 4 GiB for shared memory. A physical GPU with more than 4 GiB dedicated VRAM was not separately exercised. [Hardware sources and limitations](HARDWARE.md) describe unsupported sensors/PSU information and firmware-provided values.
+
+Final source artifact `13731436656`: SHA-256 `a0a1f33c2d06737d9bef3b4ebae3fbfa1ff76fc950b9edb6f4818691232b53a4`. Original artifact SHA-256/ZIP CRC and embedded-key Ed25519 metadata were verified. All five published asset sizes/digests match the source build. Both PE files contain all seven original front-facing icon payloads at 16/24/32/48/64/128/256 pixels.
+
+| Package | Bytes | SHA-256 |
+| --- | --- | --- |
+| Setup | 94,160,972 | `fdf23af1e99e1f618a49b4e8d0aa2b67c5003c18c2971d49309b822365c8c9a9` |
+| Portable | 94,037,141 | `79227d0401dcd571ce6e9b27dca0c0e6be439e0dbe3a7a157173358bad2387bc` |
+
+Downloaded upgrade evidence `13731322441` passed SHA-256 `aed80b06c4ba1e73b2ac1681f32039acfa302c4689817f7b12f48ce46b7f779e` and ZIP CRC. It verifies version 6.1.0, English/dark/135% UI/125% text/OpenDyslexic, original cleanup/restore events and milestones. This is the tested 5.3.0 migration pair; no separate 6.0.0 → 6.1.0 in-app pair was certified. Installer Authenticode signing remains unavailable; authenticated in-app updates use Ed25519 metadata and SHA-256. Portable updates remain manual EXE replacement beside Data.
+
+Private Drive backup readbacks for source ZIPs, all-history Git bundles and whole Setup/Portable files passed size/SHA-256, ZIP CRC and Git-bundle checks. No private signing key was uploaded. The canonical private receipt retains previous verification records and records the new source/package evidence.
+
+
 Production release: [6.0.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.0.0). Production application source/tag: `d5090af906b313eb8e63160c354bda54f7edda6b`. Earlier evidence is retained below.
 
 ## 6.0.0 native Windows GUI
