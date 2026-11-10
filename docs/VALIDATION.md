@@ -1,5 +1,27 @@
 # Verification evidence
 
+## 6.2.0 Native update replacement and readable results
+
+Application/tag source `fc60edaed7aa75ae78b3deaac8ddccb20179248c`, PR #9, merge `9dba27a974fc8926b09de27db0a0348a80032048`. [Release v6.2.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.2.0) is stable/latest. [Source Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42777535853), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42777542808), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42778260279), [immutable publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42778350270) and [actual native 6.1.0 → 6.2.0 upgrade](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42778713731) passed.
+
+47 Node and 18 native Qt checks passed, covering preserved hardware search, clipboard/UTF-8 report output, unknown data, real-receipt category progress, collapsed log visibility/counts, saved preferences, clean installer handoff and launch failure recovery. Real installed and portable packages read fourteen categories, copied the actual Windows inventory summary and formatted the full text report. Portable reopening and data isolation passed. The package scan rejects browser-engine payloads; the GUI remains Python/Qt Widgets with headless Node/PowerShell. [Turkish compact Windows view](screenshots/WinOptimizer-6.2.0-Windows-Donanim.png) shows the test VM's hardware.
+
+The old native update negative control [6.0.0 → 6.1.0](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42776288899) reached the real confirmation through Windows UI Automation, then exposed registration 6.1.0 with the unchanged 6.0.0 executable hash. It is a failing historical pair, not a certified upgrade. The new installer stages the complete new payload and retries atomic MoveFileEx replacement while the old executable remains locked. Registration and restart follow successful replacement; failures leave the old executable. Installer/client handoffs request a fresh onefile environment. A real Windows test holds the installed EXE open without delete sharing, verifies the installer waits, releases the lock, and verifies the exact new payload with no leftover staging file.
+
+The successful 6.1.0 → 6.2.0 run invokes Settings, Updates, Check for updates, Update and restart, and Continue on the installed native app. It checks the installed EXE against the published portable SHA-256, registration 6.2.0, and actual running application 6.2.0. English, dark theme, 135% UI, 125% text, OpenDyslexic, cleanup/restore history and milestones were preserved. Upgrade artifact `13744404860`: SHA-256 `57d0dd43d8015d5a815c0c2ec098748eda40ac70aba02eea063e4b2a31a483c9`; ZIP CRC and actual receipts verified.
+
+Source artifact `13745030924`: SHA-256 `27848a4251b47a54feaa0f70e76a414895b671efe824262ee7b0b764ed991b32`; original digest and ZIP CRC verified. Embedded-key Ed25519 metadata, all five published asset sizes/digests, and all seven original icon payloads at 16/24/32/48/64/128/256 pixels in both EXEs were checked.
+
+| Package | Bytes | SHA-256 |
+| --- | --- | --- |
+| Setup | 94,171,235 | `e24f9ab650e54a46acbe8bf688ddb4cf642773015625ce9a186ee768d1f5b2e4` |
+| Portable | 94,046,497 | `c57f9356d28ca451c4b277574e79c92a3175b8708c893ff679d9f0db105c407f` |
+
+Hardware percentage is processed category work, not a health score. Missing values/providers and unknown operation totals remain explicit. Physical GPU/provider combinations and all disk/filesystem failures are not exhaustively certified; [hardware scope](HARDWARE.md) applies. Portable updates remain manual replacement beside Data; installer Authenticode signing remains unavailable. In-app installer updates authenticate Ed25519 metadata plus SHA-256.
+
+Source/history and whole Setup/Portable private Drive readbacks passed size/hash, ZIP CRC and Git-bundle checks. Final evidence and the cumulative private receipt retain previous records. Private signing keys are excluded.
+
+
 ## 6.1.0 Hardware and front-facing Aion
 
 Application/tag source `350a93c4751d283a57cca72fe95077d5028e7786`, merged through PR #8. 46 Node checks and 12 native Qt checks passed. [Source Windows build](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745105796), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745111433), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745759295), [immutable publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745776245) and [installed 5.3.0 → 6.1.0 upgrade](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42745955196) succeeded. Release [v6.1.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.1.0) is stable/latest; prior 6.0.1 angled-icon preview remains a historical prerelease.

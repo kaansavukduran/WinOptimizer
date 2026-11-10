@@ -19,6 +19,8 @@ Windows 10 22H2 veya Windows 11 x64 ve Windows'un kendi PowerShell 5.1'i gerekir
 
 Download either **Setup.exe** for installation or **Portable.exe** for direct use. Double-click the file. No separate Python, Node.js, Chrome, Chromium, account or subscription is required. The installer is not Authenticode-signed; authenticated in-app installer updates use Ed25519 metadata and SHA-256.
 
+6.2.0 kurucusu, önceki yerel EXE hâlâ kilitliyken sürüm kaydını ilerletmez: yeni dosyayı hazırlar, kilidin açılmasını bekler ve tek adımda değiştirir. Gerçek 6.1.0 → 6.2.0 uygulama içi güncellemesi; kurulan dosya özeti, çalışan sürüm ve ayar/geçmiş korunmasıyla doğrulandı.
+
 ## İlk kullanım / First use
 
 1. **Tara ve Düzelt → Taramayı başlat.** Sürücü teklifleri için çevrimiçi kontrol varsayılan açıktır. Tarama sistem ayarlarını değiştirmez, indirme/kurulum başlatmaz. İnternetsiz kontrol için **Tarama seçenekleri → Çevrimiçi kontrolleri de yap** seçeneğini kapat.
@@ -37,7 +39,7 @@ VRAM, DXGI'nin 64 bit değeridir; paylaşılan sistem belleği ayrıca gösteril
 
 **Hardware → Scan hardware** reads local specifications, supports search/category filtering and exports JSON. Missing providers and absent devices have different labels. Dedicated GPU memory uses DXGI 64-bit counts; shared RAM stays separate. This is a read-only inventory, not a hardware benchmark or health diagnosis.
 
-[Gerçek Windows Donanım ekranı](docs/screenshots/WinOptimizer-6.1.0-Windows-Donanim.png) — test sanal makinesinin özelliklerini gösterir.
+[Gerçek Windows Donanım ekranı](docs/screenshots/WinOptimizer-6.2.0-Windows-Donanim.png) — test sanal makinesinin özelliklerini gösterir.
 
 ## İşlem gerçekten çalışıyor mu? / Observable operations
 
