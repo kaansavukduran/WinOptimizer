@@ -1,6 +1,16 @@
 # WinOptimizer Aion Forge
 
-Durum: **6.5.0 kararlı/latest; anlaşılır hata sonrası devam ekranı tamamlandı.** Windows x64, Python/Qt Widgets, bundled headless Node/Windows PowerShell; Chromium veya ayrı donor EXE yok. Kaynak/etiket `484f317286681816c3e939a481400827bf028500`, PR #16, merge `0a2da16a769292fb313f91b67b81c07b0af47f9f`, imzalı metadata `bad8e8194f90a09a32056c802429c2ff971e4716`, yayın `440584318`.
+Durum: **6.6.0 kararlı/latest; yazı/renk ayarları ve her sekmede Aion tamamlandı.** Windows x64, native Qt, Chromiumsuz. Kaynak/etiket `525229f452b535bce01dac5f07877d0a236f58f0`, PR #17, merge `3878fe1b8b2cef055358cccf650126fa2ade50e8`, imzalı metadata ve test-only animasyon akışı `23e7cf4051efb9f22e156ba99c2f8ceeb8c40966`, yayın `440675799`.
+
+Her sayfada Yazı ve tema; Ayarlar açılınca Görünüm. Font/gerçek önizleme/OpenDyslexic Türkçe glifleri, renk seçici, beş renk, doğrulanan HEX/sıfırlama ve okunaklı düğme metni. Font tüm içeriğe uygulanır. Ayarlar bağımsız, dar ekran yüzdeleri üç sütun. Yeni 24 kare aion-sections.png; on sayfada farklı klipler, fare/sevilme/pause/gerçek başarı/azaltılmış hareket ve ortak pixmap önbelleği. Ana sayfa rehberi önce gelir. Yeni Drive referansı indirildiği iddia edilmez; mevcut onaylı optimizer karakteriyle yeni pafta üretildi.
+
+86 Qt/55 Node geçti. Windows kaynak `42862554953`, PR `42862566359` (2. deneme), main `42864509713`, yayın `42864650951`, hareket açık `42864657457`, gerçek 6.5.0 → 6.6.0 güncelleme `42865115572` başarılı. İlk Windows turunda rehber düğmesinin kayması ve testin host hareket/odak varsayımı düzeltildi. PR bir ortamda CIM servis okuyamadı; değişmeyen testler yeni ortamda geçti. Normal runner hareketi azaltıyordu: sabit kare doğrulandı. Ayrı test workflow Windows hareketini açıp geri okudu; aynı paket on sayfada gerçekten kare ilerletti, sonra runner ayarı geri alındı. Uygulama OS tercihini değiştirmez. Gerçek paket kontrolü tercihleri geri yükler; geçmiş/milestones korunur. Metadata/test-workflow-only committe gereksiz push derlemesi skip edilir; uygulama source/PR/merge ve ayrı animation workflow ile doğrulanır.
+
+Özel Drive `1i11oPGJtgpqmLSzB0bqCHGn3cX2YTSCQ`: dört kaynak push, merge, metadata/workflow, kapanış, tüm Git geçmişi/etiketler, bütün Setup/Portable ve kanıtlar. Ham geri okuma ve arşiv/bundle doğrulaması; özel anahtar yok. Sonraki Forge bu doğrulanmış noktadan başlar. Eski yayınları değiştirme; yalnız Windows, Aion kimliği, kayıtlar ve ortak SysMender entegrasyonu korunur. Kullanım docs/PERSONALIZATION.md, gerçek Windows kanıtları docs/VALIDATION.md.
+
+## Önceki 6.5.0 kaydı
+
+Durum: **6.5.0 önceki doğrulanmış sürüm; anlaşılır hata sonrası devam ekranı tamamlandı.** Windows x64, Python/Qt Widgets, bundled headless Node/Windows PowerShell; Chromium veya ayrı donor EXE yok. Kaynak/etiket `484f317286681816c3e939a481400827bf028500`, PR #16, merge `0a2da16a769292fb313f91b67b81c07b0af47f9f`, imzalı metadata `bad8e8194f90a09a32056c802429c2ff971e4716`, yayın `440584318`.
 
 İşlem motoru açılamadığında/koptuğunda bekleyen istekler tek kez hata verir, sonraki istekler anında döner, sorgulama durur. TR/EN açıklama, etkilenen işlem/ekran, ilgili ekrana dönüş, yerel hata kopyası ve ayrıntılar gösterilir. Yalnız açıkça izin verilen okuma işlemleri aynı seçeneklerle yeniden denenebilir; değişiklikler otomatik tekrarlanmaz. Çalışmış bir Windows işleminin sonucu doğrulanamadıysa devam ediyor olabilir. Raporlar o pencerede ve önceki bakım ilerlemesi korunur. Açılış hatası kullanılabilir açıklama ekranı verir.
 

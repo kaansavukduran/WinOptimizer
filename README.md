@@ -8,6 +8,8 @@ A bilingual native Windows care app. The 6.x GUI uses Python/Qt Widgets, with a 
 
 ## İndir ve aç / Download and open
 
+**6.6.0:** Her sayfada **Yazı ve tema** kısa yolu; görünür font seçimi ve gerçek OpenDyslexic önizlemesi, tema/renk seçici ve hazır renkler. Yeni 24 karelik Aion paftasıyla on sekmede farklı animasyonlar. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.6.0) · [Kişiselleştirme](docs/PERSONALIZATION.md) · [Font/tema ekranı](docs/screenshots/WinOptimizer-6.6.0-Yazi-Tema.png) · [Renkler](docs/screenshots/WinOptimizer-6.6.0-Renkler.png) · [Donanımda Aion](docs/screenshots/WinOptimizer-6.6.0-Aion-Donanim.png). / Discoverable font/theme/color choices and contextual Aion animation across every native section.
+
 **6.5.0:** Hata sonrası ne olduğunu ve nasıl devam edeceğini açıklayan ekran; bilgi okuma işlemleri için yeniden deneme, ilgili işleme dönüş ve motor bağlantısı kopunca sonsuz beklemeyi önleme. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.5.0) · [Hata sonrası devam](docs/RECOVERY.md) · [Windows doğrulaması](docs/VALIDATION.md). / Clear recovery guidance, explicit read retries and preserved results after engine disconnection.
 
 **6.4.0:** Bakım yolculuğu hangi üç işi saydığını, tamamlananları ve sıradaki adımı açıklar. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.4.0) · [Windows doğrulaması](docs/VALIDATION.md). / Explained care steps with guided actions and preserved progress.

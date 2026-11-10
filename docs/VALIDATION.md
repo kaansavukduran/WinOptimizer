@@ -1,8 +1,33 @@
 # Verification evidence
 
+## 6.6.0 font, color and contextual Aion animation
+
+[v6.6.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.6.0) is stable/latest. Application/tag source `525229f452b535bce01dac5f07877d0a236f58f0`, PR #17, merge `3878fe1b8b2cef055358cccf650126fa2ade50e8`, signed metadata/test-only animation workflow `23e7cf4051efb9f22e156ba99c2f8ceeb8c40966`. The metadata commit skips the redundant application push build; the unchanged app is validated by source, PR and merge builds, and the new animation workflow is dispatched separately against that exact source artifact.
+
+Settings opens on Appearance. Every page offers a Font and theme shortcut. Font choices, actual preview and bundled Turkish OpenDyslexic glyphs are visible; application/content fonts now update together. Native color picker, five presets, validated hex input, independent reset and black/white primary-button text are included. Theme, accent, UI/text scales and other preferences remain independent. Percentage controls fit narrow screens. [User instructions](PERSONALIZATION.md).
+
+A new transparent 1024×1536 atlas has 24 distinct frames for cleanup, drivers, hardware, startup, tools and history. Existing approved Aion art supplies the other four page loops. Shared pixmaps, a fixed foot anchor, 360 ms frames, short pointer gaze, petting, pause across navigation, one-shot success and hidden-timer suspension are tested. Child-widget construction preserves keyboard focus. Overview keeps its existing care guide first. No separate donor process or browser engine is added; normal application code only reads the Windows reduced-motion preference.
+
+86 Qt and 55 Node tests passed locally and on Windows. Initial Windows checks caught the new header pushing the care action below the viewport and a clock test assuming host foreground/motion policy. Guide priority was restored and the unit clock is controlled independently; actual Windows policy is tested in packaged runs. One final PR runner could not read CIM services; the same source passed the source run and unchanged assertions passed on a fresh second PR attempt.
+
+[Source Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42862554953), [PR, attempt 2](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42862566359), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42864509713), [publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42864650951), [motion enabled](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42864657457) and [actual installed 6.5.0 → 6.6.0 update](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42865115572) succeeded. Regular runners requested reduced motion and all ten pages used static frames. A separate test-only runner enabled Windows client-area animation, read it back, ran the same source Portable and verified actual clock advance on all ten pages, then restored the original setting in finally. This setter exists only in the opt-in CI workflow. Actual UI controls changed font/accent, verified bundled Turkish glyphs, exercised all page companions and motion/visibility off, then restored saved preferences with milestones unchanged. Existing scans, hardware, cleanup/restore, recovery, journey navigation, portable isolation, locked-EXE replacement, signature and seven icon sizes passed. Upgrade payload hash/registry/runtime, settings, cleanup/restore history and health/scan progress matched.
+
+| Artifact | ID | SHA-256 |
+| --- | --- | --- |
+| Source Windows | 13786795837 | `1c6c57221acd24fc168418db297dd0f36c8fe94e64b4a66763a2c5c808dfce9e` |
+| Motion enabled | 13787151038 | `89773f5e01b21c899ec0c3805975ecdd67009df171167721bfbd0c76ee1d57fc` |
+| Installed update | 13785863874 | `2c9926bdaf0941ea6bb220ba4fde2b10006531de968b39ebd78a2320f57e7f00` |
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Setup | 96,894,439 | `6aa4f697a89b07cd31046c1ff06f47637ed05a80766549f7f2838276eb7a019c` |
+| Portable | 96,743,942 | `28081b7cddb2a41418ed8c8a8185f0333f384afb1b57845d0da3a88de87f1961` |
+
+Original archive hashes/ZIP CRC, all five public asset digests and the Ed25519 manifest signature matched. Actual Windows test-runner screenshots: [font/theme](screenshots/WinOptimizer-6.6.0-Yazi-Tema.png), [color presets/picker](screenshots/WinOptimizer-6.6.0-Renkler.png), [Aion with hardware](screenshots/WinOptimizer-6.6.0-Aion-Donanim.png). Hardware shown belongs to the test VM. [Private Drive backup](https://drive.google.com/drive/folders/1i11oPGJtgpqmLSzB0bqCHGn3cX2YTSCQ): every code push, full reachable Git history/tags, whole Setup/Portable files, notes and source/evidence; raw readback hashes, ZIP CRC and bundles checked. Signing keys excluded; old public releases/assets/tags preserved.
+
 ## 6.5.0 operation recovery and clear next steps
 
-[v6.5.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.5.0) is stable/latest. Application/tag source `484f317286681816c3e939a481400827bf028500`, PR #16, merge `0a2da16a769292fb313f91b67b81c07b0af47f9f`, signed metadata `bad8e8194f90a09a32056c802429c2ff971e4716`.
+[v6.5.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.5.0) was the previous verified stable release. Application/tag source `484f317286681816c3e939a481400827bf028500`, PR #16, merge `0a2da16a769292fb313f91b67b81c07b0af47f9f`, signed metadata `bad8e8194f90a09a32056c802429c2ff971e4716`.
 
 Unexpected backend exit, failed startup and malformed response envelopes settle pending requests once. Later requests fail immediately and status polling stops; navigation can display cached results. A readable TR/EN panel identifies the relevant screen/action, explains cancellation, stale selection, administrator cancellation or engine loss, and offers operation details, local diagnostic copy and navigation. Only an explicit allowlist of read operations can be retried with captured options and original screen/section. Mutations are never automatically replayed. An interrupted Windows operation may still be running; its outcome is not asserted. Cached reports are not promised to survive reopening the app. Existing maintenance milestones remain intact. See [recovery behavior](RECOVERY.md).
 
