@@ -57,6 +57,18 @@ jobs:
           $p = Start-Process -FilePath $exe -ArgumentList '--smoke','verify' -Wait -PassThru
           if ($p.ExitCode -ne 0) { throw 'Native upgrade verification failed' }
           if (-not (Test-Path "$env:AION_EVIDENCE/verified-verify.json")) { throw 'Native upgrade receipt missing' }
+      - name: Verify original activity and milestones after native migration
+        shell: pwsh
+        run: |
+          $data = Join-Path $env:LOCALAPPDATA 'WinOptimizer Aion'
+          $activity = Get-Content (Join-Path $data 'activity.json') -Raw | ConvertFrom-Json
+          if ($activity.schema -ne 1) { throw 'Activity schema changed unexpectedly' }
+          $cleanup = @($activity.events | Where-Object { $_.type -eq 'cleanup' })
+          $restore = @($activity.events | Where-Object { $_.type -eq 'restore' })
+          if ($cleanup.Count -lt 1 -or $restore.Count -lt 1) { throw 'Baseline activity was lost' }
+          if ('health' -notin $activity.milestones -or 'scan' -notin $activity.milestones) { throw 'Milestones were lost' }
+          $receipt = @{ baseline=$env:BASELINE_TAG; version=$env:EXPECTED_VERSION; cleanupEvents=$cleanup.Count; restoreEvents=$restore.Count; milestones=$activity.milestones; preserved=$true }
+          $receipt | ConvertTo-Json -Depth 6 | Set-Content 'work/native-evidence/upgrade/preserved-history.json' -Encoding utf8
       - uses: actions/upload-artifact@v4
         if: always()
         with:
