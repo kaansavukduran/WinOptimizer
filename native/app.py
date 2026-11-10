@@ -311,7 +311,7 @@ class Window(QMainWindow):
         self.bridge.call(command, payload, finished)
 
     def error(self, code):
-        key = {'WINDOWS_ONLY': 'n.preview', 'BACKEND_UNAVAILABLE': 'n.backend_error', 'SCAN_EXPIRED': 'errorExpired', 'ADMIN_CANCELLED': 'errorAdmin', 'INVALID_SELECTION': 'errorSelection', 'UPDATE_SIGNATURE_INVALID': 'errorSignature', 'UPDATE_HASH_INVALID': 'errorHash', 'SCAN_CANCELLED': 'cancel', 'OPERATION_TIMEOUT': 'errorTimeout'}.get(code, code if code.startswith('n.') else 'errorDefault')
+        key = {'WINDOWS_ONLY': 'n.preview', 'BACKEND_UNAVAILABLE': 'n.backend_error', 'SCAN_EXPIRED': 'errorScan', 'ADMIN_CANCELLED': 'errorAdmin', 'INVALID_SELECTION': 'errorDefault', 'UPDATE_SIGNATURE_INVALID': 'errorSignature', 'UPDATE_HASH_INVALID': 'errorSignature', 'SCAN_CANCELLED': 'cancel', 'OPERATION_TIMEOUT': 'errorTimeout'}.get(code, code if code.startswith('n.') else 'errorDefault')
         self.notice.setText(f'{self.t(key)}  ({code})')
         self.notice.setAccessibleName(self.t('n.error'))
 

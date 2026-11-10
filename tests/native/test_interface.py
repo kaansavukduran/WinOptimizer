@@ -92,3 +92,13 @@ def test_primary_scan_action_is_visible_before_scrolling_and_trace_keeps_latest_
     assert w.scroll.viewport().rect().contains(button.mapTo(w.scroll.viewport(),button.rect().center()))
     bridge.trace=dict(command='diagnostics.scan',status='complete',events=[dict(at='2026-11-10T12:00:00Z',origin='native',action='diagnostics',step='devices',status='running'),dict(at='2026-11-10T12:00:01Z',origin='native',action='diagnostics',step='devices',status='complete',count=12)])
     w.poll();assert w.log.topLevelItemCount()==1;assert w.log.topLevelItem(0).text(3)=='Tamamlandı';assert len(w.trace['events'])==2
+
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_native_errors_use_human_translations_instead_of_missing_translation_keys(window,language):
+    w,_=window;w.settings['language']=language
+    for code in ['SCAN_EXPIRED','INVALID_SELECTION','UPDATE_HASH_INVALID']:
+        w.error(code)
+        assert code in w.notice.text()
+        assert 'errorExpired' not in w.notice.text() and 'errorSelection' not in w.notice.text() and 'errorHash' not in w.notice.text()
+        assert len(w.notice.text())>len(code)+20
