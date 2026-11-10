@@ -58,7 +58,7 @@ try {
   $install=Find-Control $window 'Update and restart' ([System.Windows.Automation.ControlType]::Button) 120
   Invoke-Control $install 'Update and restart'
   # User confirmation is exercised rather than calling the updater service directly.
-  Invoke-Control (Find-Control $desktop 'OK' ([System.Windows.Automation.ControlType]::Button)) 'OK'
+  Invoke-Control (Find-Control $desktop 'Continue' ([System.Windows.Automation.ControlType]::Button)) 'Continue'
   @{baselineProcessId=$script:baselineProcessId;controls=$script:receipts}|ConvertTo-Json -Depth 6|Set-Content (Join-Path $evidence 'invoked-controls.json') -Encoding UTF8
   Write-Host 'Native Settings -> Updates -> authenticated update invoked through Windows UI Automation'
 }catch{
