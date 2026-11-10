@@ -1,8 +1,14 @@
 # WinOptimizer Aion Forge
 
-Durum: **ACTIVE, 6.0.0 kararlı; 6.0.1 uygulamaya özel logo paketleniyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Yalnız Windows x64; başka OS paketi üretme.
+Durum: **6.3.1 kararlı ve latest; ortak Windows taraması mevcut ekranlara entegre.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal `main`; yalnız Windows x64, Qt Widgets, Chromium yok. Kaynak/etiket `01715e9ca2d8f86011bee0949a3a15dc4f745329`, PR #11 ve #12, son merge `b4c71a406872b182ea2a76899ca923f00a15c484`, imzalı metadata `8de2c00f163c4b7887aee9d32663df63fa969d27`. Yayın `440344724`. Ayrı SysMender EXE/C# veya Windows Sağlığı sekmesi yok; lisans atıfları korunur.
 
-## Güncel doğrulanmış yayın: 6.0.0 native Qt
+Son doğrulama: 54 Node/23 Qt; Windows kaynak `42817615406`, PR `42817650396`, main `42818514168`, yayın `42818597131` ikinci deneme, gerçek 6.3.0 → 6.3.1 yükseltme `42819311009` başarılı. İlk yayın taslak etiketi boşalınca varlık yüklemeden durdu; sürüm etiketi düzeltilip aynı doğrulanmış kaynakla tamamlandı. Kurulan hash/registry/çalışan sürüm, tema/ölçek/font/geçmiş, portable izolasyon, kilitli EXE değiştirme ve bütün ikon boyutları doğrulandı. Drive klasörü `1qNgH2ZW8lLDOLNbdxSttkmlXC8u8xYM_`; kaynak/tüm erişilebilir Git ve iki bütün EXE geri indirilerek doğrulanır. Son belge commit'i ve kanıt arşivi de yedeklenir; imzalama anahtarı yedeğe girmez.
+
+Uygulama kendi başına bir bütündür: Tara ve Düzelt ortak taraması olay/çökme bilgilerini, Sistem araçları koruma/servis/CheckHealth'i, Genel bakış yeniden başlatmayı, Geçmiş ve yedekler WUA geçmişi ve azaltılmış raporu gösterir. Ekran değişimi tarama başlatmaz; kaynak zamanı görünür. Tarihsel kayıt arıza sayılmaz; okunamayan sağlayıcı bilinmiyor kalır. Global rapordaki iç içe Windows kanıtından da olay metinleri çıkarılır. Ayrıntılar `docs/SYSMENDER-DONOR.md`, gerçek ekranlar ve hash/CI/upgrade kanıtı `docs/VALIDATION.md` içinde.
+
+Aşağıdaki 6.0.0 ve sonraki bölümler tarihsel çalışmaları kaydeder. Güncel durum yukarıdadır.
+
+## Tarihsel doğrulanmış yayın: 6.0.0 native Qt
 
 - [6.0.0 kararlı](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.0.0), yayın kimliği `439846022`. Kaynak/etiket `d5090af906b313eb8e63160c354bda54f7edda6b`. PR #5 native geçiş merge `e537d823eaa410fef4d83e3562a230b24d1391ed`, PR #6 son görünürlük merge `ddf2a9f124d33d1c35e1eebb2b97b6d13d98358e`; imzalı üstveri `3f2fd92e94cbab571caca45e4e8f462d4edf4dee`.
 - Setup: 93.478.533 bayt, SHA-256 `532a90c7932b4ad1a3b654aa5e7cea28d3a41c5328e2e1c23e262488ed98f1be`. Portable: 93.426.145 bayt, SHA-256 `4ed4e7e047e0096fb0f6f71dff08ea51c1b4be24558f46014ae616a27b4c0bf7`. Release'ta iki gerçek EXE + imzalı aion-update.json/.sig ve SHA256SUMS.txt var. Eski yayınlar korunur.

@@ -56,6 +56,8 @@ Bilgiler aynı taramanın zaman damgasını taşır; sekme değiştirmek yeniden
 
 Selected SysMender/WinUtil MIT inspection ideas are implemented in WinOptimizer's own Python/Qt, Node and Windows backend. One shared Scan & Fix snapshot feeds existing pages; no donor executable, nested application or separate donor tab runs. Unavailable providers remain unknown; historical records alone are not a current fault diagnosis.
 
+Gerçek Windows 6.3.1 ekranları: [Tara ve Düzelt](docs/screenshots/WinOptimizer-6.3.1-Tarama.png) · [Sistem araçları](docs/screenshots/WinOptimizer-6.3.1-Sistem-Araclari.png) · [Genel bakış](docs/screenshots/WinOptimizer-6.3.1-Genel-Bakis.png) · [Geçmiş](docs/screenshots/WinOptimizer-6.3.1-Gecmis.png). [Doğrulama ve yükseltme kanıtı](docs/VALIDATION.md).
+
 ## İşlem gerçekten çalışıyor mu? / Observable operations
 
 **İşlem adımları** bölümü Windows arka ucundan gelen gerçek aşamaları gösterir. Uygulama isteği ile Windows kaynaklı olaylar ayrılır. Her adımın son durumu, ölçülebilen adetleri, hata/sonuç kodu ve atlama nedeni görünür. Tamamlanan, başarısız olan ve atlanan adımlar ayrı sayılır. Toplam bilinmeyen işlerde uydurma yüzde gösterilmez; çalışan durum ve geçen süre gösterilir.
