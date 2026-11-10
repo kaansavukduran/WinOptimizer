@@ -686,7 +686,38 @@
       "software": "yazılım bağdaştırıcısı",
       "remote": "uzak bağdaştırıcı"
     },
-    "windowsCare": "Windows kayıtları"
+    "windowsCare": "Windows kayıtları",
+    "j": {
+      "intro": "İlk bakım için 3 başlangıç adımı: ne işe yarar, hangileri tamamlandı, sıradaki ne?",
+      "progress": "{done}/3 adım tamamlandı",
+      "summary": "3 başlangıç adımından {done} tanesi daha önce tamamlandı",
+      "next": "Sıradaki adım: {number}. {title}",
+      "done": "✓ Daha önce tamamlandı",
+      "pending": "○ Henüz tamamlanmadı",
+      "open": "Aç",
+      "reopen": "Tekrar aç",
+      "allDone": "3 başlangıç adımını da tamamladın. Güncel sorunları ve sürücü tekliflerini incelemek için Tara ve Düzelt’i kullanabilirsin.",
+      "review": "Tara ve Düzelt’e git",
+      "historyNote": "Bu cihazda en az bir kez yapılan işleri gösterir; sağlık puanı değildir. Adımı açmak veya aynı işi tekrarlamak ilerlemeyi artırmaz.",
+      "go": {
+        "health": "Sistem kontrolüne git",
+        "scan": "Temizlik taramasına git",
+        "drivers": "Sürücü yedeğine git"
+      },
+      "explain": {
+        "health": "Windows, RAM ve koruma bilgilerine bakar; ayarları değiştirmez.",
+        "scan": "Geçici dosyaları listeler; silmez. “Tara ve Düzelt” taramasından ayrıdır.",
+        "drivers": "Üçüncü taraf sürücü paketlerini yerel yedekler. Yönetici izni ister; güncelleme yüklemez."
+      },
+      "locate": {
+        "health": "1. adım: Vurgulanan “{action}” düğmesine bas. Kontrol ayarları değiştirmez.",
+        "scan": "2. adım: Vurgulanan “{action}” düğmesine bas. Tarama dosya silmez.",
+        "drivers": "3. adım: Vurgulanan “{action}” düğmesine bas. Windows yönetici izni ister. Yedeklenecek üçüncü taraf paket yoksa adım tamamlandı sayılmaz."
+      },
+      "back": "Bakım adımlarına dön",
+      "backupCreated": "{count} sürücü paketi yedeklendi.",
+      "noPackages": "Bu denemede yedeklenecek üçüncü taraf sürücü paketi bulunamadı. Bu nedenle 3. adım tamamlandı sayılmadı; diğer işlevleri kullanmaya devam edebilirsin."
+    }
   },
   "en": {
     "followPointer": "Aion follows the pointer",
@@ -1375,6 +1406,37 @@
       "software": "software adapter",
       "remote": "remote adapter"
     },
-    "windowsCare": "Windows records"
+    "windowsCare": "Windows records",
+    "j": {
+      "intro": "Three first-care steps: what they do, what is complete and what to do next.",
+      "progress": "{done}/3 steps completed",
+      "summary": "{done} of 3 first-care steps completed before",
+      "next": "Next step: {number}. {title}",
+      "done": "✓ Completed before",
+      "pending": "○ Not completed yet",
+      "open": "Open",
+      "reopen": "Open again",
+      "allDone": "You completed all 3 first-care steps. Use Scan & Fix to review current issues and driver offers.",
+      "review": "Go to Scan & Fix",
+      "historyNote": "Tracks tasks done at least once on this device; this is not a health score. Opening a step or repeating a task does not add progress.",
+      "go": {
+        "health": "Go to system check",
+        "scan": "Go to cleanup scan",
+        "drivers": "Go to driver backup"
+      },
+      "explain": {
+        "health": "Reads Windows, RAM and protection information; no settings are changed.",
+        "scan": "Lists temporary files without deleting them. Separate from Scan & Fix.",
+        "drivers": "Backs up third-party driver packages locally. Requires administrator permission; installs no updates."
+      },
+      "locate": {
+        "health": "Step 1: press the highlighted “{action}” button. It does not change settings.",
+        "scan": "Step 2: press the highlighted “{action}” button. Scanning deletes no files.",
+        "drivers": "Step 3: press the highlighted “{action}” button. Windows administrator permission is required. If no third-party packages can be backed up, the step is not marked complete."
+      },
+      "back": "Back to care steps",
+      "backupCreated": "{count} driver packages backed up.",
+      "noPackages": "No third-party driver packages were available to back up in this attempt. Step 3 was not marked complete; you can continue using the other features."
+    }
   }
 }

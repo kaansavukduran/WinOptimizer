@@ -161,6 +161,36 @@ def start(window, scenario):
                 assert window.findChild(QTreeWidget,'update-records-tree').topLevelItemCount()==1
                 window.grab().save(str(evidence/'Windows-Qt-unified-history-tr-100.png'))
                 (evidence/'unified-scan.json').write_text(json.dumps(dict(sharedScanId=window.state['report']['id'],separateDonorTab=False,sharedCategories=9,pages=['scanFix','tools','home','history'],verified=True),indent=2),encoding='utf-8')
+                window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system',operationDetails=False,gamification=True)
+                window.appearance();window.go('home');state['stage']=17
+            elif stage==17:
+                from PySide6.QtWidgets import QGroupBox,QProgressBar,QWidget
+                from journey import STEPS
+                panel=window.scroll.widget().findChild(QGroupBox,'care-journey');assert panel
+                completed=window.state.get('milestones',[])
+                done=sum(key in completed for key,_,_,_ in STEPS)
+                assert panel.findChild(QProgressBar,'journey-progress').value()==done
+                for key,_,_,_ in STEPS:assert panel.findChild(QWidget,'journey-step-'+key)
+                if scenario in ('seed','verify'):assert 'health' in completed and 'scan' in completed
+                state['journeyMilestones']=list(completed)
+                state['journeyNext']=next((item for item in STEPS if item[0] not in completed),None)
+                window.scroll.verticalScrollBar().setValue(0)
+                window.grab().save(str(evidence/'Windows-Qt-journey-tr-100.png'))
+                if state['journeyNext']:click('journey-next');state['stage']=18
+                else:state['stage']=19
+            elif stage==18:
+                key,title,page,name=state['journeyNext']
+                target=window.scroll.widget().findChild(QPushButton,name)
+                assert window.page==page and window.focusWidget()==target
+                assert window.scroll.viewport().rect().contains(target.mapTo(window.scroll.viewport(),target.rect().center()))
+                assert target.text() in window.notice.text()
+                window.grab().save(str(evidence/'Windows-Qt-journey-target-tr-100.png'))
+                click('journey-return');state['stage']=19
+            elif stage==19:
+                from PySide6.QtWidgets import QProgressBar
+                assert window.page=='home' and window.state.get('milestones',[])==state['journeyMilestones']
+                assert window.scroll.widget().findChild(QProgressBar,'journey-progress').value()==len(state['journeyMilestones'])
+                (evidence/'journey-navigation.json').write_text(json.dumps(dict(milestones=state['journeyMilestones'],steps=['health','scan','drivers'],nextStep=state['journeyNext'][0] if state['journeyNext'] else None,navigationDidNotCompleteTasks=True,actualServiceHistory=True,verified=True),indent=2),encoding='utf-8')
                 window.settings=state['careViewSettings'];window.appearance();window.render()
                 if scenario=='portable':
                     window.save_setting('theme','dark');state['stage']=8;return

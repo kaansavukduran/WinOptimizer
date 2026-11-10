@@ -140,3 +140,7 @@ Kullanıcı 6.3.1 Portable açılışında `Window object has no attribute detai
 ## 6.3.3 yoğun kullanım sağlamlaştırması
 
 Forge denetiminde hızlı sekme/tema/ölçek geçişlerinde silinmiş Paragraph nesnesine gecikmiş boyutlama çağrısı yeniden üretildi. Metin boyutlama, nesneye ait tek seferlik zamanlayıcıda birleştirilir; Qt slot bağlantıları ve grup bağlamlı başlangıç çağrıları ekran silinince iptal olur. Ölçek kaydırıcısının klavye değişikliği kaydedilir, 137 gibi giriş 135'e yuvarlandığında kontrol ve kayıt aynı değeri gösterir. Sorun/bilinmiyor bulguları başarı kutlaması yerine inceleme geri bildirimi verir. 34 Qt/54 Node geçti; eski 6.3.2 kaynağı ayrı ağaçta negatif kontrol için kullanıldı. Windows paket/upgrade ve özel Drive kapanışı yeni sürümde doğrulanacak; eski yayınlar değişmez.
+
+## 6.4.0 anlaşılır bakım rehberi
+
+Kullanıcı Bakım yolculuğu 2/3 sayısının hangi işleri saydığını ve sıradaki işlemi bulamadığını bildirdi. Eski milestone anlamları korunur: health=sistem durumu, scan=temizlik aday taraması (Tara ve Düzelt değil), drivers=gerçek üçüncü taraf sürücü yedeği. Ana sayfanın başında üç adımın adı/açıklaması/durumu, ilk eksik adım için doğrudan ekran ve düğmeye gitme, adımlara dönüş ve 3/3 açıklaması eklendi. Navigasyon çalıştırma veya tamamlanma sayılmaz; veri/puan sıfırlanmaz. Sıfır paketli yedekte neden tamamlanmadığı gösterilir. TR/EN, 200% arayüz+125% yazı/disleksi, gizli oyunlaştırma ve 0/1/2/3 durumları test edilir. Windows Setup/Portable ve 6.3.3 → 6.4.0 yükseltme/yedek kapanışı yayımdan önce doğrulanacak.

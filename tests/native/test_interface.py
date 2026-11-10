@@ -346,3 +346,86 @@ def test_expanding_options_before_initial_callback_keeps_visible_controls(window
     check=w.scroll.widget().findChild(QCheckBox,'scan-online');group=check.parentWidget()
     group.setChecked(True);application.processEvents()
     assert group.isChecked() and not check.isHidden()
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_journey_explains_real_steps_and_reveals_the_missing_backup_without_running_it(window,application,language):
+    from PySide6.QtWidgets import QLabel,QGroupBox,QProgressBar,QWidget
+    from PySide6.QtTest import QTest
+    w,bridge=window;w.settings['language']=language;w.state['milestones']=['health','scan'];w.go('home');QTest.qWait(30)
+    panel=w.scroll.widget().findChild(QGroupBox,'care-journey');assert panel
+    assert panel.findChild(QProgressBar,'journey-progress').value()==2
+    for key in ['health','scan','drivers']:assert panel.findChild(QWidget,'journey-step-'+key)
+    assert w.t('stepDrivers') in panel.findChild(QObject,'journey-next-label').toPlainText()
+    assert panel.findChild(QLabel,'journey-status-health').text()==w.t('j.done')
+    assert panel.findChild(QLabel,'journey-status-drivers').text()==w.t('j.pending')
+    button=panel.findChild(QPushButton,'journey-next');assert w.scroll.viewport().rect().contains(button.mapTo(w.scroll.viewport(),button.rect().center()))
+    before=copy.deepcopy(bridge.calls);button.click();QTest.qWait(30)
+    target=w.scroll.widget().findChild(QPushButton,'driver-backup')
+    assert w.page=='drivers' and w.focusWidget()==target
+    assert w.scroll.viewport().rect().contains(target.mapTo(w.scroll.viewport(),target.rect().center()))
+    assert [call for call in bridge.calls if call[0]!='operation.status']==[call for call in before if call[0]!='operation.status']
+    assert w.state['milestones']==['health','scan']
+    assert target.text() in w.notice.text()
+    w.scroll.widget().findChild(QPushButton,'journey-return').click();application.processEvents()
+    assert w.page=='home' and w.scroll.verticalScrollBar().value()==0
+    assert w.state['milestones']==['health','scan']
+
+@pytest.mark.parametrize('completed,next_key,page,target_name',[( [],'health','home','health-scan'),(['health'],'scan','cleanup','cleanup-scan'),(['drivers'],'health','home','health-scan'),(['health','drivers'],'scan','cleanup','cleanup-scan')])
+def test_journey_targets_the_first_missing_task_and_keeps_it_accessible_at_large_scale(window,application,completed,next_key,page,target_name):
+    from PySide6.QtWidgets import QProgressBar
+    from PySide6.QtTest import QTest
+    w,bridge=window;w.settings.update(scale=200,textSize=125,font='dyslexic',language='en');w.appearance();w.resize(540,900);w.state['milestones']=completed.copy();w.go('home');QTest.qWait(30)
+    assert w.scroll.widget().findChild(QProgressBar,'journey-progress').value()==len(completed)
+    button=w.scroll.widget().findChild(QPushButton,'journey-next');assert button.text()==w.t('j.go.'+next_key)
+    # A normal scroll can reach the action even with 200% UI and 125% text.
+    w.scroll.ensureWidgetVisible(button);button.click();QTest.qWait(50)
+    target=w.scroll.widget().findChild(QPushButton,target_name)
+    assert w.page==page and w.focusWidget()==target
+    assert w.scroll.viewport().rect().contains(target.mapTo(w.scroll.viewport(),target.rect().center()))
+    assert w.state['milestones']==completed and not any(c in ('health','scan','driver-backup') for c,_ in bridge.calls)
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_journey_all_done_and_hidden_states_do_not_erase_progress_or_core_actions(window,application,language):
+    from PySide6.QtWidgets import QProgressBar,QGroupBox
+    w,bridge=window;w.settings['language']=language;w.state['milestones']=['health','scan','drivers'];w.go('home')
+    assert w.scroll.widget().findChild(QProgressBar,'journey-progress').value()==3
+    assert w.scroll.widget().findChild(QPushButton,'journey-next') is None
+    w.scroll.widget().findChild(QPushButton,'journey-review').click();assert w.page=='scanFix'
+    w.settings['gamification']=False;w.go('home')
+    assert w.scroll.widget().findChild(QGroupBox,'care-journey') is None
+    assert w.scroll.widget().findChild(QPushButton,'health-scan')
+    w.go('drivers');assert w.scroll.widget().findChild(QPushButton,'driver-backup')
+    assert w.state['milestones']==['health','scan','drivers']
+
+
+@pytest.mark.parametrize('packages',[0,2])
+def test_driver_backup_explains_its_outcome_instead_of_silently_leaving_the_journey_incomplete(window,packages):
+    from PySide6.QtWidgets import QTextEdit
+    w,bridge=window;w.state['milestones']=['health','scan'];w.state['journeyActiveStep']='drivers';w.go('drivers')
+    w.store('driverBackupResult',dict(packages=packages))
+    texts=' '.join(widget.toPlainText() for widget in w.scroll.widget().findChildren(QTextEdit))
+    assert (w.t('j.backupCreated').format(count=packages) if packages else w.t('j.noPackages')) in texts
+    assert w.scroll.widget().findChild(QPushButton,'journey-return')
+    assert w.state['milestones']==['health','scan']
+
+
+def test_journey_reveal_follows_late_layout_changes_without_overriding_manual_scroll(window,application):
+    from PySide6.QtWidgets import QWidget
+    from PySide6.QtTest import QTest
+    w,bridge=window;w.go('home');w.scroll.widget().findChild(QPushButton,'journey-next').click();QTest.qWait(40)
+    target=w.scroll.widget().findChild(QPushButton,'health-scan')
+    spacer=QWidget();spacer.setFixedHeight(800);w.scroll.widget().layout().insertWidget(0,spacer);QTest.qWait(50)
+    assert w.focusWidget()==target
+    assert w.scroll.viewport().rect().contains(target.mapTo(w.scroll.viewport(),target.rect().center()))
+    w.scroll.verticalScrollBar().setValue(0);QTest.qWait(30)
+    assert w.scroll.verticalScrollBar().value()==0
+
+
+def test_journey_pending_focus_cannot_reveal_a_disposed_page(window,application,monkeypatch):
+    from PySide6.QtTest import QTest
+    from PySide6.QtCore import QCoreApplication,QEvent
+    w,bridge=window;errors=[];monkeypatch.setattr(sys,'excepthook',lambda kind,error,tb:errors.append(repr(error)))
+    w.go('home');w.scroll.widget().findChild(QPushButton,'journey-next').click()
+    w.go('settings');QCoreApplication.sendPostedEvents(None,QEvent.DeferredDelete);QTest.qWait(30)
+    assert w.page=='settings' and w.scroll.widget().findChild(QComboBox,'settings-section')
+    assert errors==[] and w.state.get('milestones',[])==[]
