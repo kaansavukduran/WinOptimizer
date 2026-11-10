@@ -3,7 +3,14 @@ param([Parameter(Mandatory=$true)][string]$Exe)
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
-Add-Type -AssemblyName System.Windows.Forms
+Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class AionUiMouse {
+  [DllImport("user32.dll")] public static extern bool SetCursorPos(int x,int y);
+  [DllImport("user32.dll")] public static extern void mouse_event(uint flags,uint dx,uint dy,uint data,UIntPtr extra);
+}
+'@
 $evidence=Join-Path $pwd 'work/native-evidence/native-update-ui'
 $null=New-Item -ItemType Directory -Path $evidence -Force
 $script:receipts=@()
@@ -40,10 +47,13 @@ try {
   $combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
   # Qt popup windows can be siblings of the main window in the accessibility tree.
   $item=Find-Control $desktop 'Updates' ([System.Windows.Automation.ControlType]::ListItem)
-  $item.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
-  # Selection marks the popup row; Enter commits the QComboBox choice.
-  [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
-  $script:receipts+=@{control='Updates';action='SelectionItemPattern + Enter'}
+  $rect=$item.Current.BoundingRectangle
+  if($item.Current.IsOffscreen -or $rect.Width -le 0 -or $rect.Height -le 0){throw 'Updates popup item is not visibly clickable'}
+  # Click the UIA-discovered row: selection alone does not activate a Qt combo item.
+  $null=[AionUiMouse]::SetCursorPos([int]($rect.X+$rect.Width/2),[int]($rect.Y+$rect.Height/2))
+  [AionUiMouse]::mouse_event(2,0,0,0,[UIntPtr]::Zero)
+  [AionUiMouse]::mouse_event(4,0,0,0,[UIntPtr]::Zero)
+  $script:receipts+=@{control='Updates';action='UIA bounding rectangle + Windows click'}
   Invoke-Control (Find-Control $window 'Check for updates' ([System.Windows.Automation.ControlType]::Button)) 'Check for updates'
   $install=Find-Control $window 'Update and restart' ([System.Windows.Automation.ControlType]::Button) 120
   Invoke-Control $install 'Update and restart'
