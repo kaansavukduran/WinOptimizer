@@ -1,8 +1,19 @@
 # WinOptimizer Aion Forge
 
-Durum: **ACTIVE, 5.2.0 yayımlandı; 5.3.0 fare takibi ve sevilme etkileşimi geliştiriliyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
+Durum: **COMPLETE, 5.3.0 kararlı/Latest yayımlandı ve kurulu uygulamadan doğrulandı.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
 
-## Son doğrulanmış yayın: 5.1.0
+## Güncel doğrulanmış yayın: 5.3.0
+
+- [5.3.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v5.3.0), yayın kimliği `439794172`. Kaynak/etiket `d67947e2e172dfdab36103f52f164bd277596973`, [PR #4](https://github.com/kaansavukduran/WinOptimizer/pull/4), merge `1b194777ee9acd95cbc6ed464fb52ecfe4ae47c7`, imzalı üstveri commit `95c8459d7fc2405fd714d299177de88e959e1d49`.
+- Paket `WinOptimizer-Aion-5.3.0-Windows-x64-Setup.exe`, 134.466.232 bayt, SHA-256 `c2635bf1980b0def3a612b40ecf25597213366138c30580dc922f815a28f185b`.
+- 36 Node testi ve 17 Chromium senaryosu; [kaynak Windows CI](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42725411279), [PR CI](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42725419940), [merge CI](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42726497251), [yayın](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42726582946), [gerçek 5.2.0 → 5.3.0 güncelleme](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42726691878): başarılı. Dil/tema/135% arayüz/125% yazı/OpenDyslexic/geçmiş korundu. Kurulu Windows uygulamasında 16 yön bakış ve sevilme doğrulandı; ekranları `docs/screenshots/` içinde.
+- Kullanıcının istediği RealLife Aion paftası, kaynak oranı ve sabit konumu korunarak kullanılır. Baş/gövde/kuyruk/ayak tepkileri, Enter/Boşluk ve bağımsız kalıcı takip/sevilme/%75–%150 boyut ayarları. İşlem animasyonları önceliklidir; sonuç/odak ekranlarında takip sürer. Koordinat kaydı/telemetri ve sevilmeden bakım puanı yoktur. Firmware hem teklif hem kurulum yollarından çıkarıldı.
+- [Özel Drive 5.3.0 yedeği](https://drive.google.com/drive/folders/1wazc5EDb17qmeAIXfzFN4CQY6df8reFV): kaynak ZIP, kayıpsız iki kurulum parçası, birleştirme araçları, imzalı üstveri, notlar ve yayın makbuzu. Kaynak/geçmiş/yayın dosyaları gerçek Drive geri okumasında byte/hash/ZIP CRC/Git bundle ile doğrulandı; indirilen PowerShell aracı parçaları özgün paket SHA-256 değerine birleştirdi. Özel anahtar yüklenmedi. Son belge commit'i ayrıca tüm geçmiş ve etiketlerle yedeklenir.
+- 5.2.0 bakım atölyesi, tarama sonucundan sürücü kurulumu, imzalı çevrimdışı klasörler ve Microsoft runtime akışları dahildir. [Kapsam](docs/DRIVER-COVERAGE.md) ve [katalog tasarımı](docs/DRIVER-CATALOG.md). Otomatik kaynak bugün Windows Update; bağımsız global/OEM katalog servisi henüz yoktur. Authenticode sertifikası yoktur; güncelleme Ed25519 + SHA-256 doğrular. VM testi her fiziksel donanımda başarı garantisi değildir.
+
+Aşağıdaki kayıtlar önceki sürümlerin tarihsel çalışma notlarıdır; güncel tamamlanma durumu bu bölümdür.
+
+## Önceki doğrulanmış yayın: 5.1.0
 
 - [WinOptimizer Aion 5.1.0, Latest](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v5.1.0); kaynak etiketi `5d696ccbdbd7d4eaee8dfa0041fcf744507c05ed`, [PR #2](https://github.com/kaansavukduran/WinOptimizer/pull/2), merge `67eb48fd4d2944e28118e9e3fb9e00f9ae711c4f`.
 - Paket: `WinOptimizer-Aion-5.1.0-Windows-x64-Setup.exe`, 128.258.942 bayt; SHA-256 `b4898218d8203460abc8e5585659508503a367cd030fb693be404e06ce5d40aa`. Yeni imzalı meta veri `release-metadata/5.1.0`; yayın kimliği `439703384`. Eski yayınlar korunur.
@@ -52,11 +63,11 @@ Windows sanal makinesinde PowerShell 5.1 parser; gerçek sağlık/sürücü/ağ/
 
 Kullanıcı Driver Booster benzeri tarama/düzeltme istedi. `docs/SCAN-FIX.md` kapsamı, resmî kaynakları ve sınırları kaydeder. Yerel aygıt/ses/ağ/ekran/oyun bileşeni envanteri, isteğe bağlı Windows Update ve DNS sorgusu; kullanıcı onaylı ses servisi başlatma/aygıt yeniden algılama/DNS önbelleği temizleme, ön ve son kontrol, süreli tek kullanımlık rapor, doğrulanan/çözülmeyen/doğrulanamayan sonuçlar. Bağlı olmayan aygıtları arıza sayma veya eski tarihi otomatik hata sayma yok. Microsoft çalışma zamanı yükleme bağlantıları ve Windows ayarları yönlendirmedir, otomatik DLL düzeltme iddiası yok. 19 Node testi ve 8 tarayıcı senaryosu yerelde ve Windows CI’da geçti. Kurulu uygulama taraması ve 5.0.1 → 5.1.0 güncelleme de doğrulandı; sürüm Latest kararlı olarak yayımlandı.
 
-## Aktif 5.2.0 işi
+## Tarihsel 5.2.0 geliştirme notu
 
 Yetkili hedef aynı Windows deposu. Kullanıcı Driver Booster işlevlerini geliştirme, uygulamaya özel Aion paftası ve gerçek ekran görüntüsü istedi. Drive ana/model/kuyruk referansları okundu; 4×6 yeni saydam kare paftası `public/assets/aion-optimizer.png`, envanter `docs/ASSETS.json`. Yeni bakım atölyesi: sürücü yedeği/paket inceleme, imzalı çevrimdışı klasör, uygulama öncesi yedek, gerçek paket kabulü/aygıt değişimi ayrımı, seçmeli ghost kayıt temizliği, atlanan güncellemeler, Windows geri yükleme noktaları, geçici güç planı ve kullanıcı pencerelerine normal kapatma isteği. Microsoft VC/DirectX indirme ve imza doğrulamalı onaylı kurulum eklendi; gerçek Windows testi bekliyor. Kareler gerçek tarama/onarım/başarı/odak durumlarına bağlı, görünmeyince duraklar. Kapsam ve açık kalan farklar `docs/DRIVER-COVERAGE.md`; tam IObit katalog eşitliği iddiası yok. Yayından önce Windows CI, gerçek runtime kurulumu ve 5.1.0 → 5.2.0 yükseltme, normal ölçekli Türkçe Windows ekran görüntüleri ve özel Drive yedeği tamamlanmalı.
 
-## 5.2.0 tamamlanan yayın ve aktif 5.3.0
+## Tarihsel 5.2.0 kapanışı ve 5.3.0 geliştirme notu
 
 5.2.0 kaynak `f354f4b8c39f78b7c0b3e95043e559884e589b95`, PR #3, merge `26d30375971fca53b5d243cb665dc3e2a1a955fc`. Paket 131.007.565 bayt, SHA-256 `602ba4db4291b41ad84961beec4dac6b71a548a6c562467bd24c0f42284f4ab9`. Yayın `439771474` kararlı. Kaynak Windows CI `42721023776`, PR `42721029997`, yayın `42722077586`, gerçek 5.1.0 → 5.2.0 yükseltme ve Türkçe açık/koyu/atölye Windows ekranları `42722973347` başarılı. İlk yükseltme testi yalnız ekran görüntüsünde eski düğme adına takıldı; `ace85f162903abd4700a3856856c3741560d2990` test düzeltmesiyle başarılı tekrarlandı. 32 Node, 14 Chromium; gerçek Microsoft DirectX kurulum/imza/son kontrol geçti. Drive 5.2.0 klasörü `1aEExvJ6ipxCv3ydGCLyt_aE6kSf4WiYu`; metadata/parça geri okuma kapanışı devam ediyor.
 

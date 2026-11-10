@@ -19,7 +19,9 @@ Requires Windows 10 22H2 or Windows 11 x64 and built-in Windows PowerShell 5.1. 
 
 ## Özellikler / Features
 
-- **5.1.0 Tara ve Düzelt / Scan & Fix:** aygıt hata kodları, ses servisleri, ağ, ekran ve oyun bileşeni göstergeleri; isteğe bağlı Windows Update/DNS kontrolleri. Onaylı ses servisi başlatma, aygıt yeniden algılama ve DNS temizliği aynı sorunu yeniden denetler. Visual C++/DirectX ve ekran ayarları resmî kaynaklara yönlendirir; açılan bir ekran düzeltilmiş sorun sayılmaz. [Kapsam ve sınırlar](docs/SCAN-FIX.md).
+- **5.3.0 Etkileşimli Aion:** 16 çizilmiş yön ile fareye bakar; baş, gövde, kuyruk ve ayak dokunuşuna tepki verir. Enter/Boşluk ile de sevilebilir. Ayarlar → Aion ve Bildirimler içinde fare takibi, sevilme ve %75–%150 Aion boyutu bağımsızdır; azaltılmış hareket ve duraklatma desteklenir.
+- **Tara ve Düzelt / Scan & Fix:** aygıt hata kodları, ses servisleri, ağ, ekran ve oyun bileşeni göstergeleri; isteğe bağlı Windows Update/DNS kontrolleri. Tarama sonucundan güncellemeleri seç → onay → otomatik sürücü yedeği → yükleme → sürücü başına sonuç. Onaylı ses servisi başlatma, aygıt yeniden algılama ve DNS temizliği aynı sorunu yeniden denetler. [Kapsam ve sınırlar](docs/SCAN-FIX.md).
+- **Bakım atölyesi:** imzalı yerel sürücü klasörlerini ve yedeklerini inceleyip seçmeli uygulama; çevrimdışı donanım kimliklerini dışa aktarma; atlanan güncellemeler; seçili bağlı olmayan aygıt kayıtları; geri yükleme noktaları; geri alınabilir odak/güç planı. Microsoft'un resmî Visual C++ v14 x86/x64 ve DirectX June 2010 kurucuları indirilir, yayıncı imzası doğrulanır, ayrıca onayla kurulur ve son durum okunur. [Driver Booster for Steam karşılaştırması](docs/DRIVER-COVERAGE.md).
 
 - Salt okunur sistem kontrolü: işletim sistemi, CPU, RAM, disk alanı, Windows’un sağladığı disk sağlığı, Defender, güvenlik duvarı, BitLocker. Erişilemeyen bilgi açıkça belirtilir.
 - Yedi gündür değişmeyen kullanıcı Temp dosyaları ve Chrome/Edge **Default/Cache/Cache_Data** önbellekleri. En fazla 10.000 aday, değişiklik kontrolü, bağlantı/junction koruması, dosya önizlemesi ve geri alınabilir depo.
@@ -27,7 +29,7 @@ Requires Windows 10 22H2 or Windows 11 x64 and built-in Windows PowerShell 5.1. 
 - Kullanıcının HKCU Run başlangıç kayıtlarını kaldırma ve geçmişten geri yükleme. Diğer kullanıcıların kayıtları değiştirilmez.
 - Ağ/DNS bilgisi, yalnızca DNS önbelleğini temizleme, var olan güç planlarını seçme ve önceki plana geri dönme.
 - TR/EN, açık/koyu/sistem/yüksek kontrast, bağımsız %80–%200 arayüz ölçeği (%5 adım ve elle yüzde), %80–%160 yazı boyutu, sistem/Verdana/OpenDyslexic, satır/harf aralığı, vurgu rengi, yoğunluk, ayrı hareket ve ses tercihleri.
-- Gerçek karelerden Aion animasyonu; azaltılmış hareket desteği. Gerçek tamamlanan üç kontrolü izleyen isteğe bağlı bakım yolculuğu; kozmetik değişiklikler ve tekrarlar puan üretmez.
+- Gerçek karelerden Aion işlem animasyonları ve RealLife Aion paftasından fare/sevilme tepkileri. Gerçek tamamlanan üç kontrolü izleyen isteğe bağlı bakım yolculuğu; sevilme, kozmetik değişiklikler ve tekrarlar puan üretmez.
 - Ayar/geçmiş JSON dışa aktarma, görünüm içe aktarma, önceki ayarların otomatik kopyası ve rapor dışa aktarma. İçe aktarılan geçmiş sistem komutu olarak oynatılmaz.
 - Düğmeyle başlayan güncelleme kontrolü; kanal/mimari/sürüm, Ed25519 imzası ve paket SHA-256 doğrulanır. Bozuk/kesik indirme kurulmaz.
 
@@ -40,6 +42,16 @@ Kayıtlar `%LOCALAPPDATA%\WinOptimizer Aion` içindedir. `settings.json` görün
 Sürücü yedeği için **Aygıt Yöneticisi → ilgili aygıt → Sürücüyü güncelleştir → Bilgisayarımdaki sürücülere göz at** yolunda yedek klasörünü seçebilirsiniz. Windows uygun paketi seçer; eski sürüme geçiş her aygıtta garanti edilmez. Driver backup is not a complete system image or an automatic recovery guarantee.
 
 Offline: local scans, history, settings and cleanup work. Windows Update, application update checks and downloads need internet. No automatic background updating or telemetry runs.
+
+Automatic driver offers currently come from Windows Update for the current PC; the app does not operate an independent global/OEM driver database. Official vendor/catalog buttons are manual handoffs. See [catalog architecture and sources](docs/DRIVER-CATALOG.md). Firmware is excluded from driver installation. A higher version or older installed date alone does not prove compatibility.
+
+## Gerçek Windows ekranları / Installed Windows screenshots
+
+[5.2.0 → 5.3.0 gerçek güncelleme doğrulaması](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42726691878). Görüntüler Windows sanal makinesinde kurulu uygulamadan alınmıştır; cihaz değerleri o makineye aittir.
+
+![Aion sevilme tepkisi](docs/screenshots/WinOptimizer-5.3.0-Windows-pet-tr.png)
+
+[Fare takibi](docs/screenshots/WinOptimizer-5.3.0-Windows-pointer-tr.png) · [Tara ve Düzelt](docs/screenshots/WinOptimizer-5.3.0-Windows-scan-tr.png) · [Bakım atölyesi](docs/screenshots/WinOptimizer-5.3.0-Windows-workshop-tr.png) · [Koyu tema](docs/screenshots/WinOptimizer-5.3.0-Windows-dark-tr.png)
 
 ## Development
 
