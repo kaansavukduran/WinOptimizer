@@ -84,7 +84,16 @@ function Invoke-Action {
     }
     'windows-install' {
       Assert-Admin
-      $ids=@($payload.ids);if($ids.Count -eq 0 -or $ids.Count -gt 20){throw 'INVALID_SELECTION'}
+      $ids=@($payload.ids)
+      if($payload.idsFile){
+        $plan=Get-Item -LiteralPath ([string]$payload.idsFile) -ErrorAction Stop
+        if($plan.PSIsContainer -or $plan.Length -gt 1048576){throw 'INVALID_SELECTION'}
+        $planBytes=[IO.File]::ReadAllBytes($plan.FullName);$hasher=[Security.Cryptography.SHA256]::Create()
+        try{$planHash=([BitConverter]::ToString($hasher.ComputeHash($planBytes))).Replace('-','').ToLowerInvariant()}finally{$hasher.Dispose()}
+        if($planHash -cne [string]$payload.idsSha256){throw 'UPDATE_CHANGED'}
+        $ids=@(([Text.Encoding]::UTF8.GetString($planBytes)|ConvertFrom-Json).ids)
+      }
+      if($ids.Count -eq 0 -or $ids.Count -gt 10000 -or @($ids|Select-Object -Unique).Count -ne $ids.Count){throw 'INVALID_SELECTION'}
       foreach($id in $ids){if([string]$id -notmatch '^[0-9a-fA-F-]{36}$'){throw 'INVALID_UPDATE_ID'}}
       $session=New-Object -ComObject Microsoft.Update.Session;$searcher=$session.CreateUpdateSearcher()
       $found=$searcher.Search("IsInstalled=0 and IsHidden=0 and Type='Driver'")

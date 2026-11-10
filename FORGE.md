@@ -1,6 +1,6 @@
 # WinOptimizer Aion Forge
 
-Durum: **COMPLETE, 5.3.0 kararlı/Latest yayımlandı ve kurulu uygulamadan doğrulandı.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
+Durum: **ACTIVE, 5.3.0 kararlı; 5.3.1 toplu güncelleme ve ilk kullanım akışı doğrulanıyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Kullanıcı açıkça yalnızca Windows istedi; başka işletim sistemi paketi üretme.
 
 ## Güncel doğrulanmış yayın: 5.3.0
 
@@ -74,3 +74,7 @@ Yetkili hedef aynı Windows deposu. Kullanıcı Driver Booster işlevlerini geli
 Kullanıcı ardından RealLife benzeri fare takibi ve sevilme istedi. `forge/interactive-aion` dalı bunun için açıldı. Kullanıcının açık izniyle `reallife-rpg/assets/companions/aion_pet.png` salt okunur alınarak `public/assets/aion-pet.png` olarak eklendi. 8×11, 1536×2288; 16 bakış yönü, 4 kare sevilme, 5 kare ayak tepkisi. SVG tüm hücreyi oranını koruyarak sabit noktada gösterir; gövde fareye taşınmaz. Baş/gövde/kuyruk/ayak tıklaması, Enter/Boşluk, kısa altyazı, bakım puanı vermeme; bağımsız kalıcı fare takibi/sevilme/boyut ayarları; azaltılmış hareket ve görünmezken durma eklendi. 35 Node ve 17 tarayıcı senaryosu yerelde geçti. 5.3.0 için gerçek Windows derleme, 5.2.0 → 5.3.0 güncelleme, bakış/sevilme ekranları, yeni ayrı Release ve özel Drive yedeği gerekli. Eski 5.2.0 dosyaları değiştirilmez.
 
 Son soru sürücü veri tabanının kaynaklarıydı; `docs/DRIVER-CATALOG.md` mevcut Windows Update kaynağını ve gelecekte resmî OEM adaptörleriyle imzalı üstveri kataloğu mimarisini ayırır. Henüz bağımsız global/OEM veri tabanı servisi kurulmadı; bu yönde yapılmış gibi yazma.
+
+## Aktif 5.3.1 toplu güncelleme ve ilk kullanım
+
+Kullanıcı tek tek kutu işaretlemeden Tümünü güncelle ve teknik bilgi gerektirmeyen arayüz istedi. Yetkili dal `forge/update-all`. İki sürücü ekranında tüm uygun teklifleri kapsayan düğme, sayı/ad listeli mevcut onay, otomatik yedek ve sonuçlar; 20 üzeri seçimler için hash sabitlenmiş yerel plan eklendi. Tara ve Düzelt çevrimiçi sürücü aramasını varsayılan açar, değişiklik yapmayan taramayı açıklar, üç adım ve dinamik Sıradaki adım gösterir; seçenek/filtreler açılır ayrıntıdır. Yerel tarama tercihi ve tek sürücü seçimi korunur. Eski terminal kapsamı `docs/LEGACY-COVERAGE.md`; tam eşitlik yoktur. Yerelde39Node,22Chromium ve TypeScript/Vite geçti; üretim audit sıfır. Windows PS5.1 gerçek plan reddi, kurulum ve 5.3.0→5.3.1 güncelleme/yayın/yedek bekliyor. Eski etiket/paketler değiştirilmez.

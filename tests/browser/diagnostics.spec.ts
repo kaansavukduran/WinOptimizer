@@ -34,7 +34,7 @@ test('scan separates optional components, asks before repair and shows unresolve
   await expect(page.getByText('Operation complete.',{exact:true})).toHaveCount(0);
   await expect(page.locator('[data-clip="celebrate"]')).toHaveCount(0);
   const calls=await page.evaluate(()=>(window as any).__calls);
-  expect(calls.find((c:any)=>c.command==='diagnostics.scan').payload).toEqual({online:false});
+  expect(calls.find((c:any)=>c.command==='diagnostics.scan').payload).toEqual({online:true});
   expect(calls.find((c:any)=>c.command==='diagnostics.repair').payload).toEqual({reportId:'fixture-report',findingId:'device:missing',actionId:'device-rescan',confirm:true});
 });
 

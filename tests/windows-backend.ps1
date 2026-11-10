@@ -27,6 +27,15 @@ $apps=@(Call-Backend 'focus-apps')
 $plans=@(Call-Backend 'power-profiles');if($plans.Count -lt 1){throw 'No power plans'}
 $identity=[Security.Principal.WindowsIdentity]::GetCurrent()
 if((New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
+  # Real native rejection paths stop before any Windows Update search/download/install.
+  $planFile=Join-Path $env:TEMP ('aion-driver-plan-'+[guid]::NewGuid().ToString('N')+'.json')
+  try {
+    $ids=@(1..31|ForEach-Object{[guid]::NewGuid().ToString()})+@('invalid-update-id')
+    $bytes=[Text.Encoding]::UTF8.GetBytes((@{ids=$ids}|ConvertTo-Json -Compress));[IO.File]::WriteAllBytes($planFile,$bytes)
+    $hash=(Get-FileHash -LiteralPath $planFile -Algorithm SHA256).Hash.ToLowerInvariant()
+    $rejected=$false;try{Call-Backend 'windows-install' @{idsFile=$planFile;idsSha256=('0'*64)}}catch{if($_.Exception.Message -ne 'UPDATE_CHANGED'){throw};$rejected=$true};if(-not $rejected){throw 'Changed driver plan accepted'}
+    $rejected=$false;try{Call-Backend 'windows-install' @{idsFile=$planFile;idsSha256=$hash}}catch{if($_.Exception.Message -ne 'INVALID_UPDATE_ID'){throw};$rejected=$true};if(-not $rejected){throw 'Invalid final bulk update ID accepted'}
+  }finally{Remove-Item -LiteralPath $planFile -Force -ErrorAction SilentlyContinue}
   $destination=Join-Path $env:LOCALAPPDATA ('WinOptimizer Aion\DriverBackups\integration-'+[guid]::NewGuid().ToString('N'))
   $backup=Call-Backend 'driver-backup' @{destination=$destination}
   if(-not (Test-Path (Join-Path $destination 'backup.json'))){throw 'Driver backup manifest missing'}

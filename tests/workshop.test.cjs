@@ -25,3 +25,19 @@ test('scan results offer confirmed driver installation only for the current filt
 });
 
 test('firmware offers are excluded from both driver views and cannot reach driver installation',async t=>{const dir=await fixture(t),calls=[];const service=new Service({dir,local:dir,backend:'fixture',platform:'win32',version:'5.3.0',run:async(_b,action)=>{calls.push(action);if(action==='windows-updates')return [{id:'device',name:'Wi-Fi',driverClass:'Net'},{id:'firmware',name:'System firmware',driverClass:'Firmware'}];if(action==='diagnostics')return {devices:[],audio:[],display:[],runtimes:[],unavailable:[]};throw Error(action);}});assert.deepEqual((await service.handle('windows-updates')).map(d=>d.id),['device']);const report=await service.handle('diagnostics.scan',{online:true});assert.ok(!report.findings.some(f=>f.id==='update:firmware'));await assert.rejects(service.handle('windows-install',{confirm:true,ids:['firmware']}),/INVALID_SELECTION/);assert.ok(!calls.includes('windows-install'));});
+
+for(const source of ['diagnostics','drivers'])test(`update all from ${source} keeps every eligible offer beyond 20 in one pinned native plan`,async t=>{
+ const dir=await fixture(t),offers=Array.from({length:32},()=>({id:crypto.randomUUID(),name:'Fixture update',driverClass:'Net'}));let planPath,installed;
+ const service=new Service({dir,local:dir,backend:'fixture',platform:'win32',version:'5.3.1',run:async(_b,action,payload,elevated)=>{
+  if(action==='diagnostics')return {devices:[],audio:[],display:[],runtimes:[],unavailable:[]};if(action==='windows-updates')return [...offers,{id:'firmware',driverClass:'Firmware'},{id:'ignored',name:'Ignored'}];
+  assert.equal(action,'windows-install');assert.equal(elevated,true);assert.ok(payload.backupDestination.includes('DriverBackups'));assert.equal(payload.ids,undefined);planPath=payload.idsFile;const bytes=await fs.readFile(planPath);assert.equal(hash(bytes),payload.idsSha256);installed=JSON.parse(bytes).ids;return {success:false,items:installed.map((id,i)=>({id,success:i!==0,code:i===0?4:2})),reboot:true};
+ }});service.state.ignoredUpdates=[{id:'ignored',name:'Ignored'}];
+ let report;if(source==='diagnostics')report=await service.handle('diagnostics.scan',{online:true});else await service.handle('windows-updates');const ids=offers.map(o=>o.id);
+ if(source==='diagnostics')await assert.rejects(service.handle('diagnostics.updates',{reportId:report.id,ids,confirm:false}),/CONFIRM_REQUIRED/);else await assert.rejects(service.handle('windows-install',{ids,confirm:false}),/INVALID_SELECTION/);
+ assert.equal(installed,undefined);const r=await service.handle(source==='diagnostics'?'diagnostics.updates':'windows-install',{reportId:report?.id,ids,confirm:true});assert.deepEqual(installed,ids);assert.equal(r.items.length,32);assert.equal(r.success,false);assert.equal(r.reboot,true);await assert.rejects(fs.stat(planPath));assert.equal(service.state.events[0].items.length,32);
+});
+test('a failed native bulk update cleans up its plan and duplicate selections never start installation',async t=>{
+ const dir=await fixture(t),ids=Array.from({length:24},()=>crypto.randomUUID());let planPath;
+ const service=new Service({dir,local:dir,backend:'fixture',platform:'win32',version:'5.3.1',run:async(_b,action,payload)=>{if(action==='windows-updates')return ids.map(id=>({id}));planPath=payload.idsFile;throw Error('ADMIN_CANCELLED');}});
+ await service.handle('windows-updates');await assert.rejects(service.handle('windows-install',{ids:[ids[0],ids[0]],confirm:true}),/INVALID_SELECTION/);assert.equal(planPath,undefined);await assert.rejects(service.handle('windows-install',{ids,confirm:true}),/ADMIN_CANCELLED/);await assert.rejects(fs.stat(planPath));assert.equal(service.state.events.length,0);
+});
