@@ -1,5 +1,27 @@
 # Verification evidence
 
+## 6.3.0 SysMender donor adaptation
+
+Application/tag source `e102bcac9bd50932c07d6e8c1981fa041338c830`, PR #10, merge `c4f5e5e1f9b9dca07ebea4b3518864ce21534cb1`. [v6.3.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.0) is stable/latest. [Source Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42811034065), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42811230024), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42812621830), [publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42812646149) and [actual native 6.2.0 → 6.3.0 upgrade](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42812826451) passed.
+
+50 Node and 22 native Qt checks passed, including unelevated/local evidence requests, ignored injected flags, separate confirmed read-only elevation, support-export allowlists, retained filters, unknown/empty states, actual category-receipt progress and confirmation cancellation. Windows PowerShell 5.1 parsed the new backend and read actual readiness/service evidence; the administrator recorded-component check returned a recognized DISM state. It does not certify a full DISM/SFC scan or repair.
+
+Both installed and portable native apps read all nine care categories and exported reduced evidence with no event-message fields. The runner provided readiness, Defender, all three firewall profiles, System/Application events, local update history and selected services; crash and dump lists correctly returned no matching records. Actual clipboard summaries and installed/portable data isolation/reopening passed. The existing real locked-executable replacement check also passed. [Turkish Windows Health view](screenshots/WinOptimizer-6.3.0-Windows-Sagligi.png) shows the runner, not the user's PC.
+
+Source artifact `13762945439`: SHA-256 `c3193b12bcaf6612f537777eba11dbd12ab2ebe63ad61a49527f85b742c9b962`; original digest and ZIP CRC verified. The embedded-key Ed25519 manifest, all five published sizes/digests and seven original icon payloads in both EXEs were verified. SysMender/WinUtil full MIT notices are bundled; [donor provenance and exact scope](SYSMENDER-DONOR.md) identifies the pinned source and distinguishes transferred functionality from candidates not implemented.
+
+| Package | Bytes | SHA-256 |
+| --- | --- | --- |
+| Setup | 94,189,573 | `e09ace7bbc7fdd18a5b1bbdc37be3c3eb3ccf0ba1553f86dc6009a369e47ae74` |
+| Portable | 94,065,931 | `bd610799a6b5b9d5b3e503c6bce4fd25de6beea9517472e1ef15316c9b72f952` |
+
+Upgrade artifact `13764056243`: SHA-256 `76ceb8d5e2065c9d2a90102e6ca516f867153ea88656ed4fa28a861ba3b2b2eb`; ZIP CRC and receipts checked. Native UI Automation invoked the baseline app's update flow. Installed payload SHA-256, registration 6.3.0 and actual running version 6.3.0 matched; English/dark/135% UI/125% text/OpenDyslexic, original cleanup/restore history and milestones were preserved. The updated app then ran the new care scan and reduced export.
+
+Limits: hosted Windows VM/provider coverage, not every physical machine or policy. Read success and historical events are not proof of overall health or root cause. Primary care scanning does not change Windows protection/services or request elevation; only the separate recorded-state read requests administrator approval and may write Windows' diagnostic log. No full repair, donor binary/Linux port, global OEM driver database or all-66-tool parity is claimed. Portable updates remain manual replacement beside Data; installer Authenticode remains unavailable. In-app installer authentication remains Ed25519 metadata plus SHA-256.
+
+Private Drive source/history and whole Setup/Portable readbacks passed size/hash, ZIP CRC and Git-bundle checks; final documentation/evidence and the cumulative private receipt preserve earlier records. No private signing key was uploaded.
+
+
 ## 6.2.0 Native update replacement and readable results
 
 Application/tag source `fc60edaed7aa75ae78b3deaac8ddccb20179248c`, PR #9, merge `9dba27a974fc8926b09de27db0a0348a80032048`. [Release v6.2.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.2.0) is stable/latest. [Source Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42777535853), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42777542808), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42778260279), [immutable publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42778350270) and [actual native 6.1.0 → 6.2.0 upgrade](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42778713731) passed.

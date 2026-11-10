@@ -49,6 +49,8 @@ VRAM, DXGI'nin 64 bit değeridir; paylaşılan sistem belleği ayrıca gösteril
 
 The new native Windows Health view adapts selected SysMender/WinUtil MIT inspection workflows. It does not import the donor's executable or Linux app. Local evidence, provider availability and reduced support exports remain distinct from repair or comprehensive system health claims.
 
+[Windows Sağlığı ekran görüntüsü](docs/screenshots/WinOptimizer-6.3.0-Windows-Sagligi.png) — Windows test makinesinden alınmıştır.
+
 ## İşlem gerçekten çalışıyor mu? / Observable operations
 
 **İşlem adımları** bölümü Windows arka ucundan gelen gerçek aşamaları gösterir. Uygulama isteği ile Windows kaynaklı olaylar ayrılır. Her adımın son durumu, ölçülebilen adetleri, hata/sonuç kodu ve atlama nedeni görünür. Tamamlanan, başarısız olan ve atlanan adımlar ayrı sayılır. Toplam bilinmeyen işlerde uydurma yüzde gösterilmez; çalışan durum ve geçen süre gösterilir.
