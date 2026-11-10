@@ -1,8 +1,25 @@
 # Verification evidence
 
+## 6.3.2 startup resize crash fix
+
+[v6.3.2](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.2) is stable/latest. Application/tag source `322ab8e59089e6c89b9e4b1ee082ecfdc0d2c319`, PR #13, merge `578d6b2ffbb253175b3b19e779f39d45243ffba6`, signed metadata `3b9c7c745b3aa3c70997aaaee8bfb883fe6ea092`.
+
+The user reported a packaged 6.3.1 Portable crash in `QMainWindow.resizeEvent`: `Window object has no attribute details_expanded`. Qt can resize on first show before the real asynchronous Node bootstrap responds. The expansion flag previously existed only after bootstrap/appearance; synchronous test fixtures hid the ordering. The flag now exists before the first resize, and resize layout work waits until bootstrap is ready. The saved expansion preference is still applied afterwards. No reset or data migration is required.
+
+A delayed-bootstrap regression drives the actual Qt Window through resize, show, narrow/wide sizes and settings delivery. All four TR/EN and expanded/collapsed cases fail with the exact reported AttributeError on the old source and pass after the fix; collapsed cases also use 200% UI scale. 27 Qt and 54 Node tests passed locally and on Windows. [Source Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42822010321), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42822106630), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42823081581), [publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42823181236) and [real 6.3.1 → 6.3.2 update](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42823397571) succeeded.
+
+Source artifact `13767473371`, SHA-256 `e74d271a4c92610820a830f21ed4acce45da0d89c204fbe24a0cfc4c448490ef`; upgrade artifact `13768271194`, SHA-256 `69c255975d148e8bc313fb8a5168ee76e90b1afbe9805e9a7b4fe256c2840092`. Original hashes and ZIP CRC verified. Real installed/portable/reopened apps completed local scans, shared Windows provider receipts, hardware inventory, reduced exports and data-isolation checks. Locked installer replacement and all seven original icon payload sizes passed. [Portable Windows screenshot](screenshots/WinOptimizer-6.3.2-Portable.png) shows the test runner, not the user's PC.
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Setup | 94,195,586 | `8aab33cdaced2ee26c167b0b8f4f2d3a2d0341c624cb03e2dd8ebea6889a986e` |
+| Portable | 94,071,833 | `5cddddc2149de8719fd629ed8662fc9f85fefeb0330fee52691cc33e6f294d6d` |
+
+Actual baseline UI Automation invoked the signed update. Installed payload hash, registry version and running Qt version matched 6.3.2; English/dark/135% UI/125% text/OpenDyslexic, original cleanup/restore events and milestones were retained. Both full EXEs were backed up and read back by hash in the [private 6.3.2 Drive folder](https://drive.google.com/drive/folders/1belBteQsII4QY7VxrBccOpHmAAcfr0Tn); final source/reachable history, evidence and receipts use the same backup closure. Old releases are preserved and signing keys are excluded.
+
 ## 6.3.1 unified Windows scan and existing pages
 
-[v6.3.1](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.1) is stable/latest. Final application/tag source `01715e9ca2d8f86011bee0949a3a15dc4f745329`; integration PR #11 merge `6219ad3b5e2e5dbb4ef98cc2a2e91c9137c769f7`, final label PR #12 merge `b4c71a406872b182ea2a76899ca923f00a15c484`, signed metadata `8de2c00f163c4b7887aee9d32663df63fa969d27`.
+[v6.3.1](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.1) is a preserved stable release. Final application/tag source `01715e9ca2d8f86011bee0949a3a15dc4f745329`; integration PR #11 merge `6219ad3b5e2e5dbb4ef98cc2a2e91c9137c769f7`, final label PR #12 merge `b4c71a406872b182ea2a76899ca923f00a15c484`, signed metadata `8de2c00f163c4b7887aee9d32663df63fa969d27`.
 
 The separate Windows Health tab is removed. One `diagnostics.scan` reads the device checks, nine Windows evidence providers and optional WUA offers with a shared cancellation signal and operation log. Events/crashes appear in Scan & Fix, protection/services and confirmed CheckHealth in System tools, restart signals in Overview, and WUA history/support export in History & backups. Navigation reuses the completed snapshot and its timestamp. No donor executable or child application is shipped. Unknown providers do not become healthy, valid driver offers survive an evidence-provider failure, and cancellation retains the last completed snapshot. Global exports reduce nested evidence too, excluding event message bodies.
 
