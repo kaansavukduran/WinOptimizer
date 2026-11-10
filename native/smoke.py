@@ -132,7 +132,7 @@ def start(window, scenario):
                 (evidence/'care-support.json').write_text(json.dumps(safe,ensure_ascii=False,indent=2),encoding='utf-8')
                 state['careViewSettings']=dict(window.settings)
                 window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system',operationDetails=False)
-                window.appearance();window.render();state['stage']=13
+                window.appearance();window.render();window.poll();state['stage']=13
             elif stage==13:
                 from care import summary
                 assert window.findChild(QPushButton,'nav-windowsCare') is None

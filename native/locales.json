@@ -317,7 +317,9 @@
       "toolsStatus": "Koruma ve Windows servisleri",
       "refreshLocal": "Yerel bilgileri yenile",
       "sharedEmpty": "Bilgiler ortak taramadan gelir. Yerel bilgileri yenile ile Tara ve Düzelt denetimlerini çalıştırabilirsin.",
-      "sharedUnavailable": "Bu taramada Windows kayıtları okunamadı. Sonuçlar kısmi; bu durum sağlıklı olarak kabul edilmez."
+      "sharedUnavailable": "Bu taramada Windows kayıtları okunamadı. Sonuçlar kısmi; bu durum sağlıklı olarak kabul edilmez.",
+      "allRecords": "Tüm kayıtlar",
+      "recordProperty": "Kayıt / özellik"
     },
     "ready": "Kontrol sende",
     "localBadge": "Verilerin cihazında",
@@ -1004,7 +1006,9 @@
       "toolsStatus": "Protection and Windows services",
       "refreshLocal": "Refresh local information",
       "sharedEmpty": "Information comes from the shared scan. Refresh local information runs the Scan & Fix checks.",
-      "sharedUnavailable": "Windows records could not be read in this scan. Results are partial; this is not considered healthy."
+      "sharedUnavailable": "Windows records could not be read in this scan. Results are partial; this is not considered healthy.",
+      "allRecords": "All records",
+      "recordProperty": "Record / property"
     },
     "ready": "You’re in control",
     "localBadge": "Your data stays here",
