@@ -40,7 +40,7 @@ class Aion(QWidget):
         return self.preferences.get('motion', True) and not self.paused and not reduced
 
     def tick(self):
-        if not self.isVisible() or not self.window().isActiveWindow():
+        if not self.isVisible() or self.visibleRegion().isEmpty() or not self.window().isActiveWindow():
             return
         self.elapsed += 120
         if not self.motion():

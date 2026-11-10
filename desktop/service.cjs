@@ -12,7 +12,7 @@ class Service {
   save(){atomicWrite(this.stateFile,this.state);}
   milestone(id){if(!this.state.milestones.includes(id)){this.state.milestones.push(id);this.save();}}
   async native(action,payload={},elevated=false,options={}){if(this.platform!=='win32')throw Error('WINDOWS_ONLY');this.trace.add({action,step:'launch',status:'running'});try{const result=await this.run(this.backend,action,payload,elevated,{...options,onProgress:event=>this.trace.add({...event,origin:'native',action})});this.trace.add({action,step:'response',status:result?.success===false?'failed':'complete'});return result;}catch(e){this.trace.add({action,step:'response',status:'failed',reason:e.message});throw e;}}
-  availableDriverOffers(offers){return (offers||[]).filter(c=>!/^firmware$/i.test(String(c.driverClass||''))&&!this.state.ignoredUpdates.some(e=>e.id===c.id));}
+  availableDriverOffers(offers){const eligible=(offers||[]).filter(c=>!/^firmware$/i.test(String(c.driverClass||''))&&!this.state.ignoredUpdates.some(e=>e.id===c.id));if(['diagnostics.scan','windows-updates'].includes(this.trace.current?.command)){const count=(offers||[]).filter(c=>this.state.ignoredUpdates.some(e=>e.id===c.id)).length;if(count)this.trace.add({step:'ignored',status:'skipped',count,reason:'ignored'});}return eligible;}
   async installDriverUpdates(ids){
     if(!Array.isArray(ids)||!ids.length||ids.length>10000||new Set(ids).size!==ids.length||ids.some(id=>!this.availableDriverOffers(this.driverCandidates).some(c=>c.id===id)))throw Error('INVALID_SELECTION');
     // Large selections use a hash-pinned plan to stay below the Windows/UAC command-line limit.

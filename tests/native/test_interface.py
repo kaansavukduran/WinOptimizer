@@ -84,3 +84,26 @@ def test_portable_native_update_never_calls_setup(window,application):
     button=w.findChild(QPushButton,'portableDownload');assert button;button.click()
     assert any(c=='updates.portable' for c,_ in bridge.calls)
     assert not any(c=='updates.install' for c,_ in bridge.calls)
+
+
+def test_primary_scan_action_is_visible_before_scrolling_and_trace_keeps_latest_step_status(window,application):
+    w,bridge=window;w.resize(1024,750);w.go('scanFix');application.processEvents()
+    button=w.findChild(QPushButton,'start-scan')
+    assert w.scroll.viewport().rect().contains(button.mapTo(w.scroll.viewport(),button.rect().center()))
+    bridge.trace=dict(command='diagnostics.scan',status='complete',events=[dict(at='2026-11-10T12:00:00Z',origin='native',action='diagnostics',step='devices',status='running'),dict(at='2026-11-10T12:00:01Z',origin='native',action='diagnostics',step='devices',status='complete',count=12)])
+    w.poll();assert w.log.topLevelItemCount()==1;assert w.log.topLevelItem(0).text(3)=='Tamamlandı';assert len(w.trace['events'])==2
+
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_native_errors_use_human_translations_instead_of_missing_translation_keys(window,language):
+    w,_=window;w.settings['language']=language
+    for code in ['SCAN_EXPIRED','INVALID_SELECTION','UPDATE_HASH_INVALID']:
+        w.error(code)
+        assert code in w.notice.text()
+        assert 'errorExpired' not in w.notice.text() and 'errorSelection' not in w.notice.text() and 'errorHash' not in w.notice.text()
+        assert len(w.notice.text())>len(code)+20
+
+
+def test_native_log_preserves_distinct_driver_results_even_with_identical_titles(window):
+    w,bridge=window;bridge.trace=dict(command='windows-install',status='attention',events=[dict(at='2026-11-10T12:00:00Z',origin='native',action='windows-install',step='install-item',status='failed',item='Same driver title',count=1),dict(at='2026-11-10T12:00:01Z',origin='native',action='windows-install',step='install-item',status='complete',item='Same driver title',count=2)])
+    w.poll();assert w.log.topLevelItemCount()==2;assert w.log.topLevelItem(0).text(3)=='Başarısız';assert 'Başarısız: 1' in w.log_hint.text()
