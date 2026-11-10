@@ -20,7 +20,7 @@ def start(window, scenario):
         if not button or not button.isEnabled():raise AssertionError('Button unavailable: '+name)
         button.click()
     def accept():
-        dialog=window.findChild(QDialog,'confirm-dialog')
+        dialog=QApplication.activeModalWidget()
         if not dialog:raise AssertionError('Expected real confirmation dialog')
         dialog.findChild(QDialogButtonBox).button(QDialogButtonBox.Ok).click()
     def advance():
@@ -46,6 +46,7 @@ def start(window, scenario):
                 trace=window.trace or {}
                 # Poll once after completion; then inspect actual native events, not a UI fixture.
                 if trace.get('command')!='diagnostics.scan' or trace.get('status')=='running':return
+                state['scanTrace']=trace
                 events=trace.get('events',[])
                 assert any(e.get('origin')=='native' and e.get('step')=='devices' and e.get('status') in ('complete','failed') for e in events),events
                 assert any(e.get('step')=='windows-updates' and e.get('status')=='skipped' and e.get('reason')=='offline' for e in events),events
@@ -107,14 +108,14 @@ def start(window, scenario):
                 window.notice.setText(window.t('n.done'))
                 window.grab().save(str(evidence/'Windows-Qt-hardware-tr-100.png'))
                 window.settings=state['hardwareViewSettings'];window.appearance();window.render()
-                window.go('windowsCare');click('care-scan');state['stage']=11
+                window.go('scanFix');state['stage']=11
             elif stage==11:
                 report=window.state.get('care');assert report and report['readOnly'] is True and report['online'] is False
                 assert len(report['sections'])==9
                 for section_id in ('readiness','services'):
                     assert next(s for s in report['sections'] if s['id']==section_id)['status']=='available'
-                trace=window.trace or {}
-                if trace.get('command')!='care.snapshot' or trace.get('status')=='running':return
+                trace=state['scanTrace']
+                assert trace['command']=='diagnostics.scan' and trace['status']!='running'
                 terminal=[e for e in trace.get('events',[]) if e.get('origin')=='native' and e.get('step','').startswith('care-') and e.get('status') in ('complete','failed')]
                 assert len(terminal)==9,terminal
                 (evidence/'operation-care.json').write_text(json.dumps(trace,indent=2),encoding='utf-8')
@@ -133,14 +134,33 @@ def start(window, scenario):
                 window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system',operationDetails=False)
                 window.appearance();window.render();state['stage']=13
             elif stage==13:
-                from care import summary,progress_state
-                assert progress_state(window.trace)[0]==9
+                from care import summary
+                assert window.findChild(QPushButton,'nav-windowsCare') is None
+                assert not any(s.get('step')=='care.snapshot' for s in state['scanTrace']['events'])
                 click('care-copy');copied=QApplication.clipboard().text()
                 assert copied==summary(window.state['care'],'tr',window.t)
                 (evidence/'care-summary.txt').write_text(copied,encoding='utf-8')
                 window.scroll.verticalScrollBar().setValue(0)
                 window.notice.setText(window.t('care.review' if window.state['care'].get('needsAttention') else 'n.done'))
-                window.grab().save(str(evidence/'Windows-Qt-care-tr-100.png'))
+                window.grab().save(str(evidence/'Windows-Qt-unified-scan-tr-100.png'))
+                window.go('tools');state['stage']=14
+            elif stage==14:
+                from PySide6.QtWidgets import QTreeWidget
+                tree=window.findChild(QTreeWidget,'tools-records-tree');assert tree and tree.topLevelItemCount()==3
+                assert window.findChild(QPushButton,'care-component-check')
+                window.scroll.verticalScrollBar().setValue(0)
+                window.grab().save(str(evidence/'Windows-Qt-unified-tools-tr-100.png'))
+                window.go('home');state['stage']=15
+            elif stage==15:
+                from PySide6.QtWidgets import QGroupBox
+                assert any(g.title()==window.t('care.homeStatus') for g in window.findChildren(QGroupBox))
+                window.grab().save(str(evidence/'Windows-Qt-unified-home-tr-100.png'))
+                window.go('history');state['stage']=16
+            elif stage==16:
+                from PySide6.QtWidgets import QTreeWidget
+                assert window.findChild(QTreeWidget,'update-records-tree').topLevelItemCount()==1
+                window.grab().save(str(evidence/'Windows-Qt-unified-history-tr-100.png'))
+                (evidence/'unified-scan.json').write_text(json.dumps(dict(sharedScanId=window.state['report']['id'],separateDonorTab=False,sharedCategories=9,pages=['scanFix','tools','home','history'],verified=True),indent=2),encoding='utf-8')
                 window.settings=state['careViewSettings'];window.appearance();window.render()
                 if scenario=='portable':
                     window.save_setting('theme','dark');state['stage']=8;return

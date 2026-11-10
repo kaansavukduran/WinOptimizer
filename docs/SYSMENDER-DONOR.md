@@ -1,4 +1,4 @@
-# SysMender donor adaptation — 6.3.0
+# SysMender donor adaptation — unified in 6.3.1
 
 Reviewed source: [OguzhanDUYAR/sysmender](https://github.com/OguzhanDUYAR/sysmender), commit `f1da72e5d7b371f775161989b1e2968c43c178a6` (Git commit verified; tree `e3dc98cb731d23a5390cb9e0269a1a1245a8ed97`). The audit reads actual Windows files; the README's scaffold description and newer feature matrix do not by themselves establish implementation or build results.
 
@@ -15,6 +15,12 @@ Reviewed source: [OguzhanDUYAR/sysmender](https://github.com/OguzhanDUYAR/sysmen
 The donor catalog lists 66 tools; this release does not claim to port all 66 or achieve feature parity. Existing hardware/GPU/driver inventory, safe cleanup, startup, driver backups and restore points were retained rather than duplicated. Our 64-bit DXGI VRAM handling remains in place.
 
 Candidate later work: full DISM/SFC repair with verified outcomes, software inventory, live process/performance data and guided symptom workflows. Not imported here: blanket debloat/tweaks, remote/enterprise administration, bulk software removal, arbitrary command runners, Linux functionality, donor branding or compiled donor executables. No global OEM driver database is supplied by this adaptation.
+
+## Integration into WinOptimizer
+
+6.3.1 removes 6.3.0's separate Windows Health navigation tab. The existing `diagnostics.scan` command now collects the nine evidence categories once with the same cancellation signal and operation trace as device checks and optional WUA offers. Scan & Fix shows events/crashes/dump metadata, System tools shows Defender/firewall/services and the confirmed component-state check, Overview shows pending-restart evidence, and History & backups shows WUA history and reduced support exports. These pages share the completed in-memory snapshot and its original timestamp; changing pages does not rescan. System tools' local refresh uses `diagnostics.scan` with online checks disabled, without changing the user's online-scan preference.
+
+Unreadable providers add unknown findings while valid driver offers remain usable. Cancelling leaves the previous completed snapshot intact and prevents a later WUA request. Export reduction also applies to nested Windows evidence in the main diagnostics report, so shared-scan event message bodies cannot leak through the global report. There is no donor executable, child GUI or second application; `care.snapshot` remains an internal compatibility route and is not exposed as a GUI workflow.
 
 ## Provenance and licensing
 

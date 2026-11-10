@@ -7,4 +7,19 @@ function reducedCare(report){
  return structuredClone(safe);
 }
 function reducedComponent(report){if(!report)return null;return Object.fromEntries(['at','state','restartNeeded','mode','readOnly','online','success','needsAttention'].filter(key=>Object.hasOwn(report,key)).map(key=>[key,report[key]]));}
-module.exports={reducedCare,reducedComponent};
+function careFindings(report,unavailable=false){
+ const findings=[];
+ if(unavailable)return [{id:'windows:unavailable',category:'windows',status:'unknown',reason:'windowsUnavailable',evidence:{},actions:[{id:'system-tools',kind:'navigate'}]}];
+ if(!report)return findings;
+ for(const section of report.sections||[]){
+  if(section.status==='unavailable')findings.push({id:'windows:unknown:'+section.id,category:'windows',status:'unknown',reason:'windowsProviderUnavailable',evidence:{provider:section.id},actions:[{id:'system-tools',kind:'navigate'}]});
+  if(section.id==='readiness'&&section.items?.[0]){
+   const row=section.items[0];
+   if(row.restartUnknown)findings.push({id:'windows:restart-unknown',category:'windows',status:'unknown',reason:'windowsRestartUnknown',evidence:{},actions:[]});
+   if(row.restartSignals?.length)findings.push({id:'windows:restart',category:'windows',status:'info',reason:'windowsRestartPending',evidence:{signals:row.restartSignals},actions:[]});
+  }
+ }
+ return findings;
+}
+function reducedDiagnostics(report){if(!report)return null;return {...report,...(Object.hasOwn(report,'care')?{care:reducedCare(report.care)}:{})};}
+module.exports={reducedCare,reducedComponent,careFindings,reducedDiagnostics};
