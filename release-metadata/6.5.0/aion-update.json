@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.5.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 94215580,
+  "sha256": "5468a32565f1a6a2202ae5d3131a8bb2a5a28c3d5c37e3b4537cc15fe52fe7ef",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.5.0/WinOptimizer-Aion-6.5.0-Windows-x64-Setup.exe",
+  "sourceCommit": "484f317286681816c3e939a481400827bf028500",
+  "notes": {
+    "tr": "Hata sonrası anlaşılır açıklama, ilgili ekrana dönüş ve yalnız okuma işlemlerini güvenle yeniden deneme. İşlem motoru bağlantısı koparsa bekleme sonlanır; raporlar ve bakım ilerlemesi korunur.",
+    "en": "Clear error guidance, return to the relevant screen and explicit retries for read operations. Engine disconnections stop waiting while reports and care progress remain available."
+  },
+  "portable": {
+    "bytes": 94090849,
+    "sha256": "7676454849d0d26dd4351c8b4e8f61edaf315bde4d183ae0a853c17a978cd547",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.5.0/WinOptimizer-Aion-6.5.0-Windows-x64-Portable.exe"
+  }
+}
