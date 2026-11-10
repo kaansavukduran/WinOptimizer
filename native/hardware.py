@@ -55,7 +55,7 @@ def summary_entries(report,language,text):
     rows.append((text('hw.installedMemory'),compact('capacityBytes',installed or None)))
     for system in items('system'):rows.append((text('hw.fields.usableMemoryBytes'),compact('usableMemoryBytes',system.get('usableMemoryBytes'))))
     for gpu in items('gpu'):
-        rows.append((text('hw.fields.dedicatedVideoBytes')+' · '+adapter_name(gpu,text),compact('dedicatedVideoBytes',gpu.get('dedicatedVideoBytes'))))
+        rows.append((text('hw.fields.dedicatedVideoBytes'),adapter_name(gpu,text)+': '+compact('dedicatedVideoBytes',gpu.get('dedicatedVideoBytes'))))
     return rows
 
 def summary_text(report,language,text):

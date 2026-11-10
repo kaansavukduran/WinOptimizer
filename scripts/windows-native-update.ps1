@@ -3,6 +3,7 @@ param([Parameter(Mandatory=$true)][string]$Exe)
 $ErrorActionPreference='Stop'
 Add-Type -AssemblyName UIAutomationClient
 Add-Type -AssemblyName UIAutomationTypes
+Add-Type -AssemblyName System.Windows.Forms
 $evidence=Join-Path $pwd 'work/native-evidence/native-update-ui'
 $null=New-Item -ItemType Directory -Path $evidence -Force
 $script:receipts=@()
@@ -35,11 +36,14 @@ try {
   $script:baselineProcessId=$window.Current.ProcessId
   Invoke-Control (Find-Control $window 'Settings' ([System.Windows.Automation.ControlType]::CheckBox)) 'Settings'
   $combo=Find-Control $window 'Settings' ([System.Windows.Automation.ControlType]::ComboBox)
+  $combo.SetFocus()
   $combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
   # Qt popup windows can be siblings of the main window in the accessibility tree.
   $item=Find-Control $desktop 'Updates' ([System.Windows.Automation.ControlType]::ListItem)
   $item.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
-  $script:receipts+=@{control='Updates';action='SelectionItemPattern'}
+  # Selection marks the popup row; Enter commits the QComboBox choice.
+  [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+  $script:receipts+=@{control='Updates';action='SelectionItemPattern + Enter'}
   Invoke-Control (Find-Control $window 'Check for updates' ([System.Windows.Automation.ControlType]::Button)) 'Check for updates'
   $install=Find-Control $window 'Update and restart' ([System.Windows.Automation.ControlType]::Button) 120
   Invoke-Control $install 'Update and restart'
