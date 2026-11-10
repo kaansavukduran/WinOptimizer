@@ -8,6 +8,8 @@ A bilingual native Windows care app. The 6.x GUI uses Python/Qt Widgets, with a 
 
 ## İndir ve aç / Download and open
 
+**6.4.0:** Bakım yolculuğu hangi üç işi saydığını, tamamlananları ve sıradaki adımı açıklar. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.4.0) · [Windows doğrulaması](docs/VALIDATION.md). / Explained care steps with guided actions and preserved progress.
+
 **6.3.3:** hızlı sekme/görünüm geçişlerinde sağlamlık, klavye ile ölçek kaydı ve doğru tarama geri bildirimi. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.3) · [Doğrulama](docs/VALIDATION.md). / Native UI stability, keyboard scale persistence and accurate scan feedback.
 
 **6.3.1 açılış hatası 6.3.2’de düzeltildi.** [6.3.2 Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.2). Portable kullanıyorsan uygulamayı kapat, yeni EXE’yi mevcut `Data` klasörünün yanına koy ve yeni dosyayı aç. Ayarları sıfırlama. Alt satırda 6.3.2 görünür. / **6.3.2 fixes a 6.3.1 startup crash.** Keep your existing Data folder beside the new Portable EXE. [Verification](docs/VALIDATION.md).
@@ -34,6 +36,18 @@ Download either **Setup.exe** for installation or **Portable.exe** for direct us
 **Güvenli temizlik** ayrı bir işlemdir: tara, adayları incele, **Güvenli depoya taşı**. **Geçmiş ve yedekler → Geri al** dosyaları geri getirir; var olan yeni dosyaların üzerine yazılmaz. **Kalıcı sil ve alan aç** geri alınamaz.
 
 English: **Scan & Fix → Start scan → Next step → Update all (count) → review and confirm**. Online driver checks are enabled by default; disable them under **Scan options** for a local scan. Windows asks for administrator permission before driver backup/installation. Review per-driver results rather than assuming all succeeded. Safe cleanup is a separate preview → vault → restore/permanent-delete flow.
+
+## Bakım yolculuğu: bu 3 adım nedir? / What are the three care steps?
+
+**Genel bakış** başındaki rehber, daha önce tamamladığın başlangıç görevlerini gösterir. Sağlık puanı değildir. İlk eksik görev **Sıradaki adım** olarak önerilir:
+
+1. **Sistem durumunu kontrol et:** Windows, RAM ve koruma bilgilerine bakar. **Sistem kontrolüne git** ile vurgulanan **Sistemi kontrol et** düğmesini bul.
+2. **Temizlik adaylarını tara:** geçici dosyaları listeler; dosya silmez. **Temizlik taramasına git** ile vurgulanan **Temizliği tara** düğmesine ulaş. Bu, **Tara ve Düzelt** taramasından ayrıdır.
+3. **Sürücü yedeği oluştur:** üçüncü taraf sürücü paketlerini yerel yedekler. **Sürücü yedeğine git** ile vurgulanan **Sürücü yedeği oluştur** düğmesine ulaş; Windows yönetici izni ister. Güncelleme yüklemez. Paket yoksa neden tamamlanmadığı açıklanır.
+
+**Bakım adımlarına dön** seni tekrar listeye götürür. Adımın ekranını açmak veya aynı işi tekrarlamak puan kazandırmaz. Önceki ilerleme korunur. Oyunlaştırma kapalıyken normal sayfa ve işlemler kullanılabilir.
+
+The Overview guide names the three existing tasks, shows prior completion and recommends the first missing one. Go buttons reveal/focus the real action without starting it or granting progress. Return to the guide after the operation. Existing milestones remain intact; this is not a health score. [Actual Windows guide](docs/screenshots/WinOptimizer-6.4.0-Bakim-Rehberi.png) · [Next action](docs/screenshots/WinOptimizer-6.4.0-Siradaki-Adim.png).
 
 ## Donanım / Hardware
 

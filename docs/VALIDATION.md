@@ -1,8 +1,27 @@
 # Verification evidence
 
+## 6.4.0 explained care steps and guided actions
+
+[v6.4.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.4.0) is stable/latest. Final application/tag source `807c252a0eac0d4e8f1ccf41fa26a0f12cb3fa2c`, PR #15, merge `a6855cb4bc499bbea630bb21577af7c329e3ec31`, signed metadata `c27a82718f5bb2158933aa89ebde53ad21526c0b`.
+
+The old bare 2/3 bar did not identify its tasks. Overview now starts with the three existing milestone names, explanations, prior-completion states and a prominent first-missing-step action. The meanings are unchanged: `health` is system information, `scan` is cleanup candidate scanning (not Scan & Fix), and `drivers` is a nonempty third-party driver backup. Opening a step only navigates, reveals/focuses its real button and explains what to press. A return action takes the user back to the guide; navigation grants no progress. All-done, historical-versus-health meaning, gamification-off and zero-package backup outcomes are explicit. Saved milestones are preserved.
+
+47 Qt and 55 Node tests passed locally and on Windows. Coverage includes TR/EN, 0/1/2/3 completion, different missing tasks, 200% UI + independent 125% text/OpenDyslexic, visible keyboard focus, late text/layout changes, manual scrolling, disposed-page cancellation, return flow and the actual service predicates. Initial Windows source/PR runs failed because a late Windows layout could move the target out of view and a test compared benign status polling as a side effect. A target-owned Qt observer now follows layout/range changes only while the action is focused on the current page; the test excludes only status polling. These failures were resolved before publication.
+
+[Final source Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42836539870), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42836550684), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42837793956), [publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42838264089) and [actual installed 6.3.3 → 6.4.0 update](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42838763716) succeeded. First source/PR attempts `42835302935` / `42835323900` are retained as failure evidence; old published assets/tags are unchanged.
+
+Source artifact `13774496808`: SHA-256 `dbc7215d72157c44f26b6ef298a317078ebe8003e222699a4927f9324718e54e`. Upgrade artifact `13775410366`: SHA-256 `210cfd3c81ab9b77cedebe1f1fb8c7ff4bf0c370ff2de785c006a4959ddc506a`. Original hashes and ZIP CRC verified. Actual installed/portable/reopened apps read Service history, showed the guide, followed its suggestion, verified the real button was focused/visible and returned with milestones unchanged. Existing scan/provider receipts, hardware, reduced export, cleanup/restore, portable isolation, locked EXE replacement and seven icon sizes passed.
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Setup | 94,206,450 | `123faed04869e5cf5f89375eab6c13e3e602b50b63d278046ea7e331f023505b` |
+| Portable | 94,081,082 | `29a80519578215418701fd17ac51e4c54a5c1ccda4e943ca527dd3f16830b7ff` |
+
+Native UI Automation invoked the old app's signed update. Installed payload hash, registry and real running Qt version matched 6.4.0. English/dark/135% UI/125% text/OpenDyslexic, original cleanup/restore events and milestones survived; the upgraded guide's milestone array matches the verified retained history. [Guide screenshot](screenshots/WinOptimizer-6.4.0-Bakim-Rehberi.png) and [revealed next action](screenshots/WinOptimizer-6.4.0-Siradaki-Adim.png) come from the actual upgraded Windows runner, not the user's PC. [Private 6.4.0 backups](https://drive.google.com/drive/folders/1t6Npt3xJDciBsdA8j4_ULPs5nx7zGREz) include source/reachable Git, both complete EXEs and evidence; EXE readbacks match the original files. Final source/history/evidence closure also uses byte/hash, ZIP and bundle checks. Signing keys are excluded.
+
 ## 6.3.3 UI lifetime, scale input and result feedback
 
-[v6.3.3](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.3) is stable/latest. Final application/tag source `ca63f1ae1c07da7d8a7c03e6f235e38e666acd62`, PR #14, merge `1db8f3942b714b6cda3175ba81bbc24fa80e06ad`, signed metadata `c20c95e31d47e8227fa118819f388ad3980197cb`.
+[v6.3.3](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.3) is a preserved stable release. Final application/tag source `ca63f1ae1c07da7d8a7c03e6f235e38e666acd62`, PR #14, merge `1db8f3942b714b6cda3175ba81bbc24fa80e06ad`, signed metadata `c20c95e31d47e8227fa118819f388ad3980197cb`.
 
 A stability audit reproduced `Internal C++ object (Paragraph) already deleted` while navigating and changing appearance with pending layout work. Paragraph fitting now uses a widget-owned, coalesced timer and Qt slots; resize/document signals schedule work rather than recursively fitting immediately. Initial option-group callbacks are bound to their group lifetime and read its current checked state. Disposed pages cannot receive this work, and immediately expanded options remain visible. Keyboard scale changes now save; rounded input updates both controls to the recorded value with blocked intermediate signals. Scan issues/unknown findings trigger review/help feedback even if the envelope omits an attention flag; healthy results retain celebration.
 
