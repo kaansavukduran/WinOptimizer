@@ -1,4 +1,4 @@
-# Driver workflow coverage (5.2)
+# Driver workflow coverage (6.7)
 
 This is a feature comparison, not a claim that WinOptimizer reproduces another vendor's private catalog or algorithms. Feature names were checked for [Driver Booster for Steam, Steam app 920490](https://store.steampowered.com/app/920490/Driver_Booster_for_Steam/), with repair-tool details from the [official Driver Booster manual](https://www.iobit.com/product-manuals/db-help/). A named tool does not mean identical diagnosis or hardware coverage.
 
@@ -10,7 +10,7 @@ This is a feature comparison, not a claim that WinOptimizer reproduces another v
 | Driver installation | Selected Windows Update offers; automatic third-party package backup first | No blanket silent installation or forced version override |
 | Driver recovery | Inspect signed packages from prior backups; reapply selected INF files with a fresh backup and Windows ranking | Forced rollback uses Device Manager; inbox/vendor apps are not fully backed up |
 | Offline drivers | Export hardware IDs, search Microsoft catalog, import an extracted signed OEM/backup folder, apply without internet | Finding/downloading a package on the connected PC is manual |
-| Ignore updates | Persistently ignore a specific Windows Update offer and restore visibility | Not a global ignore for all future versions of a hardware model |
+| Ignore updates | Persistently ignore selected Windows Update offers atomically; restore selected/all visibility | Not a global ignore for all future versions of a hardware model |
 | Audio/device/network repair | Service start, hardware rescan, DNS-cache repair with fresh verification | Does not guess every physical, VPN, audio-endpoint or router fault |
 | Disconnected devices | Inspect/remove selected absent audio/Bluetooth/camera/printer entries; recheck absence | Other device classes and bulk removal are not offered |
 | Missing game runtimes | Official Visual C++ v14 x86/x64 and legacy DirectX installers; HTTPS allowlist, Microsoft Authenticode, hash, license confirmation, protected staging, installed-indicator postcheck | Not a universal game-specific DLL repair catalog; PhysX/OpenAL and older VC generations are not managed; no arbitrary DLL downloads |
@@ -33,3 +33,7 @@ Runtime URLs are fixed Microsoft endpoints; redirects must remain on the HTTPS a
 - [Windows restore-point creation and frequency](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/checkpoint-computer?view=powershell-5.1)
 - [Microsoft Visual C++ download endpoints](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170)
 - [Microsoft DirectX June 2010 package](https://www.microsoft.com/en-us/download/details.aspx?id=8109)
+
+## Native driver center
+
+6.7 groups updates, searchable installed inventory, dated backup/recovery inspection, offline preparation and ignored offers in one native driver page. Game runtimes, restore points, focus and disconnected devices are categorized in the existing workshop. This organization does not expand the external catalog or bypass signed-package eligibility. Bulk ignore/show-again validates the whole selection before an atomic local state write and never installs a driver.
