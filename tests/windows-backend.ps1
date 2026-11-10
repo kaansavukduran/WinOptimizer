@@ -1,4 +1,7 @@
 $ErrorActionPreference='Stop'
+$uiScript=Join-Path $PSScriptRoot '..\scripts\windows-native-update.ps1'
+$uiTokens=$null;$uiErrors=$null;$null=[Management.Automation.Language.Parser]::ParseFile($uiScript,[ref]$uiTokens,[ref]$uiErrors)
+if($uiErrors.Count){$uiErrors|Format-List;throw 'Native UI automation PS 5.1 parser errors'}
 $recovery=Join-Path $PSScriptRoot '..\backend\Recovery.ps1'
 $rt=$null;$re=$null;$null=[Management.Automation.Language.Parser]::ParseFile($recovery,[ref]$rt,[ref]$re)
 if($re.Count){throw 'Recovery PS 5.1 parser errors'}

@@ -92,10 +92,19 @@ def start(window, scenario):
                 (evidence/'operation-hardware.json').write_text(json.dumps(trace,ensure_ascii=False,indent=2),encoding='utf-8')
                 window.grab().save(str(evidence/'Windows-Qt-hardware.png'))
                 state['hardwareViewSettings']=dict(window.settings)
-                window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system')
+                window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system',operationDetails=False)
                 window.appearance();window.render();state['stage']=10;return
             elif stage==10:
+                from hardware import summary_text,text_report,progress_state
+                assert window.log_details.isHidden()
+                assert progress_state(window.trace)[0]==14
+                click('hardware-copy')
+                copied=QApplication.clipboard().text()
+                assert copied==summary_text(window.state['hardware'],'tr',window.t)
+                (evidence/'hardware-summary.txt').write_text(copied,encoding='utf-8')
+                (evidence/'hardware-report.txt').write_text(text_report(window.state['hardware'],'tr',window.t),encoding='utf-8')
                 window.scroll.verticalScrollBar().setValue(0)
+                window.notice.setText(window.t('n.done'))
                 window.grab().save(str(evidence/'Windows-Qt-hardware-tr-100.png'))
                 window.settings=state['hardwareViewSettings'];window.appearance();window.render()
                 if scenario=='portable':

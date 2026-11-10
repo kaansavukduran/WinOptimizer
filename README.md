@@ -31,7 +31,7 @@ English: **Scan & Fix → Start scan → Next step → Update all (count) → re
 
 ## Donanım / Hardware
 
-**Donanım → Donanımı tara** bilgisayarın yerel özelliklerini okur: işlemci/çekirdekler, ekran kartı ve ayrılmış VRAM, RAM modülleri/türü, anakart, BIOS, disk/birimler, ekran, ağ, ses, pil ve Windows aygıtları. Arama ve kategori filtresiyle bul; ayrıntıları genişlet veya JSON raporunu dışa aktar. İnternet veya yönetici izni gerekmez. Her kategorinin gerçek okuma sonucu işlem günlüğünde görünür.
+**Donanım → Donanımı tara** bilgisayarın yerel özelliklerini okur: işlemci/çekirdekler, ekran kartı ve ayrılmış VRAM, RAM modülleri/türü, anakart, BIOS, disk/birimler, ekran, ağ, ses, pil ve Windows aygıtları. Arama ve kategori filtresiyle bul; ayrıntıları genişlet, özeti kopyala veya JSON/metin raporunu dışa aktar. Donanım taramasının 14 kategorisi gerçek işlem kayıtlarına göre yüzdeyle ilerler. İnternet veya yönetici izni gerekmez. Her kategorinin gerçek okuma sonucu işlem günlüğünde görünür.
 
 VRAM, DXGI'nin 64 bit değeridir; paylaşılan sistem belleği ayrıca gösterilir. Okunamayan bilgi tahmin edilmez. Sensör sıcaklığı, fan/PSU modeli gibi Windows'un standart olarak sunmadığı bilgiler her bilgisayarda bulunamaz. [Kaynaklar ve sınırlar](docs/HARDWARE.md).
 
@@ -45,7 +45,7 @@ VRAM, DXGI'nin 64 bit değeridir; paylaşılan sistem belleği ayrıca gösteril
 
 Örneğin çevrimiçi arama kapalıysa Windows Update **Atlandı: çevrimiçi kontrol kapalı** olarak kaydedilir. Aygıt/ses/ağ/ekran/bileşen sağlayıcı hataları görünür; erişilemeyen bilgi sağlıklı sayılmaz. Temizlikte yeni dosyalar, bağlantılar, bulunamayan/erişilemeyen klasörler ve tarama sınırı da nedenleriyle raporlanır. Bir dosya taşıma veya geri alma kısmen başarısız olursa sonuç bunu belirtir.
 
-Ekran adımların son durumlarını özetler. **Günlüğü dışa aktar**, bütün zaman sıralı olayları JSON raporuna ekler. Son işlem günlüğü uygulama yeniden açıldığında korunur; beklenmedik kapanışta yarım kalan işlem tamamlandı sayılmaz. Bu, Windows'taki her donanım arızasını saptama veya her sorunu otomatik çözme garantisi değildir.
+**İşlem ayrıntılarını daralt** sonuçlara daha fazla alan açar; tamamlanan/başarısız/atlanan sayıları görünür kalır ve kayıt sürer. Tercihin yeniden açılışta korunur. Ekran adımların son durumlarını özetler. **Günlüğü dışa aktar**, bütün zaman sıralı olayları JSON raporuna ekler. Son işlem günlüğü uygulama yeniden açıldığında korunur; beklenmedik kapanışta yarım kalan işlem tamamlandı sayılmaz. Bu, Windows'taki her donanım arızasını saptama veya her sorunu otomatik çözme garantisi değildir.
 
 Operation steps show actual backend events, their source, latest state, counts, failures and skip reasons. The entire chronological log can be exported, and the last operation survives reopening. Unknown totals remain indeterminate. An accepted package or opened settings page is not proof that a device issue was repaired.
 

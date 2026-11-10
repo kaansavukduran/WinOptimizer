@@ -48,6 +48,32 @@ jobs:
           $p = Start-Process -FilePath $exe -ArgumentList '--smoke','seed' -Wait -PassThru
           if ($p.ExitCode -ne 0) { throw 'Native installed UI self-test failed' }
           if (-not (Test-Path "$env:AION_EVIDENCE/verified-seed.json")) { throw 'Native evidence missing' }
+      - name: Installer waits for a locked executable and replaces the exact payload
+        shell: pwsh
+        run: |
+          $setup = (Get-ChildItem release/*-Setup.exe | Select-Object -First 1).FullName
+          $portable = (Get-ChildItem release/*-Portable.exe | Select-Object -First 1).FullName
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs/WinOptimizer Aion/WinOptimizer Aion.exe'
+          $stage = Join-Path (Split-Path $exe) 'WinOptimizer Aion.installing.exe'
+          $expected = Get-FileHash $portable -Algorithm SHA256
+          $lock = [IO.File]::Open($exe,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::Read)
+          try {
+            $p = Start-Process -FilePath $setup -ArgumentList '/S' -PassThru
+            $deadline = (Get-Date).AddSeconds(45)
+            do {
+              Start-Sleep -Milliseconds 500
+              $staged = (Test-Path $stage) -and (Get-Item $stage).Length -eq (Get-Item $portable).Length
+              $p.Refresh()
+            } while (-not $staged -and -not $p.HasExited -and (Get-Date) -lt $deadline)
+            if (-not $staged) { throw 'Installer did not prepare the complete new payload' }
+            Start-Sleep -Seconds 2
+            $p.Refresh()
+            if ($p.HasExited) { throw 'Installer reported completion while the executable was still locked' }
+          } finally { $lock.Dispose() }
+          if (-not $p.WaitForExit(120000) -or $p.ExitCode -ne 0) { throw 'Installer replacement failed after releasing the lock' }
+          if ((Get-FileHash $exe -Algorithm SHA256).Hash -ne $expected.Hash) { throw 'Installed executable is not the verified portable payload' }
+          if (Test-Path $stage) { throw 'Installer left an uncommitted staging payload' }
+          @{lockedReplacement=$true;sha256=$expected.Hash;bytes=(Get-Item $exe).Length} | ConvertTo-Json | Set-Content 'work/native-evidence/locked-replacement.json' -Encoding utf8
       - name: Portable launch, real scan, reopen and installed-data isolation
         shell: pwsh
         run: |

@@ -133,3 +133,67 @@ def test_hardware_scan_search_unknowns_and_export_existing_report(window,applica
     w.findChild(QPushButton,'hardware-export').click()
     assert ('hardware.export',{}) in bridge.calls
     assert len([c for c,_ in bridge.calls if c=='hardware'])==1
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_hardware_readable_summary_clipboard_text_and_filter_retention(window,application,tmp_path,monkeypatch,language):
+    from PySide6.QtWidgets import QLineEdit, QLabel
+    from hardware import QFileDialog, summary_text
+    w,bridge=window;w.settings['language']=language;w.go('hardware');w.findChild(QPushButton,'hardware-scan').click();application.processEvents()
+    report=w.state['hardware'];summary=summary_text(report,language,w.t)
+    assert 'bytes' not in summary and '12' in summary and 'GiB' in summary
+    w.findChild(QPushButton,'hardware-copy').click();assert application.clipboard().text()==summary
+    destination=tmp_path/'donanım.txt'
+    monkeypatch.setattr(QFileDialog,'getSaveFileName',lambda *args:(str(destination),'Text (*.txt)'))
+    w.findChild(QPushButton,'hardware-text-export').click();exported=destination.read_text(encoding='utf-8')
+    assert '12,884,901,888' in exported or '12.884.901.888' in exported
+    assert w.t('hw.noProvider') in exported and w.t('hw.noDevices') in exported
+    w.findChild(QLineEdit,'hardware-search').setText('no such fixture')
+    assert not w.findChild(QObject,'hardware-no-matches').isHidden()
+    w.go('home');application.processEvents();w.go('hardware');application.processEvents()
+    assert w.findChild(QLineEdit,'hardware-search').text()=='no such fixture'
+    w.findChild(QPushButton,'hardware-clear-filter').click()
+    assert w.findChild(QLineEdit,'hardware-search').text()==''
+    assert w.findChild(QObject,'hardware-no-matches').isHidden()
+    assert len([c for c,_ in bridge.calls if c=='hardware'])==1
+
+def test_hardware_progress_uses_actual_native_terminal_categories_and_never_old_trace(window):
+    w,bridge=window;w.busy=True;w.active_command='hardware'
+    from hardware import CATEGORIES
+    events=[dict(origin='native',step='hardware-'+name,status='complete') for name in CATEGORIES[:6]]
+    events += [dict(origin='native',step='hardware-bios',status='failed'),dict(origin='native',step='hardware-storage',status='running'),dict(origin='app',step='hardware-devices',status='complete')]
+    bridge.trace=dict(command='hardware',status='running',at='2026-11-10T12:00:00Z',events=events);w.poll()
+    assert w.progress.maximum()==14 and w.progress.value()==7
+    assert '7/14' in w.notice.text() and w.t('hw.storage') in w.notice.text()
+    events += [dict(origin='native',step='hardware-cpu',status='complete')];w.poll();assert w.progress.value()==7
+    bridge.trace=dict(command='diagnostics.scan',status='running',events=[]);w.poll();assert w.progress.value()==7
+
+def test_collapsing_operation_details_preserves_live_failures_and_preference(window,application):
+    w,bridge=window;application.processEvents();before=w.scroll.height()
+    w.log_toggle.click();application.processEvents()
+    assert w.settings['operationDetails'] is False and w.log_details.isHidden()
+    assert w.scroll.height()>before
+    bridge.trace=dict(command='hardware',status='attention',events=[dict(origin='native',step='hardware-bios',status='failed')]);w.poll()
+    assert 'Başarısız: 1' in w.log_hint.text() and w.trace['events'][0]['status']=='failed'
+    w.log_toggle.click();application.processEvents();assert not w.log_details.isHidden()
+    assert w.log.topLevelItem(0).text(3)=='Başarısız'
+
+
+def test_native_installer_handoff_requests_fresh_onefile_payload(window,monkeypatch):
+    import app as native_app
+    w,_=window;calls=[]
+    monkeypatch.setenv('PYINSTALLER_RESET_ENVIRONMENT','0')
+    monkeypatch.setattr(native_app.subprocess,'Popen',lambda *args,**kwargs:calls.append((args,kwargs)))
+    monkeypatch.setattr(native_app.QTimer,'singleShot',lambda *args:None)
+    w.install_app({'installer':'C:/Verified/Setup.exe'})
+    args,kwargs=calls[0]
+    assert args[0]==['C:/Verified/Setup.exe','/S','--updated','--force-run']
+    assert kwargs['env']['PYINSTALLER_RESET_ENVIRONMENT']=='1' and kwargs['close_fds'] is True
+
+def test_native_installer_launch_failure_keeps_interface_available(window,monkeypatch):
+    import app as native_app
+    w,_=window
+    def reject(*args,**kwargs):raise OSError('Controlled launch failure')
+    monkeypatch.setattr(native_app.subprocess,'Popen',reject)
+    w.install_app({'installer':'C:/Verified/Setup.exe'})
+    assert w.last_error=='OPERATION_FAILED' and w.isVisible() and not w.busy
+    assert w.t('errorDefault') in w.notice.text()
