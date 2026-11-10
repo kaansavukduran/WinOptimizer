@@ -166,9 +166,9 @@
     "textSize": "Yalnızca yazı boyutu",
     "font": "Yazı tipi",
     "systemFont": "Sistem yazı tipi",
-    "readableFont": "Okunaklı • Verdana",
-    "dyslexicFont": "Disleksi dostu yazı tipi • OpenDyslexic",
-    "fontPreview": "Çiçek, ığdır, Şule: Ç Ğ İ Ö Ş Ü • ç ğ ı ö ş ü • 0123456789",
+    "readableFont": "Okunaklı (Verdana)",
+    "dyslexicFont": "Disleksi dostu yazı tipi (OpenDyslexic)",
+    "fontPreview": "Çiçek, Iğdır, Şule: Ç Ğ İ Ö Ş Ü / ç ğ ı ö ş ü / 0123456789",
     "lineHeight": "Satır aralığı",
     "letterSpacing": "Harf aralığı",
     "accent": "Vurgu rengi",
@@ -717,6 +717,32 @@
       "back": "Bakım adımlarına dön",
       "backupCreated": "{count} sürücü paketi yedeklendi.",
       "noPackages": "Bu denemede yedeklenecek üçüncü taraf sürücü paketi bulunamadı. Bu nedenle 3. adım tamamlandı sayılmadı; diğer işlevleri kullanmaya devam edebilirsin."
+    },
+    "look": {
+      "quick": "Yazı ve tema",
+      "preview": "Seçilen yazı tipinin canlı önizlemesi",
+      "offlineFont": "OpenDyslexic pakete dahildir, internetsiz çalışır. Seçimin menü ve içeriklerde de uygulanır.",
+      "colorHelp": "Hazır renk seç, renk seçiciyi aç veya #RRGGBB kodu yaz. Yalnız vurgu rengi değişir.",
+      "colorInvalid": "Geçerli renk örneği: #b82e69. Önceki rengin korundu.",
+      "contrastHelp": "Yüksek kontrast teması kendi renklerini kullanır; kişisel vurgu rengin saklı kalır.",
+      "pick": "Özel renk seç…",
+      "pink": "Aion pembesi",
+      "blue": "Okyanus mavisi",
+      "purple": "Lavanta",
+      "green": "Orman yeşili",
+      "amber": "Kehribar",
+      "pages": {
+        "home": "Bir bakım adımı seç; neyi kontrol edeceğini açıklayalım.",
+        "scanFix": "Sürücü ve Windows sonuçlarını birlikte incele. Taramayı sen başlatırsın.",
+        "cleanup": "Önce aday dosyaları tara; sonuçları inceleyip kapsamı seç.",
+        "drivers": "Sürücüleri incele, yedek oluştur veya sunulan güncellemeleri kontrol et.",
+        "hardware": "Donanımını tanı: Donanımı tara ile yerel bilgileri oku.",
+        "startup": "Windows açılırken çalışan öğeleri incele; değiştirmeden önce etkisine bak.",
+        "workshop": "Sürücü kurtarma ve oyun bileşenleri için gelişmiş araçlar.",
+        "tools": "Ağ, güç planı ve Windows araçlarını ihtiyacına göre seç.",
+        "history": "Önceki işlemleri ve oluşturduğun yedekleri incele.",
+        "settings": "Yazı tipi, tema, renk ve Aion tercihlerini kendine göre ayarla."
+      }
     }
   },
   "en": {
@@ -886,9 +912,9 @@
     "textSize": "Text size only",
     "font": "Font",
     "systemFont": "System font",
-    "readableFont": "Readable • Verdana",
-    "dyslexicFont": "Dyslexia-friendly font • OpenDyslexic",
-    "fontPreview": "Çiçek, ığdır, Şule: Ç Ğ İ Ö Ş Ü • ç ğ ı ö ş ü • 0123456789",
+    "readableFont": "Readable (Verdana)",
+    "dyslexicFont": "Dyslexia-friendly font (OpenDyslexic)",
+    "fontPreview": "Çiçek, Iğdır, Şule: Ç Ğ İ Ö Ş Ü / ç ğ ı ö ş ü / 0123456789",
     "lineHeight": "Line spacing",
     "letterSpacing": "Letter spacing",
     "accent": "Accent color",
@@ -1437,6 +1463,32 @@
       "back": "Back to care steps",
       "backupCreated": "{count} driver packages backed up.",
       "noPackages": "No third-party driver packages were available to back up in this attempt. Step 3 was not marked complete; you can continue using the other features."
+    },
+    "look": {
+      "quick": "Font and theme",
+      "preview": "Live preview of the selected font",
+      "offlineFont": "OpenDyslexic is bundled and works offline. Your choice also applies to menus and content.",
+      "colorHelp": "Choose a preset, open the color picker, or enter #RRGGBB. Only the accent changes.",
+      "colorInvalid": "Valid color example: #b82e69. Your previous color was retained.",
+      "contrastHelp": "High contrast uses its own colors; your personal accent remains saved.",
+      "pick": "Choose custom color…",
+      "pink": "Aion pink",
+      "blue": "Ocean blue",
+      "purple": "Lavender",
+      "green": "Forest green",
+      "amber": "Amber",
+      "pages": {
+        "home": "Choose a care step and see what it checks.",
+        "scanFix": "Review driver and Windows findings together. Scans start when you request them.",
+        "cleanup": "Scan candidate files first, then review results and choose the scope.",
+        "drivers": "Inspect drivers, create a backup or check offered updates.",
+        "hardware": "Get to know your PC: Scan hardware reads local information.",
+        "startup": "Review startup entries and their effect before making changes.",
+        "workshop": "Advanced tools for driver recovery and game runtimes.",
+        "tools": "Choose network, power plan and Windows tools for your task.",
+        "history": "Review earlier operations and the backups you created.",
+        "settings": "Choose your font, theme, colors and Aion preferences."
+      }
     }
   }
 }

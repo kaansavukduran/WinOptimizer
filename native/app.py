@@ -13,11 +13,12 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
     QLabel, QPushButton, QScrollArea, QFrame, QGroupBox, QCheckBox, QComboBox, QSpinBox,
     QSlider, QDoubleSpinBox, QFormLayout, QProgressBar, QTreeWidget, QTreeWidgetItem,
     QAbstractItemView, QFileDialog, QMessageBox, QDialog, QDialogButtonBox, QLineEdit,
-    QSizePolicy, QSplitter)
+    QSizePolicy, QSplitter, QGridLayout)
 from bridge import Bridge
 from mascot import Aion
 from widgets import Paragraph
 import recovery
+import personalize
 
 ROOT = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parents[1]))
 VERSION = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
@@ -52,7 +53,8 @@ class Window(QMainWindow):
         self.details_expanded = True
         self.state, self.selected, self.trace, self.trace_signature = {}, set(), None, None
         self.save_serial = 0
-        self.settings_section = 'general'
+        self.settings_section = 'appearance'
+        self.aion_paused = False
         self.last_error, self.last_request, self.scan_online, self.filter_status = None, None, True, 'all'
         self.setWindowTitle('WinOptimizer Aion')
         self.setWindowIcon(QIcon(str(ROOT / 'public/assets/aion.ico')))
@@ -149,22 +151,32 @@ class Window(QMainWindow):
 
     def appearance(self):
         scale = self.settings.get('scale', 100) / 100
-        font_name = {'system': QApplication.font().family(), 'readable': 'Verdana', 'dyslexic': 'OpenDyslexic'}.get(self.settings.get('font'), QApplication.font().family())
+        system_font = QFontDatabase.systemFont(QFontDatabase.GeneralFont).family()
+        font_name = {'system': system_font, 'readable': 'Verdana', 'dyslexic': 'OpenDyslexic'}.get(self.settings.get('font'), system_font)
         font = QFont(font_name)
         font.setPointSizeF(10 * scale * self.settings.get('textSize', 100) / 100)
         font.setLetterSpacing(QFont.AbsoluteSpacing, self.settings.get('letterSpacing', 0))
+        QApplication.setFont(font)
         self.setFont(font)
+        for paragraph in self.findChildren(Paragraph):
+            paragraph.setFont(font)
+            paragraph.document().setDefaultFont(font)
+        for label in self.findChildren(QLabel):
+            if label.property('heading'):
+                heading=QFont(font);heading.setPointSizeF(font.pointSizeF()*1.4);heading.setBold(True);label.setFont(heading)
         theme = self.settings.get('theme', 'system')
         dark = theme in ('dark', 'contrast') or (theme == 'system' and QApplication.palette().window().color().lightness() < 128)
         high = theme == 'contrast'
         bg, surface, fg, line, accent = ('#000000', '#111111', '#ffffff', '#ffffff', '#ffff00') if high else ('#18151e', '#29222f', '#fff5fa', '#5a455c', self.settings.get('accent', '#b82e69')) if dark else ('#fcf7fb', '#ffffff', '#302838', '#e8d4e3', self.settings.get('accent', '#b82e69'))
+        accent_ink=personalize.ink(accent)
         pad = round((6 if self.settings.get('density')=='compact' else 8) * scale)
         self.nav_scroll.setFixedHeight(round(64*scale))
-        self.setStyleSheet(f'QWidget{{color:{fg};background:{bg};}} QGroupBox,QTreeWidget,QLineEdit,QComboBox,QSpinBox,QDoubleSpinBox{{background:{surface};border:1px solid {line};border-radius:8px;padding:{pad}px;}} QGroupBox{{margin-top:14px;padding-top:24px;}} QGroupBox::title{{subcontrol-origin:margin;left:12px;}} QPushButton{{background:{surface};border:1px solid {line};border-radius:8px;padding:{pad}px;min-height:{round(20*scale)}px;}} QPushButton:focus{{border:3px solid {accent};}} QPushButton:disabled{{color:#888888;}} QPushButton[primary="true"]{{background:{accent};color:{"#000000" if high else "#ffffff"};font-weight:bold;}} QPushButton:checked{{border:2px solid {accent};}} QHeaderView::section{{background:{surface};padding:{pad}px;}} QProgressBar{{border:1px solid {line};min-height:12px;}} QProgressBar::chunk{{background:{accent};}} QCheckBox{{spacing:8px;padding:6px;}} QLabel{{background:transparent;}}')
+        self.setStyleSheet(f'QWidget{{color:{fg};background:{bg};}} QGroupBox,QTreeWidget,QLineEdit,QComboBox,QSpinBox,QDoubleSpinBox{{background:{surface};border:1px solid {line};border-radius:8px;padding:{pad}px;}} QGroupBox{{margin-top:14px;padding-top:24px;}} QGroupBox::title{{subcontrol-origin:margin;left:12px;}} QPushButton{{background:{surface};border:1px solid {line};border-radius:8px;padding:{pad}px;min-height:{round(20*scale)}px;}} QPushButton:focus{{border:3px solid {accent};}} QPushButton:disabled{{color:#888888;}} QPushButton[primary="true"]{{background:{accent};color:{accent_ink};font-weight:bold;}} QPushButton:checked{{border:2px solid {accent};}} QHeaderView::section{{background:{surface};padding:{pad}px;}} QProgressBar{{border:1px solid {line};min-height:12px;}} QProgressBar::chunk{{background:{accent};}} QCheckBox{{spacing:8px;padding:6px;}} QLabel{{background:transparent;}}')
         self.outer.setSpacing(round(10 * scale))
         self.set_operation_details(self.settings.get('operationDetails',True))
         if hasattr(self,'body'):self.body.setSpacing(round((10 if self.settings.get('density')=='compact' else 14)*scale))
         self.footer.setText(f'{VERSION} · Windows x64 · {self.t("n.port") if self.portable else "Setup"} · {self.t("n.native")}')
+        personalize.sync(self)
 
     def clear_layout(self, layout):
         while layout.count():
@@ -193,8 +205,15 @@ class Window(QMainWindow):
         body = QWidget()
         self.body = QVBoxLayout(body)
         self.body.setSpacing(round(14 * self.settings.get('scale', 100) / 100))
-        self.label(self.t(self.page) if self.ready else 'WinOptimizer Aion', heading=True)
         self.actions = []
+        if self.ready:
+            guided_home=self.page=='home' and not self.failure
+            if guided_home:
+                self.label(self.t('home'),heading=True)
+                from journey import render
+                render(self)
+            personalize.header(self,title=not guided_home)
+        else:self.label('WinOptimizer Aion',heading=True)
         recovery.render(self)
         if self.ready:
             getattr(self, 'page_' + self.page)()
@@ -208,6 +227,7 @@ class Window(QMainWindow):
         self.export_log.setText(self.t('n.export_log'))
         self.trace_signature = None
         self.set_operation_details(self.settings.get('operationDetails',True))
+        personalize.sync(self)
 
     def set_operation_details(self, expanded, persist=False):
         changed=getattr(self,'details_expanded',None)!=expanded
@@ -235,6 +255,7 @@ class Window(QMainWindow):
     def label(self, value, heading=False, layout=None):
         label = QLabel(str(value)) if heading else Paragraph(str(value),self.settings.get('lineHeight',1.5))
         if heading:
+            label.setProperty('heading',True)
             label.setWordWrap(True)
             label.setTextFormat(Qt.PlainText)
             label.setTextInteractionFlags(Qt.TextSelectableByMouse)
@@ -487,22 +508,15 @@ class Window(QMainWindow):
         self.label(self.t('d.quickHelp'), layout=copy)
         self.label(self.t('n.steps'), layout=copy)
         box.addLayout(copy, 1)
-        self.aion = Aion(ROOT, lambda key: self.t('n.' + key))
-        self.aion.configure(self.settings)
-        box.addWidget(self.aion)
         self.body.addLayout(box)
-        pause = self.button('n.pause', lambda: self.toggle_pause())
-        pause.setEnabled(self.settings.get('companion', True))
 
     def toggle_pause(self):
         self.aion.paused = not self.aion.paused
+        self.aion_paused = self.aion.paused
         self.aion.update()
-        button=self.findChild(QPushButton,'n.pause')
-        if button:button.setText(self.t('n.play' if self.aion.paused else 'n.pause'))
+        personalize.sync(self)
 
     def page_home(self):
-        from journey import render
-        render(self)
         self.button('scanFix', lambda: self.go('scanFix'), True, name='home-scan')
         self.hero()
         from journey import render_return
@@ -552,9 +566,6 @@ class Window(QMainWindow):
         self.body.removeWidget(group)
         next_row=QHBoxLayout()
         next_row.addWidget(group,1)
-        self.aion=Aion(ROOT,lambda key:self.t('n.'+key))
-        self.aion.configure(self.settings)
-        next_row.addWidget(self.aion)
         self.body.addLayout(next_row)
         from care import render_scan
         render_scan(self)
@@ -849,6 +860,7 @@ class Window(QMainWindow):
 
     def choice(self,form,key,options,label=None):
         combo=QComboBox()
+        combo.setObjectName('setting-'+key)
         for value,name in options:combo.addItem(name,value)
         combo.setCurrentIndex(max(0,combo.findData(self.settings.get(key))))
         combo.setAccessibleName(label or self.t(key))
@@ -872,11 +884,11 @@ class Window(QMainWindow):
         slider.valueChanged.connect(lambda value:commit(value) if slider.hasFocus() and not slider.isSliderDown() else None)
         spin.editingFinished.connect(lambda:commit(spin.value()))
         reset=QPushButton(self.t('n.default'));reset.clicked.connect(lambda:(spin.setValue(default),self.save_setting(key,default)))
-        top.addWidget(slider,1);top.addWidget(spin);top.addWidget(reset);layout.addLayout(top)
+        layout.addWidget(slider);top.addWidget(spin,1);top.addWidget(reset);layout.addLayout(top)
         if key=='scale':
-            presets=QHBoxLayout()
-            for val in (80,100,125,150,175,200):
-                b=QPushButton(f'{val}%');b.clicked.connect(lambda _,v=val:(spin.setValue(v),self.save_setting(key,v)));presets.addWidget(b)
+            presets=QGridLayout()
+            for index,val in enumerate((80,100,125,150,175,200)):
+                b=QPushButton(f'{val}%');b.clicked.connect(lambda _,v=val:(spin.setValue(v),self.save_setting(key,v)));presets.addWidget(b,index//3,index%3)
             layout.addLayout(presets)
         form.addRow(label,row)
 
@@ -896,19 +908,22 @@ class Window(QMainWindow):
             self.choice(form,'language',[('tr','Türkçe'),('en','English')],self.t('n.language'))
             self.label(self.t('n.local_data'))
         elif section=='appearance':
+            personalize.font_controls(self,form)
             self.choice(form,'theme',[(k,self.t('systemTheme' if k=='system' else k)) for k in ('light','dark','system','contrast')])
+            personalize.note(self,form,'look.contrastHelp')
+            personalize.accent_controls(self,form)
             self.numeric(form,'scale',self.t('scale'),80,200,5,100)
             self.choice(form,'density',[(k,self.t(k)) for k in ('comfortable','compact')])
-            accent=QLineEdit(self.settings.get('accent','#b82e69'));accent.setAccessibleName(self.t('n.choose_color'));accent.editingFinished.connect(lambda:self.save_setting('accent',accent.text()));form.addRow(self.t('n.choose_color'),accent)
+            self.button('accessibility',lambda:self.set_settings_section('accessibility'))
+            self.button('gameSettings',lambda:self.set_settings_section('gameSettings'))
         elif section=='accessibility':
             self.numeric(form,'textSize',self.t('textSize'),80,160,5,100)
-            self.choice(form,'font',[('system',self.t('systemFont')),('readable','Verdana'),('dyslexic',self.t('dyslexicFont'))])
-            self.label('Ç Ğ İ Ö Ş Ü ç ğ ı ö ş ü · Aion 0123456789')
+            personalize.font_controls(self,form)
             for key,minv,maxv,step in [('lineHeight',1.2,2,.1),('letterSpacing',0,3,.1)]:
                 spin=QDoubleSpinBox();spin.setRange(minv,maxv);spin.setSingleStep(step);spin.setValue(self.settings.get(key,minv));spin.setAccessibleName(self.t(key));spin.editingFinished.connect(lambda k=key,s=spin:self.save_setting(k,s.value(),k=='lineHeight'));form.addRow(self.t(key),spin)
         elif section=='gameSettings':
             for key in ('motion','sound','gamification','companion','followPointer','petting'):
-                check=QCheckBox(self.t(key));check.setChecked(self.settings.get(key,True));check.toggled.connect(lambda v,k=key:self.save_setting(k,v));form.addRow(check)
+                check=QCheckBox(self.t(key));check.setObjectName('setting-'+key);check.setChecked(self.settings.get(key,True));check.toggled.connect(lambda v,k=key:self.save_setting(k,v));form.addRow(check)
             self.numeric(form,'mascotSize',self.t('mascotSize'),75,150,5,100)
         elif section=='dataSettings':
             self.button('exportBackup',lambda:self.export('backup.export'))
@@ -962,6 +977,7 @@ class Window(QMainWindow):
 
     def resizeEvent(self,event):
         super().resizeEvent(event)
+        if self.ready and getattr(self,'aion',None):self.companion_header.adapt()
         if self.ready and not self.details_expanded:
             QTimer.singleShot(0,lambda:self.set_operation_details(self.settings.get('operationDetails',True)))
 
