@@ -59,8 +59,10 @@ Section "WinOptimizer Aion"
   WriteRegStr HKCU "${UNINSTALL_KEY}" "InstallLocation" "$INSTDIR"
   WriteRegStr HKCU "${UNINSTALL_KEY}" "UninstallString" '$\"$INSTDIR\Uninstall WinOptimizer Aion.exe$\"'
   CreateDirectory "$SMPROGRAMS\WinOptimizer Aion"
-  CreateShortcut "$SMPROGRAMS\WinOptimizer Aion\WinOptimizer Aion.lnk" "$INSTDIR\WinOptimizer Aion.exe"
-  CreateShortcut "$DESKTOP\WinOptimizer Aion.lnk" "$INSTDIR\WinOptimizer Aion.exe"
+  CreateShortcut "$SMPROGRAMS\WinOptimizer Aion\WinOptimizer Aion.lnk" "$INSTDIR\WinOptimizer Aion.exe" "" "$INSTDIR\WinOptimizer Aion.exe" 0
+  CreateShortcut "$DESKTOP\WinOptimizer Aion.lnk" "$INSTDIR\WinOptimizer Aion.exe" "" "$INSTDIR\WinOptimizer Aion.exe" 0
+  System::Call 'shell32::SHChangeNotify(i 0x2000, i 0x5, w "$INSTDIR\WinOptimizer Aion.exe", p 0)'
+  System::Call 'shell32::SHChangeNotify(i 0x2000, i 0x5, w "$DESKTOP\WinOptimizer Aion.lnk", p 0)'
   IfSilent 0 done
   ${GetOptions} $Parameters "--force-run" $0
   IfErrors done 0

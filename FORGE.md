@@ -1,6 +1,6 @@
 # WinOptimizer Aion Forge
 
-Durum: **COMPLETE, 6.0.0 yerel Windows kararlı/Latest yayımlandı.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Yalnız Windows x64; başka OS paketi üretme.
+Durum: **ACTIVE, 6.0.0 kararlı; 6.0.1 uygulamaya özel logo paketleniyor.** Yetkili depo: https://github.com/kaansavukduran/WinOptimizer. Dal: `main`. Yalnız Windows x64; başka OS paketi üretme.
 
 ## Güncel doğrulanmış yayın: 6.0.0 native Qt
 
@@ -98,3 +98,7 @@ Kullanıcı ayrıca Release içinde Windows portable istedi. Portable.exe hedefi
 ## Aktif kapsam değişikliği: yerel 6.0.0
 
 Kullanıcı işlem adımlarının atlanmadığını görünür kılma ve Chromium motoru olmadan C/Python benzeri yerel uygulama istedi. Yayımlanmamış 5.3.1 işini 6.0.0'a taşı. Eski5.3kararlı korunur. Python3.12/PySide6QtWidgets native/app.py gerçek giriş, NodeService+PowerShellişkatmanı aynenkorunur; Electron veya WebEngine paketlenmez. NodeWindows24.22.1resmîexeSHA256pinlidir. SetupNSISvePortablePyInstalleronefileaynıbinaryfarklıisimleveriyeriniayırteder. PortableData/WinOptimizer Aionklasörü eski nativeyolkorumalarıylauyumludur. 44Node ve6nativeQtUItestyereldegeçti; yeniWindowsCIpaketvegüncellemedoğrulamasıkapısıbekliyor. powershell ilerlemejsonl, uygulama/Windowskaynağıayrıgerçekadımlar,başarısız/skippedreasonvekalıcısonişlemgünlüğüeklendi. FulllogJSONdışaaktarılır. Kurulumdata%LOCALAPPDATA%/WinOptimizerAionkorunur. Güncelleme5.3.0→6.0.0denenmeli. NativeQt görüntüleri gerçekWindowskoşusundanalınmalı. Eski67c503portablerunları bu6paketinekanıtsayılmaz.
+
+## Aktif 6.0.1 logo
+
+Kullanıcı RealLife RPG logosunun aynısını değil, benzer ama WinOptimizer ile ilgili özgün logo istedi. RealLife referans blob31762628a2cbf2d024df949088a1a04cdb5112b3 salt okunur incelendi. image_gen ile farklıpozAion+erik/pembekaro+turkuazbakımçarkı üretildi; public/assets/aion-icon.png master değişmeden kopyalandı. 16/24/32/48/64/128/256 ICO formatları eklendi; Qt uygulama/pencere ikonu, WindowsAppUserModelID, Setup/uninstall/kısayolikonları kullanır. Varlık kökeni docs/ASSETS.json. YalnızsimgeveWindowskimlikbağlantısı kapsamı; sürücüişkurallarıdeğişmedi. Yerel45backend/10Qtmevcutkontroller geçti. Windowsbuild/kurulum/paketikonkanıtı,yeni6.0.1ReleaseveDriveyedekkapanışıbekliyor. Önceki6.0.0paketleri değişmez.

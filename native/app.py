@@ -871,7 +871,11 @@ def paths():
 
 def main():
     os.environ.setdefault('QT_OPENGL','software')
+    if sys.platform=='win32':
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('dev.kaansavukduran.winoptimizer')
     app=QApplication(sys.argv)
+    app.setWindowIcon(QIcon(str(ROOT/'public/assets/aion.ico')))
     app.setApplicationName('WinOptimizer Aion')
     portable,data=paths()
     try:
