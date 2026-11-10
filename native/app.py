@@ -45,6 +45,8 @@ class Window(QMainWindow):
         self.settings = dict(language='tr', theme='system', scale=100, textSize=100, font='system', motion=True, companion=True, gamification=True)
         self.resource_root=ROOT
         self.page, self.busy, self.ready = 'home', False, False
+        # Qt can resize the window before the asynchronous bootstrap replies.
+        self.details_expanded = True
         self.state, self.selected, self.trace, self.trace_signature = {}, set(), None, None
         self.save_serial = 0
         self.settings_section = 'general'
@@ -924,7 +926,7 @@ class Window(QMainWindow):
 
     def resizeEvent(self,event):
         super().resizeEvent(event)
-        if hasattr(self,'log_details') and not self.details_expanded:
+        if self.ready and not self.details_expanded:
             QTimer.singleShot(0,lambda:self.set_operation_details(self.settings.get('operationDetails',True)))
 
     def closeEvent(self,event):
