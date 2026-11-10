@@ -22,16 +22,18 @@ function Invoke-Control($Element,[string]$Name){
   $deadline=(Get-Date).AddSeconds(30)
   do {if($Element.Current.IsEnabled){break};Start-Sleep -Milliseconds 250}while((Get-Date) -lt $deadline)
   if(-not $Element.Current.IsEnabled){throw ('Native UI control disabled: '+$Name)}
-  $pattern=$Element.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
-  $pattern.Invoke()
-  $script:receipts+=@{control=$Name;action='InvokePattern';at=(Get-Date).ToUniversalTime().ToString('o')}
+  $pattern=$null
+  if($Element.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern,[ref]$pattern)){$pattern.Invoke();$action='InvokePattern'}
+  elseif($Element.TryGetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern,[ref]$pattern)){$pattern.Toggle();$action='TogglePattern'}
+  else{throw ('Native control has no supported activation pattern: '+$Name)}
+  $script:receipts+=@{control=$Name;action=$action;at=(Get-Date).ToUniversalTime().ToString('o')}
 }
 try {
   $null=Start-Process -FilePath $Exe -PassThru
   $desktop=[System.Windows.Automation.AutomationElement]::RootElement
   $window=Find-Control $desktop 'WinOptimizer Aion' ([System.Windows.Automation.ControlType]::Window)
   $script:baselineProcessId=$window.Current.ProcessId
-  Invoke-Control (Find-Control $window 'Settings' ([System.Windows.Automation.ControlType]::Button)) 'Settings'
+  Invoke-Control (Find-Control $window 'Settings' ([System.Windows.Automation.ControlType]::CheckBox)) 'Settings'
   $combo=Find-Control $window 'Settings' ([System.Windows.Automation.ControlType]::ComboBox)
   $combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
   # Qt popup windows can be siblings of the main window in the accessibility tree.
