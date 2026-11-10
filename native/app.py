@@ -348,7 +348,8 @@ class Window(QMainWindow):
             latest={}
             for event in events:
                 if event.get('step') in ('request','launch','response'):continue
-                latest[(event.get('origin'),event.get('action'),event.get('step'))]=event
+                target=(event.get('item'),event.get('count')) if event.get('step')=='install-item' else None
+                latest[(event.get('origin'),event.get('action'),event.get('step'),target)]=event
             display=list(latest.values())
             for event in display[-60:]:
                 time = event.get('at', '')[11:19]

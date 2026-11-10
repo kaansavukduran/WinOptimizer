@@ -102,3 +102,8 @@ def test_native_errors_use_human_translations_instead_of_missing_translation_key
         assert code in w.notice.text()
         assert 'errorExpired' not in w.notice.text() and 'errorSelection' not in w.notice.text() and 'errorHash' not in w.notice.text()
         assert len(w.notice.text())>len(code)+20
+
+
+def test_native_log_preserves_distinct_driver_results_even_with_identical_titles(window):
+    w,bridge=window;bridge.trace=dict(command='windows-install',status='attention',events=[dict(at='2026-11-10T12:00:00Z',origin='native',action='windows-install',step='install-item',status='failed',item='Same driver title',count=1),dict(at='2026-11-10T12:00:01Z',origin='native',action='windows-install',step='install-item',status='complete',item='Same driver title',count=2)])
+    w.poll();assert w.log.topLevelItemCount()==2;assert w.log.topLevelItem(0).text(3)=='Başarısız';assert 'Başarısız: 1' in w.log_hint.text()
