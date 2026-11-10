@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.6.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 96894439,
+  "sha256": "6aa4f697a89b07cd31046c1ff06f47637ed05a80766549f7f2838276eb7a019c",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.6.0/WinOptimizer-Aion-6.6.0-Windows-x64-Setup.exe",
+  "sourceCommit": "525229f452b535bce01dac5f07877d0a236f58f0",
+  "notes": {
+    "tr": "Her sayfada Yazı ve tema kısa yolu, gerçek OpenDyslexic önizlemesi, renk seçici ve hazır renkler. Yeni 24 karelik Aion paftası ve on sekmede bölüme uygun animasyonlar. Ayarlar ve bakım ilerlemesi korunur.",
+    "en": "Font and theme shortcut on every page, real OpenDyslexic preview, color picker and presets. New 24-frame Aion atlas and contextual animation in all ten sections. Preferences and care progress are preserved."
+  },
+  "portable": {
+    "bytes": 96743942,
+    "sha256": "28081b7cddb2a41418ed8c8a8185f0333f384afb1b57845d0da3a88de87f1961",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.6.0/WinOptimizer-Aion-6.6.0-Windows-x64-Portable.exe"
+  }
+}

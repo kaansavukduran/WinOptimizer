@@ -1,0 +1,69 @@
+name: Verify packaged Aion animation
+on:
+  workflow_dispatch:
+    inputs:
+      build_run_id:
+        description: Successful source Windows build
+        required: true
+        type: string
+      expected_version:
+        description: Packaged version
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+jobs:
+  animation:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-installers
+          run-id: ${{ inputs.build_run_id }}
+          github-token: ${{ github.token }}
+          path: packages
+      - name: Real packaged UI with Windows animations enabled and restored
+        shell: powershell
+        env:
+          EXPECTED_VERSION: ${{ inputs.expected_version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:EXPECTED_VERSION -notmatch '^\d+\.\d+\.\d+$') { throw 'Invalid version' }
+          Add-Type @'
+          using System;
+          using System.Runtime.InteropServices;
+          public static class AionMotionTest {
+            [DllImport("user32.dll", EntryPoint="SystemParametersInfoW", SetLastError=true)]
+            public static extern bool Read(uint action, uint parameter, ref int value, uint flags);
+            [DllImport("user32.dll", EntryPoint="SystemParametersInfoW", SetLastError=true)]
+            public static extern bool Write(uint action, uint parameter, IntPtr value, uint flags);
+          }
+          '@
+          $original = 0
+          if (-not [AionMotionTest]::Read(0x1042,0,[ref]$original,0)) { throw 'Cannot read motion setting' }
+          try {
+            if (-not [AionMotionTest]::Write(0x1043,0,[IntPtr]1,2)) { throw 'Cannot enable test motion' }
+            $enabled = 0
+            if (-not [AionMotionTest]::Read(0x1042,0,[ref]$enabled,0) -or $enabled -ne 1) { throw 'Motion setting not applied' }
+            $env:AION_EVIDENCE = Join-Path $pwd 'work/animation-evidence'
+            $exe = Join-Path $pwd "packages/release/WinOptimizer-Aion-$env:EXPECTED_VERSION-Windows-x64-Portable.exe"
+            $process = Start-Process -FilePath $exe -ArgumentList '--smoke','portable' -Wait -PassThru
+            if ($process.ExitCode -ne 0) { throw 'Packaged animation smoke failed' }
+            $receipt = Get-Content (Join-Path $env:AION_EVIDENCE 'personalization.json') -Raw | ConvertFrom-Json
+            if (-not $receipt.verified -or @($receipt.pages).Count -ne 10) { throw 'Missing page evidence' }
+            foreach ($page in $receipt.pages) {
+              if (-not $page.motionAvailable -or -not $page.clockAdvanced -or -not $page.visible) { throw ('Animation did not advance: '+$page.page) }
+            }
+            @{ verified=$true; version=$env:EXPECTED_VERSION; actualPackagedAnimation=$true; pages=10; originalWindowsMotion=$original; testWindowsMotion=$enabled } | ConvertTo-Json | Set-Content (Join-Path $env:AION_EVIDENCE 'windows-motion.json') -Encoding UTF8
+          } finally {
+            if (-not [AionMotionTest]::Write(0x1043,0,[IntPtr]$original,2)) { throw 'Could not restore runner motion setting' }
+          }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-animation-evidence
+          path: work/animation-evidence/
+          if-no-files-found: warn
