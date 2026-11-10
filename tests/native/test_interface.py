@@ -64,7 +64,7 @@ def test_native_routes_and_scaled_preferences_remain_available(window,applicatio
     for page in ('home','scanFix','cleanup','drivers','startup','workshop','tools','history','settings'):
         w.page=page;w.render();application.processEvents()
     for key,value in [('language','en'),('theme','contrast'),('font','dyslexic'),('scale',200),('textSize',125)]:w.save_setting(key,value)
-    w.resize(540,900);w.render();application.processEvents()
+    w.settings_section='accessibility';w.resize(540,900);w.render();application.processEvents()
     assert w.settings['scale']==200 and w.settings['textSize']==125 and w.settings['font']=='dyslexic'
     assert w.findChild(QPushButton,'nav-settings') is not None
     assert w.scroll.verticalScrollBar().maximum()>0
@@ -79,7 +79,7 @@ def test_native_trace_distinguishes_windows_events_skips_and_failures_and_retain
     assert 'Çevrimiçi kontrol kapalı' in w.log.topLevelItem(1).text(4)
 
 def test_portable_native_update_never_calls_setup(window,application):
-    w,bridge=window;w.portable=True;w.go('settings');w.findChild(QPushButton,'check-app-update').click()
+    w,bridge=window;w.portable=True;w.settings_section='updates';w.go('settings');w.findChild(QPushButton,'check-app-update').click()
     assert w.findChild(QPushButton,'install-app-update') is None
     button=w.findChild(QPushButton,'portableDownload');assert button;button.click()
     assert any(c=='updates.portable' for c,_ in bridge.calls)

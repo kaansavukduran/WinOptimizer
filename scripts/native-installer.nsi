@@ -41,7 +41,7 @@ Section "WinOptimizer Aion"
     Abort
   ready:
   SetOutPath "$INSTDIR"
-  File /oname="WinOptimizer Aion.exe" "..\release\WinOptimizer-Aion-${APP_VERSION}-Windows-x64-Portable.exe"
+  File "/oname=WinOptimizer Aion.exe" "..\release\WinOptimizer-Aion-${APP_VERSION}-Windows-x64-Portable.exe"
   WriteUninstaller "$INSTDIR\Uninstall WinOptimizer Aion.exe"
   WriteRegStr HKCU "Software\WinOptimizer Aion" "InstallDir" "$INSTDIR"
   ; Preserve the existing Electron installation's exact uninstall identity.

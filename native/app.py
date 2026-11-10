@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
     QSizePolicy, QSplitter)
 from bridge import Bridge
 from mascot import Aion
+from widgets import Paragraph
 
 ROOT = Path(getattr(sys, '_MEIPASS', Path(__file__).resolve().parents[1]))
 VERSION = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
@@ -23,6 +24,9 @@ NATIVE = {
  'tr': dict(native='Yerel Windows uygulaması · Chromium gerekmez', trace='İşlem adımları', source='Kaynak', step='Adım', result='Durum', time='Saat', running='Çalışıyor', complete='Tamamlandı', failed='Başarısız', skipped='Atlandı', cancelled='İptal edildi', interrupted='Önceki işlem yarıda kesildi', attention='İncelenecek sonuçlar var', app='Uygulama', native_source='Windows', waiting='Windows yanıtı bekleniyor. İşlem sürüyor; henüz sonuç yok.', no_trace='Henüz işlem yapılmadı. Başlamak için Tara ve Düzelt’i kullan.', export_log='Günlüğü dışa aktar', elapsed='Geçen süre', more_events='Son {shown} / {total} adım gösteriliyor. Dışa aktarma bütün günlüğü içerir.', request='İşlem isteği', launch='Windows işlemini başlat', response='Windows yanıtı', devices='Aygıtlar ve sürücüler', audio='Ses servisleri', network='Ağ bağlantıları', display='Ekran bilgileri', runtimes='Oyun bileşenleri', dns='DNS denetimi', backup='Sürücü yedeği', download='Paket indirme', install='Sürücü kurulumu', install_item='Sürücü başına kurulum sonucu', offline='Çevrimiçi kontrol kapalı', no_link='Etkin ağ bağlantısı yok', excluded='Firmware kapsam dışında', firmware='Firmware teklifleri', ignored='Kullanıcının atladığı teklifler', default='Varsayılana dön', choices='Ayrıntılı seçenekler', issues='Sorunlar ve öneriler', other='Diğer sonuçlar', all_results='Bütün sonuçları göster', local_data='Kayıtlar yalnız bu cihazda tutulur.', error='İşlem tamamlanamadı', retry='Yeniden dene', done='İşlem tamamlandı. Sonuçları ve işlem adımlarını incele.', close_busy='İşlem sürerken uygulamayı kapatamazsın. Bitmesini bekle; taramayı İptal ile durdurabilirsin.', confirm_count='{count} öğe için devam edilsin mi?', select='Seç', language='Dil', current='Yüklü sürüm', values='Ayrıntılar', no_items='Gösterilecek öğe yok.', port='Portable sürüm', pet='Aion’u sev', pet_head='Aion başının sevilmesine mutlu oldu.', pet_belly='Aion gülümsedi!', pet_tail='Aion kuyruğunu oynattı.', pet_feet='Aion’un ayakları gıdıklandı!', pause='Aion animasyonunu duraklat', play='Aion animasyonunu oynat', read_only='Yazılabilir bir klasör seç. Data klasörü oluşturulamadı.', backend_error='Windows işlem katmanı açılamadı. Uygulamayı kapatıp yeniden dene.', save='Kaydedildi', steps='1. Tara → 2. Sonuçları incele → 3. Onayla ve uygula', ready='Hazır', scope='Bir tarama her sorunu saptayamaz. Kontrol edilemeyen sonuçlar sağlıklı sayılmaz.', restore_note='Windows daha uygun sürücüyü korumuş olabilir; paket kabulü aygıt sürümünün değiştiği anlamına gelmez.', files='Dosya', reason='Neden / sonuç kodu', automatic_backup='Mevcut üçüncü taraf sürücüler önce otomatik yedeklenir.', choose_plan='Mevcut güç planı', normal_close='Seçilen kullanıcı pencerelerine normal kapatma isteği gönderilir. Açık çalışmalarını kaydet.', accepted='Microsoft lisans koşullarını kabul ediyorum', preview='Kaynak önizlemesi: Windows işlemleri yalnız Windows üzerinde çalışır.', show_details='Ayrıntıları göster', recent='Son işlem', no_background='Tarama ve güncelleme sen başlatınca çalışır.', filter='Sonuç filtresi', amount='Adet', report_saved='Dosya kaydedildi.', choose_color='Vurgu rengi', engine='Arayüz: Python + Qt Widgets; Windows işlemleri: Node.js + PowerShell. Gerekli çalışma zamanları paketin içindedir.'),
  'en': dict(native='Native Windows app · No Chromium required', trace='Operation steps', source='Source', step='Step', result='Status', time='Time', running='Running', complete='Completed', failed='Failed', skipped='Skipped', cancelled='Cancelled', interrupted='Previous operation was interrupted', attention='Some results need attention', app='Application', native_source='Windows', waiting='Waiting for a Windows response. The operation is running; no result yet.', no_trace='No operations yet. Start with Scan & Fix.', export_log='Export operation log', elapsed='Elapsed', more_events='Showing the last {shown} / {total} steps. Export includes the entire log.', request='Operation request', launch='Launch Windows operation', response='Windows response', devices='Devices and drivers', audio='Audio services', network='Network connections', display='Display information', runtimes='Game runtimes', dns='DNS check', backup='Driver backup', download='Package download', install='Driver installation', install_item='Per-driver installation result', offline='Online checks are off', no_link='No active network link', excluded='Firmware is outside scope', firmware='Firmware offers', ignored='Offers skipped by the user', default='Reset to default', choices='Advanced options', issues='Issues and suggestions', other='Other results', all_results='Show all results', local_data='Records stay on this device.', error='The operation could not finish', retry='Try again', done='Operation completed. Review its results and steps.', close_busy='An operation is running. Wait for it to finish; Cancel can stop a read-only scan.', confirm_count='Continue with {count} items?', select='Select', language='Language', current='Installed version', values='Details', no_items='No items to display.', port='Portable mode', pet='Pet Aion', pet_head='Aion enjoyed the head pats.', pet_belly='Aion smiles!', pet_tail='Aion wiggles its tail.', pet_feet='Aion has ticklish feet!', pause='Pause Aion animation', play='Play Aion animation', read_only='Choose a writable folder. Data could not be created.', backend_error='The Windows operation layer could not start. Close the app and try again.', save='Saved', steps='1. Scan → 2. Review → 3. Confirm and apply', ready='Ready', scope='One scan cannot detect every issue. Unavailable checks are not treated as healthy.', restore_note='Windows may retain a better driver; package acceptance does not prove a device version changed.', files='Files', reason='Reason / result code', automatic_backup='Current third-party drivers are backed up automatically first.', choose_plan='Existing power plan', normal_close='Selected user windows receive normal close requests. Save your open work.', accepted='I accept Microsoft license terms', preview='Source preview: Windows operations run on Windows only.', show_details='Show details', recent='Last operation', no_background='Scanning and updates start when you request them.', filter='Result filter', amount='Count', report_saved='File saved.', choose_color='Accent color', engine='Interface: Python + Qt Widgets; Windows operations: Node.js + PowerShell. Required runtimes are included in the package.')
 }
+
+NATIVE['tr'].update(cleanup_scan='Temizlik adaylarını tara', cleanup_exclusion='Temizlik kapsamı dışında', missing='Klasör bulunamadı', unavailable='Dosya veya klasöre erişilemedi', links='Bağlantı/junction koruması', recent='Son 7 gün içinde değişmiş dosya', changed='Tarama sırasında değişmiş öğe', limit='10.000 aday sınırına ulaşıldı')
+NATIVE['en'].update(cleanup_scan='Scan cleanup candidates', cleanup_exclusion='Excluded from cleanup', missing='Folder was not found', unavailable='File or folder could not be accessed', links='Link/junction protection', recent='File changed within the last 7 days', changed='Item changed during scanning', limit='Reached the 10,000 candidate limit')
 
 def text(language, key):
     if key.startswith('n.'):
@@ -42,6 +46,7 @@ class Window(QMainWindow):
         self.page, self.busy, self.ready = 'home', False, False
         self.state, self.selected, self.trace, self.trace_signature = {}, set(), None, None
         self.save_serial = 0
+        self.settings_section = 'general'
         self.last_error, self.last_request, self.scan_online, self.filter_status = None, None, True, 'all'
         self.setWindowTitle('WinOptimizer Aion')
         self.setWindowIcon(QIcon(str(ROOT / 'public/assets/aion.ico')))
@@ -188,10 +193,11 @@ class Window(QMainWindow):
             self.run('workshop.library', callback=lambda r: self.store('library', r), silent=True)
 
     def label(self, value, heading=False, layout=None):
-        label = QLabel(str(value))
-        label.setWordWrap(True)
-        label.setTextFormat(Qt.PlainText)
-        label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        label = QLabel(str(value)) if heading else Paragraph(str(value),self.settings.get('lineHeight',1.5))
+        if heading:
+            label.setWordWrap(True)
+            label.setTextFormat(Qt.PlainText)
+            label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         if heading:
             font = self.font()
             font.setPointSizeF(font.pointSizeF() * 1.4)
@@ -285,7 +291,7 @@ class Window(QMainWindow):
                 self.render()
                 return
             result = reply.get('data')
-            failed = isinstance(result, dict) and (result.get('success') is False or any(i.get('success') is False for i in result.get('items', [])))
+            failed = isinstance(result, dict) and (result.get('success') is False or result.get('skipped',0)>0 or result.get('conflicts',0)>0 or any(i.get('success') is False for i in result.get('items', [])))
             self.notice.setText('' if silent else self.t('partialFailure' if failed else 'n.done'))
             if callback:
                 callback(result)
@@ -342,7 +348,7 @@ class Window(QMainWindow):
             for event in events[-60:]:
                 time = event.get('at', '')[11:19]
                 reason = event.get('reason', '')
-                translated = self.t('n.' + reason) if reason in ('offline', 'no-link', 'excluded') else reason
+                translated = self.t('n.' + reason) if reason in ('offline', 'no-link', 'excluded','missing','unavailable','links','recent','changed','limit') else reason
                 detail = ' · '.join(str(x) for x in (event.get('item'), translated, event.get('count')) if x is not None and x != '')
                 step = self.t('n.' + event.get('step', 'request').replace('-', '_'))
                 if event.get('step','').replace('-','_') not in NATIVE[self.settings['language']]:
@@ -443,6 +449,7 @@ class Window(QMainWindow):
         layout = self.group('d.nextStep')
         self.label(self.t('d.nextUpdates').replace('{count}',str(len(updates))) if updates else self.t('d.nextIssues' if issues else 'd.nextClear'), layout=layout)
         if updates:
+            if issues:self.label(self.t('d.nextIssues'),layout=layout)
             self.button(f'{self.t("updateAllDrivers")} ({len(updates)})', lambda: self.install_offers(updates, report), True, layout, literal=True, name='update-all')
             self.label(self.t('d.updateAllHelp'), layout=layout)
         if not report.get('online'):
@@ -455,7 +462,7 @@ class Window(QMainWindow):
         filter_box.setAccessibleName(self.t('n.filter'))
         filter_box.currentIndexChanged.connect(lambda _: self.set_filter(filter_box.currentData()))
         self.body.addWidget(filter_box)
-        for finding in findings:
+        for finding in sorted(findings,key=lambda f:('issue','unknown','update','optional','info').index(f['status'])):
             if self.filter_status != 'all' and finding['status'] != self.filter_status:
                 continue
             if finding['status'] == 'info' and self.filter_status == 'all':
@@ -566,7 +573,7 @@ class Window(QMainWindow):
         self.button('refresh',lambda:self.run('startup',callback=lambda r:self.store('startup',r)),True)
         tree=self.table(self.state.get('startup',[]),[('name',self.t('d.name')),('command',self.t('n.values'))],check=True)
         self.button('disable',lambda:self.disable_startup(self.chosen(tree)))
-        self.button('windowsUpdate',lambda:self.external('startup'))
+        self.button('startupOpen',lambda:self.external('startup'))
 
     def disable_startup(self,rows):
         if rows:
@@ -582,7 +589,7 @@ class Window(QMainWindow):
         for profile in self.state.get('power',[]):
             self.button(profile['name']+(' ✓' if profile.get('active') else ''),lambda _,p=profile:self.confirm(self.t('confirm'),self.t('power'),[p['name']],lambda:self.run('power-set',dict(id=p['id']))),literal=True)
         for key in ('security','windows','sound','display','network-settings'):
-            self.button(self.t({'security':'security','windows':'windowsUpdate','sound':'d.sound','display':'d.displayAction','network-settings':'d.networkAction'}[key]),lambda _,k=key:self.external(k),literal=True)
+            self.button(self.t({'security':'securityOpen','windows':'windowsUpdate','sound':'d.sound','display':'d.displayAction','network-settings':'d.networkAction'}[key]),lambda _,k=key:self.external(k),literal=True)
 
     def page_history(self):
         self.button('refresh',lambda:self.run('history',callback=lambda r:self.store('history',r)))
@@ -612,7 +619,14 @@ class Window(QMainWindow):
         self.label(self.t('w.intro'))
         for key in ('oem-nvidia','oem-amd','oem-intel'):
             self.button(key.split('-')[1].upper(),lambda _,k=key:self.external(k),literal=True)
-        self.button('w.offline',lambda:self.export('offline.export'))
+        self.button('w.exportHardware',lambda:self.export('offline.export'))
+        self.button('w.readHardware',lambda:self.run('offline.inventory',callback=lambda r:self.store('offline',r)))
+        if self.state.get('offline'):
+            hardware=self.table(self.state['offline']['devices'],[('name',self.t('d.name')),('hardwareIds',self.t('w.hardware'))],check=True)
+            def search():
+                selected=self.chosen(hardware)
+                if selected:self.bridge.call('hardware.search',dict(id=selected[0]['id']),self.open_reply)
+            self.button('w.catalog',search)
         self.button('w.import',self.import_package)
         library=self.state.get('library',{})
         for package in library.get('packages',[]):
@@ -621,10 +635,12 @@ class Window(QMainWindow):
         if plan:
             candidates=plan.get('candidates',[])
             self.label(self.t('w.applyHelp'))
+            self.label(self.t('w.blocked')+': '+str(sum(not c.get('eligible') for c in candidates)))
             tree=self.table(candidates,[('name',self.t('d.name')),('version',self.t('version'))],check=True)
             self.button('w.apply',lambda:self.apply_package(plan,self.chosen(tree)))
         for item in library.get('ignored',[]):
             self.button(self.t('w.unignore')+': '+item['name'],lambda _,i=item:self.run('updates.unignore',dict(id=i['id']),lambda _:self.reload_library()),literal=True)
+        if self.state.get('runtimes',{}).get('available') is False:self.label(self.t('w.runtimeUnknown'))
         self.button('w.runtimes',lambda:self.run('runtime.inventory',callback=lambda r:self.store('runtimes',r)))
         for key,name in [('vc-x64','Visual C++ v14 x64'),('vc-x86','Visual C++ v14 x86'),('directx-legacy','DirectX June 2010')]:
             layout=self.group('w.runtimes')
@@ -638,7 +654,7 @@ class Window(QMainWindow):
             self.details('n.values',json.dumps(self.state['points'],ensure_ascii=False,indent=2))
         self.button('w.createPoint',lambda:self.confirm(self.t('confirm'),self.t('w.intro'),[self.t('w.createPoint')],lambda:self.run('restore-point-create',dict(confirm=True))))
         for key in ('restore','protection','devices'):
-            self.button({'restore':'rstrui.exe','protection':'System Protection','devices':self.t('d.devices')}[key],lambda _,k=key:self.system_open(k),literal=True)
+            self.button(self.t({'restore':'w.restoreWizard','protection':'w.protection','devices':'w.deviceManager'}[key]),lambda _,k=key:self.system_open(k),literal=True)
         self.button('w.ghosts',lambda:self.run('ghosts',callback=lambda r:self.store('ghosts',r)))
         for ghost in self.state.get('ghosts',[]):
             self.button(ghost['name'],lambda _,g=ghost:self.confirm(self.t('confirm'),self.t('w.ghostHelp'),[g['name']],lambda:self.run('ghost-remove',dict(id=g['id'],confirm=True))),literal=True)
@@ -741,37 +757,62 @@ class Window(QMainWindow):
 
     def page_settings(self):
         self.label(self.t('previewSettings'))
+        sections=QComboBox()
+        sections.setObjectName('settings-section')
+        sections.setAccessibleName(self.t('settings'))
+        for key in ('general','appearance','accessibility','gameSettings','dataSettings','updates','about'):
+            sections.addItem(self.t(key),key)
+        sections.setCurrentIndex(max(0,sections.findData(self.settings_section)))
+        sections.currentIndexChanged.connect(lambda _:self.set_settings_section(sections.currentData()))
+        self.body.addWidget(sections)
         form=QFormLayout();form.setRowWrapPolicy(QFormLayout.WrapAllRows if self.width()<900 else QFormLayout.WrapLongRows);self.body.addLayout(form)
-        self.choice(form,'language',[('tr','Türkçe'),('en','English')],self.t('n.language'))
-        self.choice(form,'theme',[(k,self.t(k)) for k in ('light','dark','system','contrast')])
-        self.numeric(form,'scale',self.t('scale'),80,200,5,100)
-        self.numeric(form,'textSize',self.t('textSize'),80,160,5,100)
-        self.choice(form,'font',[('system',self.t('systemFont')),('readable','Verdana'),('dyslexic',self.t('dyslexicFont'))])
-        self.label('Ç Ğ İ Ö Ş Ü ç ğ ı ö ş ü · Aion 0123456789')
-        self.choice(form,'density',[(k,self.t(k)) for k in ('comfortable','compact')])
-        for key,minv,maxv,step in [('lineHeight',1.2,2,.1),('letterSpacing',0,3,.1)]:
-            spin=QDoubleSpinBox();spin.setRange(minv,maxv);spin.setSingleStep(step);spin.setValue(self.settings.get(key,minv));spin.setAccessibleName(self.t(key));spin.editingFinished.connect(lambda k=key,s=spin:self.save_setting(k,s.value()));form.addRow(self.t(key),spin)
-        accent=QLineEdit(self.settings.get('accent','#b82e69'));accent.setAccessibleName(self.t('n.choose_color'));accent.editingFinished.connect(lambda:self.save_setting('accent',accent.text()));form.addRow(self.t('n.choose_color'),accent)
-        for key in ('motion','sound','gamification','companion','followPointer','petting'):
-            check=QCheckBox(self.t(key));check.setChecked(self.settings.get(key,True));check.toggled.connect(lambda v,k=key:self.save_setting(k,v));form.addRow(check)
-        self.numeric(form,'mascotSize',self.t('mascotSize'),75,150,5,100)
-        self.button('exportBackup',lambda:self.export('backup.export'))
-        self.button('importBackup',self.import_backup)
-        self.button('openData',lambda:self.open_folder('data'))
-        self.label(self.t('n.current')+': '+VERSION)
-        self.label(self.t('n.engine'))
-        self.choice(form,'channel',[(k,self.t(k)) for k in ('stable','beta')])
-        if self.portable:self.label(self.t('portableHelp'))
-        self.button('checkUpdates',lambda:self.run('updates.check',callback=lambda r:self.store('appUpdate',r)),True,name='check-app-update')
-        update=self.state.get('appUpdate')
-        if update:
-            if update.get('available'):
-                self.label(self.t('updateAvailable')+': '+update['version'])
-                self.label(update.get('notes',{}).get(self.settings['language'],''))
-                if self.portable:self.button('portableDownload',lambda:self.bridge.call('updates.portable',callback=self.open_reply))
-                else:self.button('installUpdate',lambda:self.confirm(self.t('updateConfirm'),self.t('updateConfirmText'),[update['version']],lambda:self.run('updates.install',dict(confirm=True),self.install_app)),True,name='install-app-update')
-            else:self.label(self.t('upToDate'))
-        self.button('releasePage',lambda:self.external('releases'))
+        section=self.settings_section
+        if section=='general':
+            self.choice(form,'language',[('tr','Türkçe'),('en','English')],self.t('n.language'))
+            self.label(self.t('n.local_data'))
+        elif section=='appearance':
+            self.choice(form,'theme',[(k,self.t('systemTheme' if k=='system' else k)) for k in ('light','dark','system','contrast')])
+            self.numeric(form,'scale',self.t('scale'),80,200,5,100)
+            self.choice(form,'density',[(k,self.t(k)) for k in ('comfortable','compact')])
+            accent=QLineEdit(self.settings.get('accent','#b82e69'));accent.setAccessibleName(self.t('n.choose_color'));accent.editingFinished.connect(lambda:self.save_setting('accent',accent.text()));form.addRow(self.t('n.choose_color'),accent)
+        elif section=='accessibility':
+            self.numeric(form,'textSize',self.t('textSize'),80,160,5,100)
+            self.choice(form,'font',[('system',self.t('systemFont')),('readable','Verdana'),('dyslexic',self.t('dyslexicFont'))])
+            self.label('Ç Ğ İ Ö Ş Ü ç ğ ı ö ş ü · Aion 0123456789')
+            for key,minv,maxv,step in [('lineHeight',1.2,2,.1),('letterSpacing',0,3,.1)]:
+                spin=QDoubleSpinBox();spin.setRange(minv,maxv);spin.setSingleStep(step);spin.setValue(self.settings.get(key,minv));spin.setAccessibleName(self.t(key));spin.editingFinished.connect(lambda k=key,s=spin:self.save_setting(k,s.value(),k=='lineHeight'));form.addRow(self.t(key),spin)
+        elif section=='gameSettings':
+            for key in ('motion','sound','gamification','companion','followPointer','petting'):
+                check=QCheckBox(self.t(key));check.setChecked(self.settings.get(key,True));check.toggled.connect(lambda v,k=key:self.save_setting(k,v));form.addRow(check)
+            self.numeric(form,'mascotSize',self.t('mascotSize'),75,150,5,100)
+        elif section=='dataSettings':
+            self.button('exportBackup',lambda:self.export('backup.export'))
+            self.button('importBackup',self.import_backup)
+            self.button('openData',lambda:self.open_folder('data'))
+            self.label(self.t('backupHelp'))
+        elif section=='about':
+            self.label(self.t('n.current')+': '+VERSION)
+            self.label(self.t('n.engine'))
+            self.label(self.t('aboutText'))
+            self.button('source',lambda:self.external('github'))
+        elif section=='updates':
+            self.label(self.t('n.current')+': '+VERSION)
+            self.choice(form,'channel',[(k,self.t(k)) for k in ('stable','beta')])
+            if self.portable:self.label(self.t('portableHelp'))
+            self.button('checkUpdates',lambda:self.run('updates.check',callback=lambda r:self.store('appUpdate',r)),True,name='check-app-update')
+            update=self.state.get('appUpdate')
+            if update:
+                if update.get('available'):
+                    self.label(self.t('updateAvailable')+': '+update['version'])
+                    self.label(update.get('notes',{}).get(self.settings['language'],''))
+                    if self.portable:self.button('portableDownload',lambda:self.bridge.call('updates.portable',callback=self.open_reply))
+                    else:self.button('installUpdate',lambda:self.confirm(self.t('updateConfirm'),self.t('updateConfirmText'),[update['version']],lambda:self.run('updates.install',dict(confirm=True),self.install_app)),True,name='install-app-update')
+                else:self.label(self.t('upToDate'))
+            self.button('releasePage',lambda:self.external('releases'))
+
+    def set_settings_section(self,section):
+        self.settings_section=section
+        self.render()
 
     def install_app(self,result):
         installer=result.get('installer')
@@ -808,6 +849,7 @@ def paths():
     return portable,(executable.parent/'Data'/'WinOptimizer Aion' if portable else local/'WinOptimizer Aion')
 
 def main():
+    os.environ.setdefault('QT_OPENGL','software')
     app=QApplication(sys.argv)
     app.setApplicationName('WinOptimizer Aion')
     portable,data=paths()

@@ -12,14 +12,14 @@ async function regularFile(root,file){
 function rootsFor(local){return [{id:'temp',path:path.join(local,'Temp'),days:7},{id:'chrome',path:path.join(local,'Google','Chrome','User Data','Default','Cache','Cache_Data'),days:7},{id:'edge',path:path.join(local,'Microsoft','Edge','User Data','Default','Cache','Cache_Data'),days:7}];}
 class Cleanup {
   constructor(dir,roots){this.dir=dir;this.roots=roots;this.plan=null;}
-  async scan(){const files=[];const groups=[];for(const root of this.roots){let bytes=0,count=0;const pending=[root.path];
-    while(pending.length&&files.length<10000){const current=pending.pop();let entries;try{const s=await fs.lstat(current);if(s.isSymbolicLink())continue;entries=await fs.readdir(current,{withFileTypes:true});}catch{continue;}
-      for(const ent of entries){const file=path.join(current,ent.name);if(ent.isSymbolicLink()||!inside(root.path,file))continue;if(ent.isDirectory()){pending.push(file);continue;}
-        if(!ent.isFile()||!(await regularFile(root.path,file)))continue;
-        let s;try{s=await fs.stat(file);}catch{continue;}if(s.mtimeMs>Date.now()-root.days*86400000)continue;
+  async scan(){const files=[];const groups=[];const exclusions={missing:0,unavailable:0,links:0,recent:0,changed:0};for(const root of this.roots){let bytes=0,count=0;const pending=[root.path];
+    while(pending.length&&files.length<10000){const current=pending.pop();let entries;try{const s=await fs.lstat(current);if(s.isSymbolicLink()){exclusions.links++;continue;}entries=await fs.readdir(current,{withFileTypes:true});}catch(e){exclusions[e.code==='ENOENT'?'missing':'unavailable']++;continue;}
+      for(const ent of entries){const file=path.join(current,ent.name);if(ent.isSymbolicLink()||!inside(root.path,file)){exclusions.links++;continue;}if(ent.isDirectory()){pending.push(file);continue;}
+        if(!ent.isFile())continue;if(!(await regularFile(root.path,file))){exclusions.changed++;continue;}
+        let s;try{s=await fs.stat(file);}catch{exclusions.unavailable++;continue;}if(s.mtimeMs>Date.now()-root.days*86400000){exclusions.recent++;continue;}
         files.push({root:root.id,path:file,size:s.size,mtime:s.mtimeMs});bytes+=s.size;count++;if(files.length>=10000)break;}}
     groups.push({id:root.id,bytes,count});}
-    this.plan={id:crypto.randomUUID(),created:Date.now(),files};return {id:this.plan.id,groups,bytes:files.reduce((a,x)=>a+x.size,0),count:files.length,capped:files.length>=10000,samples:files.slice(0,50).map(x=>({group:x.root,name:path.basename(x.path),path:x.path,bytes:x.size}))};}
+    this.plan={id:crypto.randomUUID(),created:Date.now(),files};return {id:this.plan.id,groups,exclusions,bytes:files.reduce((a,x)=>a+x.size,0),count:files.length,capped:files.length>=10000,samples:files.slice(0,50).map(x=>({group:x.root,name:path.basename(x.path),path:x.path,bytes:x.size}))};}
   async quarantine(planId,selected){
     if(!this.plan||this.plan.id!==planId||Date.now()-this.plan.created>30*60000)throw Error('SCAN_EXPIRED');
     const plan=this.plan;this.plan=null;const id=crypto.randomUUID();const dest=path.join(this.dir,'quarantine',id);await fs.mkdir(dest,{recursive:true});
