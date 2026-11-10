@@ -78,11 +78,11 @@ def render_records(window,report,ids,context,layout=None):
     t=window.t;language=window.settings['language']
     container=QWidget();outer=QVBoxLayout(container);outer.setContentsMargins(0,0,0,0);(layout or window.body).addWidget(container)
     view=window.state.setdefault('careView:'+context,dict(category='all',query=''))
-    category=QComboBox();category.setObjectName(context+'-category');category.setAccessibleName(t('hw.category'));category.addItem(t('hw.all'),'all')
+    category=QComboBox();category.setObjectName(context+'-category');category.setAccessibleName(t('hw.category'));category.addItem(t('care.allRecords'),'all')
     for key in ids:category.addItem(t('care.'+key),key)
     category.setCurrentIndex(max(0,category.findData(view['category'])));outer.addWidget(category)
     search=QLineEdit(view['query']);search.setObjectName(context+'-search');search.setPlaceholderText(t('care.search'));search.setAccessibleName(t('care.search'));outer.addWidget(search)
-    tree=QTreeWidget();tree.setObjectName(context+'-tree');tree.setColumnCount(2);tree.setHeaderLabels([t('hw.property'),t('hw.value')]);tree.setMinimumHeight(260);tree.setWordWrap(True);tree.header().setSectionResizeMode(0,QHeaderView.Interactive);tree.header().setSectionResizeMode(1,QHeaderView.Stretch);tree.setColumnWidth(0,310);tree.setAccessibleName(t({'scan-records':'care.scanRecords','tools-records':'care.toolsStatus','update-records':'care.updateHistory'}[context]));outer.addWidget(tree)
+    tree=QTreeWidget();tree.setObjectName(context+'-tree');tree.setColumnCount(2);tree.setHeaderLabels([t('care.recordProperty'),t('hw.value')]);tree.setMinimumHeight(260);tree.setWordWrap(True);tree.header().setSectionResizeMode(0,QHeaderView.Interactive);tree.header().setSectionResizeMode(1,QHeaderView.Stretch);tree.setColumnWidth(0,310);tree.setAccessibleName(t({'scan-records':'care.scanRecords','tools-records':'care.toolsStatus','update-records':'care.updateHistory'}[context]));outer.addWidget(tree)
     no_match=QLabel(t('forge.noMatches'));no_match.setWordWrap(True);outer.addWidget(no_match)
     def populate():
         tree.clear();selection=category.currentData();query=search.text().strip().casefold();view.update(category=selection,query=search.text());matched=0
