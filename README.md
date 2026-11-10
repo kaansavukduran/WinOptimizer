@@ -8,6 +8,8 @@ A bilingual native Windows care app. The 6.x GUI uses Python/Qt Widgets, with a 
 
 ## İndir ve aç / Download and open
 
+**6.3.3:** hızlı sekme/görünüm geçişlerinde sağlamlık, klavye ile ölçek kaydı ve doğru tarama geri bildirimi. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.3) · [Doğrulama](docs/VALIDATION.md). / Native UI stability, keyboard scale persistence and accurate scan feedback.
+
 **6.3.1 açılış hatası 6.3.2’de düzeltildi.** [6.3.2 Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.2). Portable kullanıyorsan uygulamayı kapat, yeni EXE’yi mevcut `Data` klasörünün yanına koy ve yeni dosyayı aç. Ayarları sıfırlama. Alt satırda 6.3.2 görünür. / **6.3.2 fixes a 6.3.1 startup crash.** Keep your existing Data folder beside the new Portable EXE. [Verification](docs/VALIDATION.md).
 
 [Releases](https://github.com/kaansavukduran/WinOptimizer/releases) sayfasında aynı sürümün iki Windows x64 dosyası bulunur:

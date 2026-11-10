@@ -1,8 +1,27 @@
 # Verification evidence
 
+## 6.3.3 UI lifetime, scale input and result feedback
+
+[v6.3.3](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.3) is stable/latest. Final application/tag source `ca63f1ae1c07da7d8a7c03e6f235e38e666acd62`, PR #14, merge `1db8f3942b714b6cda3175ba81bbc24fa80e06ad`, signed metadata `c20c95e31d47e8227fa118819f388ad3980197cb`.
+
+A stability audit reproduced `Internal C++ object (Paragraph) already deleted` while navigating and changing appearance with pending layout work. Paragraph fitting now uses a widget-owned, coalesced timer and Qt slots; resize/document signals schedule work rather than recursively fitting immediately. Initial option-group callbacks are bound to their group lifetime and read its current checked state. Disposed pages cannot receive this work, and immediately expanded options remain visible. Keyboard scale changes now save; rounded input updates both controls to the recorded value with blocked intermediate signals. Scan issues/unknown findings trigger review/help feedback even if the envelope omits an attention flag; healthy results retain celebration.
+
+35 Qt and 54 Node tests passed locally and on Windows. Seven new regression cases fail on an isolated 6.3.2 tree; the healthy-result control passes there. Positive coverage includes delayed startup, rapid disposal and resizing, TR/EN, 80/135/200% scale, independent 125% text, OpenDyslexic, dark/high contrast, keyboard scale changes and expansion before the initial callback. A separate source audit covered 24 language/theme/scale combinations with narrow/wide navigation and reported zero callback errors after the lifecycle change.
+
+[Final source Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42827961742), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42827972758), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42829231941), [publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42829259677) and [actual 6.3.2 → 6.3.3 installed update](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42829583076) succeeded. Earlier source/PR runs were cancelled after the final expansion-state correction superseded them; published versions were not changed.
+
+Source artifact `13769753543`: SHA-256 `49b07ee6d0733f4069301478888768792358ab3485f6b0bf126ab7a57fe11ad1`. Upgrade artifact `13770946314`: SHA-256 `8e8846df56ec1999baafd5cc1e823159b0e6624bc4d07c6c712199e554dbda13`. Original hashes and ZIP CRC verified. Actual installed/portable/reopened Qt apps completed scan/provider receipts, hardware inventory, reduced exports and data-isolation checks. Locked executable replacement and all seven original icon payload sizes passed. [Actual Portable screenshot](screenshots/WinOptimizer-6.3.3-Portable.png) shows the test machine.
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Setup | 94,197,038 | `2ee7a3f167c294ac76b30e73f67b3731e4c7db54dfc37a4b59089eb3586a9ec0` |
+| Portable | 94,072,751 | `28baa49b80ca59cfc84057bd7a07850fde5cb5171714350a634072652e40a98b` |
+
+Native UI Automation invoked the baseline app's signed update. Installed payload hash, registry and real running Qt version matched 6.3.3. English/dark/135% UI/125% text/OpenDyslexic, original cleanup/restore history and milestones survived. The [private 6.3.3 backup folder](https://drive.google.com/drive/folders/1oIneRNnkJqnFECjrVwBeuWj3yObJvCSz) holds source/history, both complete EXEs and evidence; EXE readbacks matched exact bytes/hashes. Final source/history and evidence closure uses the same ZIP/Git bundle/readback checks, excluding signing keys. These checks establish the exercised scenarios, not universal fault-free operation on every Windows PC.
+
 ## 6.3.2 startup resize crash fix
 
-[v6.3.2](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.2) is stable/latest. Application/tag source `322ab8e59089e6c89b9e4b1ee082ecfdc0d2c319`, PR #13, merge `578d6b2ffbb253175b3b19e779f39d45243ffba6`, signed metadata `3b9c7c745b3aa3c70997aaaee8bfb883fe6ea092`.
+[v6.3.2](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.3.2) is a preserved stable release. Application/tag source `322ab8e59089e6c89b9e4b1ee082ecfdc0d2c319`, PR #13, merge `578d6b2ffbb253175b3b19e779f39d45243ffba6`, signed metadata `3b9c7c745b3aa3c70997aaaee8bfb883fe6ea092`.
 
 The user reported a packaged 6.3.1 Portable crash in `QMainWindow.resizeEvent`: `Window object has no attribute details_expanded`. Qt can resize on first show before the real asynchronous Node bootstrap responds. The expansion flag previously existed only after bootstrap/appearance; synchronous test fixtures hid the ordering. The flag now exists before the first resize, and resize layout work waits until bootstrap is ready. The saved expansion preference is still applied afterwards. No reset or data migration is required.
 
