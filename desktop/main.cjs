@@ -2,8 +2,11 @@ const {app,BrowserWindow,ipcMain,dialog,shell}=require('electron');
 const path=require('node:path');const fs=require('node:fs');const fsp=require('node:fs/promises');const {spawn}=require('node:child_process');
 const {Service}=require('./service.cjs');const {Updater,REPO}=require('./updater.cjs');
 const local=process.env.LOCALAPPDATA||app.getPath('appData');
-app.setPath('userData',path.join(local,'WinOptimizer Aion'));
-if(!app.requestSingleInstanceLock()){app.quit();}else{
+const {portable,data}=require('./distribution.cjs').distribution(app.isPackaged,process.env,local);
+let dataReady=true;
+try{fs.mkdirSync(data,{recursive:true});fs.accessSync(data,fs.constants.W_OK);app.setPath('userData',data);if(portable){for(const [key,folder] of [['sessionData','Session'],['logs','Logs'],['crashDumps','CrashDumps']]){const target=path.join(data,folder);fs.mkdirSync(target,{recursive:true});app.setPath(key,target);}}}
+catch{dataReady=false;app.whenReady().then(()=>{dialog.showErrorBox('WinOptimizer Aion','Data klasörüne yazılamıyor. Portable EXE dosyasını yazılabilir bir klasöre taşı ve yeniden aç.\nCannot write to Data. Move the portable EXE to a writable folder and reopen it.');app.exit(1);});}
+if(!dataReady){}else if(!app.requestSingleInstanceLock()){app.quit();}else{
 let window,service,updater,updating=false;const language=()=>service?.settings.data.language==='en';
 const sources={'oem-nvidia':'https://www.nvidia.com/en-us/drivers/','oem-amd':'https://www.amd.com/en/support/download/drivers.html','oem-intel':'https://www.intel.com/content/www/us/en/download-center/home.html','runtime-license':'https://aka.ms/VCRedistLicense',game:'ms-settings:gaming-gamemode',github:`https://github.com/${REPO}`,releases:`https://github.com/${REPO}/releases`,windows:'ms-settings:windowsupdate',security:'windowsdefender:',startup:'ms-settings:startupapps',sound:'ms-settings:sound',display:'ms-settings:display','network-settings':'ms-settings:network-status',devices:'ms-settings:troubleshoot','visual-cpp':'https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170',directx:'https://www.microsoft.com/en-us/download/details.aspx?id=35'};
 app.on('second-instance',()=>{if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});
@@ -17,6 +20,7 @@ app.whenReady().then(async()=>{
   ipcMain.handle('aion:command',async(event,command,payload={})=>{
     if(event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame)return {ok:false,error:'UNAUTHORIZED'};
     try{
+      if(command==='bootstrap')return {ok:true,data:{...await service.handle(command,payload),portable}};
       if(command==='external'){if(!Object.hasOwn(sources,payload.id))throw Error('INVALID_SELECTION');await shell.openExternal(sources[payload.id]);return {ok:true,data:true};}
       if(command==='system.open'){
         const names={restore:'rstrui.exe',protection:'SystemPropertiesProtection.exe',devices:'devmgmt.msc'};if(!Object.hasOwn(names,payload.id))throw Error('INVALID_SELECTION');
@@ -45,7 +49,12 @@ app.whenReady().then(async()=>{
         return {ok:true,data:service.importData(JSON.parse(await fsp.readFile(result.filePaths[0],'utf8')))};
       }
       if(command==='updates.check'){if(service.busy||updating)throw Error('OPERATION_BUSY');updating=true;try{return {ok:true,data:await updater.check(service.settings.data.channel)};}finally{updating=false;}}
+      if(command==='updates.portable'){
+        if(!portable||service.busy||updating)throw Error('OPERATION_BUSY');const offer=updater.pending;
+        if(!offer?.portable)throw Error('UPDATE_CHECK_FIRST');await shell.openExternal(offer.portable.url);return {ok:true,data:{opened:true}};
+      }
       if(command==='updates.install'){
+        if(portable)throw Error('PORTABLE_MANUAL_UPDATE');
         if(service.busy||updating)throw Error('OPERATION_BUSY');if(process.platform!=='win32')throw Error('WINDOWS_ONLY');if(payload.confirm!==true)throw Error('CONFIRM_REQUIRED');updating=true;
         try{const file=await updater.download();service.settings.save(service.settings.data);service.save();
           // Detached installer waits for the application to close. The validated bytes are never handed to a shell.

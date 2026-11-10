@@ -10,8 +10,11 @@ for(const version of versions){
   if(manifest.version!==version||manifest.sourceCommit!==run.head_sha||manifest.platform!=='win32'||manifest.arch!=='x64')throw Error('Build/source mismatch');
   const name=`WinOptimizer-Aion-${version}-Windows-x64-Setup.exe`;const installer=path.join('build-packages','release',name),file=fs.readFileSync(installer);
   if(file.length!==manifest.bytes||crypto.createHash('sha256').update(file).digest('hex')!==manifest.sha256||file.toString('ascii',0,2)!=='MZ')throw Error('Installer mismatch');
+  const portableName=`WinOptimizer-Aion-${version}-Windows-x64-Portable.exe`,portable=path.join('build-packages','release',portableName);
+  if(!manifest.portable||manifest.portable.url!==`https://github.com/${repo}/releases/download/v${version}/${portableName}`)throw Error('Portable metadata missing');
+  const portableBytes=fs.readFileSync(portable);if(portableBytes.length!==manifest.portable.bytes||crypto.createHash('sha256').update(portableBytes).digest('hex')!==manifest.portable.sha256||portableBytes.toString('ascii',0,2)!=='MZ')throw Error('Portable mismatch');
   const tag='v'+version;const release=JSON.parse(gh(['api',`repos/${repo}/releases/${releaseIds[version]}`]));if(release.tag_name!==tag)throw Error('Release identity mismatch');
-  for(const f of [installer,...['aion-update.json','aion-update.sig','SHA256SUMS.txt'].map(n=>path.join(folder,n))]){
+  for(const f of [installer,portable,...['aion-update.json','aion-update.sig','SHA256SUMS.txt'].map(n=>path.join(folder,n))]){
     const existing=release.assets.find(a=>a.name===path.basename(f));if(existing){const data=fs.readFileSync(f);if(existing.size!==data.length||existing.digest!=='sha256:'+crypto.createHash('sha256').update(data).digest('hex'))throw Error('Existing asset mismatch');continue;}
     if(!release.draft)throw Error('Published release missing an asset; refusing mutation');
     gh(['api','--method','POST',`https://uploads.github.com/repos/${repo}/releases/${release.id}/assets?name=${encodeURIComponent(path.basename(f))}`,'-H','Content-Type: application/octet-stream','--input',f]);

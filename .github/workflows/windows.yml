@@ -57,11 +57,15 @@ jobs:
         run: |
           npm version $env:BUILD_TARGET --no-git-tag-version --allow-same-version
           npm run dist:win
+      - name: Launch actual portable package and verify local data
+        shell: pwsh
+        run: node scripts/windows-portable-smoke.cjs "release/WinOptimizer-Aion-${{ env.BUILD_TARGET }}-Windows-x64-Portable.exe"
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installers
           path: |
             release/*-Setup.exe
+            release/*-Portable.exe
             work/native-seed.json
             work/native-diagnostics.json
             work/native-runtime.json

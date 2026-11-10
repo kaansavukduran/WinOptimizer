@@ -17,6 +17,14 @@ Download the Windows x64 Setup.exe from Releases, double-click it, finish setup,
 
 Requires Windows 10 22H2 or Windows 11 x64 and built-in Windows PowerShell 5.1. Windows 10 support depends on the installed servicing/ESU channel; this app does not extend Microsoft support. No PowerShell Gallery module, account, API key, or subscription is needed. Installer Authenticode status is documented in release notes. Updates are separately authenticated by an embedded Ed25519 public key and SHA-256.
 
+### Portable / Kurulumsuz kullanım
+
+Releases sayfasındaki **WinOptimizer-Aion-<sürüm>-Windows-x64-Portable.exe** dosyasını yazılabilir bir klasöre indir ve çift tıkla. Kurulum sihirbazı veya kurulu sürüm şartı yoktur. İlk açılışta EXE'nin yanında **Data** klasörü oluşur. Ayarlar, geçmiş, yedekler ve uygulama tarayıcı oturumu burada tutulur. Taşımak için EXE ile Data klasörünü birlikte taşı; kurulu sürümün kayıtları ayrıdır. Sistem işlemleri gerektiğinde Windows yine yönetici izni ister. Salt okunur klasörde sessizce başka konuma yazmak yerine hata gösterilir.
+
+Portable güncelleme şimdilik elle dosya değiştirmeyle yapılır: **Ayarlar → Güncellemeler → Güncellemeleri kontrol et → Portable dosyasını indir**. Uygulamayı kapat, yeni EXE'yi aynı Data klasörünün yanına koy ve yeni dosyayı aç. Data'yı silme. Portable sürüm Setup kurucusunu çalıştırmaz. Release'taki SHA256SUMS.txt, hem Setup hem Portable paket özetlerini içerir. Güncelleme üstverisinde iki paketin özeti de imzalanır; tarayıcıyla elle indirilen portable dosya uygulama tarafından otomatik kurulmaz/doğrulanmaz.
+
+Download **Portable.exe** to a writable folder and double-click it. Keep the adjacent **Data** folder when moving or replacing the executable. Installed and portable data are separate. Portable updates currently download the new portable file through the browser; close the app, put the new EXE beside the same Data folder, and reopen it. Setup retains its authenticated in-app installer update flow. The self-extracting portable launcher uses Windows temporary storage while running.
+
 ## Özellikler / Features
 
 - **5.3.0 Etkileşimli Aion:** 16 çizilmiş yön ile fareye bakar; baş, gövde, kuyruk ve ayak dokunuşuna tepki verir. Enter/Boşluk ile de sevilebilir. Ayarlar → Aion ve Bildirimler içinde fare takibi, sevilme ve %75–%150 Aion boyutu bağımsızdır; azaltılmış hareket ve duraklatma desteklenir.
