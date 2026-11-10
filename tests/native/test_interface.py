@@ -289,3 +289,60 @@ def test_window_resizes_before_delayed_bootstrap_and_retains_log_preference(wind
         assert not any(command=='settings.save' for command,_ in bridge.calls)
         assert errors==[]
     finally:startup.close();application.processEvents()
+
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_rapid_navigation_and_rescaling_dispose_pending_page_work_safely(window,application,monkeypatch,language):
+    from PySide6.QtCore import QCoreApplication,QEvent
+    from PySide6.QtTest import QTest
+    w,bridge=window;errors=[]
+    monkeypatch.setattr(sys,'excepthook',lambda kind,error,tb:errors.append(repr(error)))
+    for theme in ['dark','contrast']:
+        for scale in [80,135,200]:
+            w.settings.update(language=language,theme=theme,scale=scale,textSize=125,font='dyslexic',operationDetails=False)
+            w.appearance()
+            for page in ['scanFix','settings','home','tools','history','workshop']:
+                w.go(page)
+                if page=='scanFix':w.findChild(QPushButton,'start-scan').click()
+                w.resize(540,900)
+                QCoreApplication.sendPostedEvents(None,QEvent.DeferredDelete)
+                application.processEvents();w.resize(1240,900);application.processEvents()
+    QTest.qWait(30)
+    assert errors==[] and w.isVisible() and not w.busy
+    assert w.state['report']['id']=='fixture-report'
+    assert w.settings['scale']==200 and w.settings['textSize']==125
+    assert w.findChild(QPushButton,'nav-settings') is not None
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_scale_slider_keyboard_and_rounded_input_apply_and_show_the_saved_value(window,application,language):
+    from PySide6.QtWidgets import QSlider,QSpinBox
+    from PySide6.QtCore import Qt
+    from PySide6.QtTest import QTest
+    w,bridge=window;w.settings['language']=language;w.settings_section='appearance';w.go('settings');application.processEvents()
+    slider=w.findChild(QSlider);spin=w.findChild(QSpinBox,'setting-scale');slider.setFocus();application.processEvents()
+    before=len([c for c,_ in bridge.calls if c=='settings.save'])
+    QTest.keyClick(slider,Qt.Key_Right);application.processEvents()
+    assert w.settings['scale']==105 and spin.value()==105 and slider.value()==105
+    assert len([c for c,_ in bridge.calls if c=='settings.save'])==before+1
+    spin.setFocus();spin.setValue(137);spin.editingFinished.emit();application.processEvents()
+    assert w.settings['scale']==135 and spin.value()==135 and slider.value()==135
+    assert w.settings['textSize']==100 and w.settings['theme']=='light'
+
+@pytest.mark.parametrize('status,state',[('issue','help'),('unknown','help'),('info','celebrate')])
+def test_scan_feedback_respects_findings_even_without_an_attention_flag(window,status,state):
+    w,bridge=window;report=dict(care=fixture_care(),needsAttention=False,online=False,findings=[dict(id='fixture',category='devices',status=status,reason='unavailable',evidence={},actions=[])])
+    w.go('scanFix')
+    def deliver(command,payload=None,callback=None):
+        if command=='diagnostics.scan':callback(dict(ok=True,data=copy.deepcopy(report)))
+        else:FixtureBridge.call(bridge,command,payload,callback)
+    bridge.call=deliver
+    w.run('diagnostics.scan',dict(online=False),lambda r:w.store('report',r))
+    assert w.aion.state==state
+    if state=='help':assert w.t('care.review') in w.notice.text()
+
+def test_expanding_options_before_initial_callback_keeps_visible_controls(window,application):
+    from PySide6.QtWidgets import QCheckBox
+    w,bridge=window;w.go('scanFix')
+    check=w.scroll.widget().findChild(QCheckBox,'scan-online');group=check.parentWidget()
+    group.setChecked(True);application.processEvents()
+    assert group.isChecked() and not check.isHidden()

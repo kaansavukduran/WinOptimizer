@@ -6,7 +6,7 @@ import subprocess
 import sys
 from datetime import datetime
 
-from PySide6.QtCore import Qt, QTimer, QUrl, QLocale, QLockFile
+from PySide6.QtCore import Qt, QTimer, QUrl, QLocale, QLockFile, QSignalBlocker
 from PySide6.QtGui import QFont, QFontDatabase, QIcon, QDesktopServices, QPalette, QColor
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QScrollArea, QFrame, QGroupBox, QCheckBox, QComboBox, QSpinBox,
@@ -259,7 +259,7 @@ class Window(QMainWindow):
                 for i in range(layout.count()):
                     if layout.itemAt(i).widget():layout.itemAt(i).widget().setVisible(value)
             group.toggled.connect(toggle)
-            QTimer.singleShot(0,lambda:toggle(checked))
+            QTimer.singleShot(0,group,lambda:toggle(group.isChecked()))
         return layout
 
     def details(self, key, content, layout=None):
@@ -327,7 +327,7 @@ class Window(QMainWindow):
                 return
             result = reply.get('data')
             failed = isinstance(result, dict) and (result.get('success') is False or result.get('skipped',0)>0 or result.get('conflicts',0)>0 or any(i.get('success') is False for i in result.get('items', [])))
-            attention=isinstance(result,dict) and result.get('needsAttention') is True
+            attention=isinstance(result,dict) and (result.get('needsAttention') is True or any(f.get('status') in ('issue','unknown') for f in result.get('findings',[])))
             self.notice.setText('' if silent else self.t('care.review' if attention else 'partialFailure' if failed else 'n.done'))
             if callback:
                 callback(result)
@@ -833,8 +833,14 @@ class Window(QMainWindow):
         spin.setObjectName('setting-'+key);spin.setAccessibleName(label);slider.setAccessibleName(label)
         value=int(self.settings.get(key,default));slider.setValue(value);spin.setValue(value)
         slider.valueChanged.connect(spin.setValue);spin.valueChanged.connect(slider.setValue)
-        slider.sliderReleased.connect(lambda:self.save_setting(key,round(slider.value()/step)*step))
-        spin.editingFinished.connect(lambda:self.save_setting(key,round(spin.value()/step)*step))
+        def commit(value):
+            snapped=max(minimum,min(maximum,round(value/step)*step))
+            with QSignalBlocker(slider),QSignalBlocker(spin):
+                slider.setValue(snapped);spin.setValue(snapped)
+            self.save_setting(key,snapped)
+        slider.sliderReleased.connect(lambda:commit(slider.value()))
+        slider.valueChanged.connect(lambda value:commit(value) if slider.hasFocus() and not slider.isSliderDown() else None)
+        spin.editingFinished.connect(lambda:commit(spin.value()))
         reset=QPushButton(self.t('n.default'));reset.clicked.connect(lambda:(spin.setValue(default),self.save_setting(key,default)))
         top.addWidget(slider,1);top.addWidget(spin);top.addWidget(reset);layout.addLayout(top)
         if key=='scale':

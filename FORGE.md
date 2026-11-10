@@ -136,3 +136,7 @@ Kullanıcının açıklaması: donor işlevleri mevcut WinOptimizer ekranlarına
 ## 6.3.2 açılış hatası düzeltmesi
 
 Kullanıcı 6.3.1 Portable açılışında `Window object has no attribute details_expanded` bildirdi. Gerçek Bridge yanıtı asenkron; senkron FixtureBridge açılış sırasını gizliyordu. Geciktirilmiş bootstrap sırasında resizeEvent, gösterme ve dar/geniş boyutlandırma regresyonu dört TR/EN ve açık/kapalı ayrıntı koşulunda eski kodda aynı hatayı üretti. Arayüz durumu Qt olaylarından önce başlatıldı; bootstrap tamamlanmadan resize düzenlemesi çalışmaz. Tercih ve veri sıfırlanmaz. 6.3.2 Setup/Portable ve Windows doğrulaması hazırlanıyor; eski yayınlar korunur.
+
+## 6.3.3 yoğun kullanım sağlamlaştırması
+
+Forge denetiminde hızlı sekme/tema/ölçek geçişlerinde silinmiş Paragraph nesnesine gecikmiş boyutlama çağrısı yeniden üretildi. Metin boyutlama, nesneye ait tek seferlik zamanlayıcıda birleştirilir; Qt slot bağlantıları ve grup bağlamlı başlangıç çağrıları ekran silinince iptal olur. Ölçek kaydırıcısının klavye değişikliği kaydedilir, 137 gibi giriş 135'e yuvarlandığında kontrol ve kayıt aynı değeri gösterir. Sorun/bilinmiyor bulguları başarı kutlaması yerine inceleme geri bildirimi verir. 34 Qt/54 Node geçti; eski 6.3.2 kaynağı ayrı ağaçta negatif kontrol için kullanıldı. Windows paket/upgrade ve özel Drive kapanışı yeni sürümde doğrulanacak; eski yayınlar değişmez.
