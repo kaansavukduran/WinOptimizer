@@ -18,7 +18,7 @@ export function Aion({state,motion,label,pause,play,language='tr',preferences={f
   return()=>clearInterval(timer);
  },[state,animate]);
  useEffect(()=>{
-  setDirection(null);if(!animate||!preferences.followPointer||state!=='idle')return;
+  setDirection(null);if(!animate||!preferences.followPointer||!['idle','help','game'].includes(state))return;
   let pending=0;let last:{x:number;y:number}|null=null;
   const move=(event:PointerEvent)=>{if(event.pointerType==='touch')return;last={x:event.clientX,y:event.clientY};if(pending)return;pending=requestAnimationFrame(()=>{pending=0;const rect=target.current?.getBoundingClientRect();if(rect&&last)setDirection(gazeDirection(last.x,last.y,rect));});};
   const leave=()=>setDirection(null);

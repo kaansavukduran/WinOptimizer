@@ -24,6 +24,7 @@ async function fixture(page:any,status:'fixed'|'still-present'|'unverified'='sti
 test('scan separates optional components, asks before repair and shows unresolved outcome without success feedback',async({page})=>{
   await fixture(page);
   await expect(page.getByText('Fixture aygıt',{exact:true}).first()).toBeVisible();
+  const mascot=page.getByRole('button',{name:'Aion’u sev',exact:true});await mascot.scrollIntoViewIfNeeded();const box=(await mascot.boundingBox())!;await page.mouse.move(box.x+box.width/2,Math.max(2,box.y-30));await expect(page.locator('.aion-sprite')).toHaveAttribute('data-direction','0');
   await expect(page.getByRole('button',{name:/İsteğe bağlı/})).toBeVisible();
   await page.getByRole('button',{name:'Aygıtları yeniden algıla',exact:true}).click();
   await expect(page.getByRole('dialog')).toBeVisible();
