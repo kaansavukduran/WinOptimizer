@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.3.3",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 94197038,
+  "sha256": "2ee7a3f167c294ac76b30e73f67b3731e4c7db54dfc37a4b59089eb3586a9ec0",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.3.3/WinOptimizer-Aion-6.3.3-Windows-x64-Setup.exe",
+  "sourceCommit": "ca63f1ae1c07da7d8a7c03e6f235e38e666acd62",
+  "notes": {
+    "tr": "Hızlı sekme ve görünüm geçişlerinde arayüz çökmesi önlendi. Klavye ile ölçek ayarı kaydedilir, açılan seçenekler görünür kalır ve sorun/bilinmiyor sonuçlarında inceleme geri bildirimi gösterilir.",
+    "en": "Prevents UI crashes during rapid navigation and appearance changes. Keyboard scale changes persist, opened options stay visible and issues/unknown findings receive review feedback."
+  },
+  "portable": {
+    "bytes": 94072751,
+    "sha256": "28baa49b80ca59cfc84057bd7a07850fde5cb5171714350a634072652e40a98b",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.3.3/WinOptimizer-Aion-6.3.3-Windows-x64-Portable.exe"
+  }
+}
