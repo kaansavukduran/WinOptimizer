@@ -53,7 +53,10 @@ jobs:
           if (-not $restarted) { throw 'Application did not restart after update' }
           if (-not $restarted.CloseMainWindow()) { throw 'Could not close restarted app normally' }
           if (-not $restarted.WaitForExit(60000)) { throw 'Restarted app did not close' }
-          node scripts/windows-smoke.cjs "$exe" verify
+          $env:AION_EVIDENCE = Join-Path $pwd 'work/native-evidence/upgrade'
+          $p = Start-Process -FilePath $exe -ArgumentList '--smoke','verify' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw 'Native upgrade verification failed' }
+          if (-not (Test-Path "$env:AION_EVIDENCE/verified-verify.json")) { throw 'Native upgrade receipt missing' }
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -61,3 +64,4 @@ jobs:
           path: |
             work/native-*.json
             work/screenshots/
+            work/native-evidence/

@@ -10,7 +10,13 @@ $tokens=$null;$errors=$null;$null=[Management.Automation.Language.Parser]::Parse
 if($errors.Count){$errors|Format-List;throw 'PowerShell parser errors'}
 function Call-Backend($Action,$Data=@{}){
   $encoded=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($Data|ConvertTo-Json -Compress)))
-  $raw=& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $file -Action $Action -PayloadBase64 $encoded
+  $progress=Join-Path $env:TEMP ('aion-progress-'+[guid]::NewGuid().ToString('N')+'.jsonl')
+  try {
+    $raw=& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $file -Action $Action -PayloadBase64 $encoded -ProgressFile $progress
+    $events=@(Get-Content -LiteralPath $progress|ForEach-Object {$_|ConvertFrom-Json})
+    if(-not @($events|Where-Object {$_.status -eq 'running'}).Count){throw 'Native progress start missing'}
+    if($Action -eq 'diagnostics' -and -not @($events|Where-Object {$_.step -eq 'devices' -and $_.status -in @('complete','failed')}).Count){throw 'Native provider progress missing'}
+  } finally {Remove-Item -LiteralPath $progress -Force -ErrorAction SilentlyContinue}
   $r=$raw|ConvertFrom-Json;if(-not $r.ok){throw $r.error};return $r.data
 }
 $diag=Call-Backend 'diagnostics'
@@ -27,6 +33,15 @@ $apps=@(Call-Backend 'focus-apps')
 $plans=@(Call-Backend 'power-profiles');if($plans.Count -lt 1){throw 'No power plans'}
 $identity=[Security.Principal.WindowsIdentity]::GetCurrent()
 if((New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
+  # Real native rejection paths stop before any Windows Update search/download/install.
+  $planFile=Join-Path $env:TEMP ('aion-driver-plan-'+[guid]::NewGuid().ToString('N')+'.json')
+  try {
+    $ids=@(1..31|ForEach-Object{[guid]::NewGuid().ToString()})+@('invalid-update-id')
+    $bytes=[Text.Encoding]::UTF8.GetBytes((@{ids=$ids}|ConvertTo-Json -Compress));[IO.File]::WriteAllBytes($planFile,$bytes)
+    $hash=(Get-FileHash -LiteralPath $planFile -Algorithm SHA256).Hash.ToLowerInvariant()
+    $rejected=$false;try{Call-Backend 'windows-install' @{idsFile=$planFile;idsSha256=('0'*64)}}catch{if($_.Exception.Message -ne 'UPDATE_CHANGED'){throw};$rejected=$true};if(-not $rejected){throw 'Changed driver plan accepted'}
+    $rejected=$false;try{Call-Backend 'windows-install' @{idsFile=$planFile;idsSha256=$hash}}catch{if($_.Exception.Message -ne 'INVALID_UPDATE_ID'){throw};$rejected=$true};if(-not $rejected){throw 'Invalid final bulk update ID accepted'}
+  }finally{Remove-Item -LiteralPath $planFile -Force -ErrorAction SilentlyContinue}
   $destination=Join-Path $env:LOCALAPPDATA ('WinOptimizer Aion\DriverBackups\integration-'+[guid]::NewGuid().ToString('N'))
   $backup=Call-Backend 'driver-backup' @{destination=$destination}
   if(-not (Test-Path (Join-Path $destination 'backup.json'))){throw 'Driver backup manifest missing'}

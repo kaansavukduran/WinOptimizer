@@ -9,13 +9,21 @@ Windows only. A bilingual, local-first care center with Kaan’s animated axolot
 
 1. [Releases](https://github.com/kaansavukduran/WinOptimizer/releases) sayfasından `WinOptimizer-Aion-<sürüm>-Windows-x64-Setup.exe` dosyasını indirin.
 2. Dosyaya çift tıklayın, kurulum konumunu seçin, kurulumu tamamlayın. Başlat menüsünden **WinOptimizer Aion** uygulamasını açın.
-3. **Sistemi kontrol et** ile gerçek donanım ve koruma durumunu görün. **Temizliği tara** ile adayları listeleyin. Seçilenleri **Güvenli depoya taşı** düğmesiyle taşıyın.
+3. **Tara ve Düzelt → Taramayı başlat** ile kontrol edin. **Sıradaki adım** bölümünü okuyun. Sürücü güncellemesi varsa **Tümünü güncelle (sayı)** ile tek tek işaretlemeden devam edin ve listelenen sürücüleri onaylayın. Tarama kurulum başlatmaz; varsayılan çevrimiçi kontrol için internet gerekir. **Tarama seçenekleri** içinde çevrimiçi kontrolü kapatabilirsiniz.
 4. **Geçmiş ve yedekler** üzerinden geri alın. Alan kazanmak için ayrı **Kalıcı sil ve alan aç** işlemini seçin; bu işlem geri alınamaz.
 5. **Ayarlar** yan menünün en altındadır. **Genel ve Dil**, **Görünüm**, **Erişilebilirlik**, **Aion ve Bildirimler**, **Veri ve Yedekler**, **Güncellemeler**, **Hakkında** grupları vardır.
 
-Download the Windows x64 Setup.exe from Releases, double-click it, finish setup, and open **WinOptimizer Aion** from Start. Use **Check system**, then **Scan for cleanup**, review candidates, and **Move to safe vault**. **History & backups** lets you restore files or delete them permanently. Settings is the last navigation item. Choose **English** in **Genel ve Dil → Dil**.
+Download the Windows x64 Setup.exe from Releases, double-click it, finish setup, and open **WinOptimizer Aion** from Start. Use **Scan & Fix → Start scan → Next step → Update all (count)** and review/confirm the driver list. Online driver checks are on by default; choose a local scan under **Scan options** if needed. **Safe cleanup** separately previews files before **Move to safe vault**. **History & backups** lets you restore files or delete them permanently. Settings is the last navigation item. Choose **English** in **Genel ve Dil → Dil**.
 
 Requires Windows 10 22H2 or Windows 11 x64 and built-in Windows PowerShell 5.1. Windows 10 support depends on the installed servicing/ESU channel; this app does not extend Microsoft support. No PowerShell Gallery module, account, API key, or subscription is needed. Installer Authenticode status is documented in release notes. Updates are separately authenticated by an embedded Ed25519 public key and SHA-256.
+
+### Portable / Kurulumsuz kullanım
+
+Releases sayfasındaki **WinOptimizer-Aion-<sürüm>-Windows-x64-Portable.exe** dosyasını yazılabilir bir klasöre indir ve çift tıkla. Kurulum sihirbazı veya kurulu sürüm şartı yoktur. İlk açılışta EXE'nin yanında **Data** klasörü oluşur. Ayarlar, geçmiş, yedekler ve uygulama tarayıcı oturumu burada tutulur. Taşımak için EXE ile Data klasörünü birlikte taşı; kurulu sürümün kayıtları ayrıdır. Sistem işlemleri gerektiğinde Windows yine yönetici izni ister. Salt okunur klasörde sessizce başka konuma yazmak yerine hata gösterilir.
+
+Portable güncelleme şimdilik elle dosya değiştirmeyle yapılır: **Ayarlar → Güncellemeler → Güncellemeleri kontrol et → Portable dosyasını indir**. Uygulamayı kapat, yeni EXE'yi aynı Data klasörünün yanına koy ve yeni dosyayı aç. Data'yı silme. Portable sürüm Setup kurucusunu çalıştırmaz. Release'taki SHA256SUMS.txt, hem Setup hem Portable paket özetlerini içerir. Güncelleme üstverisinde iki paketin özeti de imzalanır; tarayıcıyla elle indirilen portable dosya uygulama tarafından otomatik kurulmaz/doğrulanmaz.
+
+Download **Portable.exe** to a writable folder and double-click it. Keep the adjacent **Data** folder when moving or replacing the executable. Installed and portable data are separate. Portable updates currently download the new portable file through the browser; close the app, put the new EXE beside the same Data folder, and reopen it. Setup retains its authenticated in-app installer update flow. The self-extracting portable launcher uses Windows temporary storage while running.
 
 ## Özellikler / Features
 
@@ -78,6 +86,8 @@ npm run test:e2e
 
 ## Origin and license
 
-Fork of [OguzhanDUYAR/WinOptimizer](https://github.com/OguzhanDUYAR/WinOptimizer). Upstream history and scripts are preserved in `legacy/`; they are not used or packaged by the desktop app. Broad deletion, registry cleaning, blanket service/network tweaks, Prefetch deletion and DISM `/ResetBase` are excluded. Root launchers open only the desktop app.
+Fork of [OguzhanDUYAR/WinOptimizer](https://github.com/OguzhanDUYAR/WinOptimizer). [Eski terminal sürümüyle özellik karşılaştırması / Legacy feature comparison](docs/LEGACY-COVERAGE.md).
+
+Upstream history and scripts are preserved in `legacy/`; they are not used or packaged by the desktop app. Broad deletion, registry cleaning, blanket service/network tweaks, Prefetch deletion and DISM `/ResetBase` are excluded. Root launchers open only the desktop app.
 
 The existing **GPLv3 LICENSE** is retained for the new code. Upstream README/script headers said MIT despite the GPLv3 LICENSE; this fork does not claim to relicense upstream work as MIT. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

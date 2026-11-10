@@ -1,13 +1,22 @@
 param(
   [Parameter(Mandatory=$true)][ValidateSet('focus-apps','focus-close','package-inspect','package-apply','runtime-verify','runtime-install','restore-points','restore-point-create','ghosts','ghost-remove','diagnostics','diagnostic-repair','health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set')][string]$Action,
   [string]$PayloadBase64 = 'e30=',
-  [string]$ResultFile = ''
+  [string]$ResultFile = '',
+  [string]$ProgressFile = ''
 )
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Utility\Microsoft.PowerShell.Utility.psd1') -ErrorAction Stop
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
 $payload = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($PayloadBase64)) | ConvertFrom-Json
+function Write-OperationStatus([string]$Step,[string]$Status,[int]$Count=-1,[string]$Item='', [string]$Reason='') {
+  if(-not $ProgressFile){return}
+  try {
+    $entry=@{at=(Get-Date).ToUniversalTime().ToString('o');action=$Action;step=$Step;status=$Status}
+    if($Count -ge 0){$entry.count=$Count};if($Item){$entry.item=$Item};if($Reason){$entry.reason=$Reason}
+    [IO.File]::AppendAllText($ProgressFile,(($entry|ConvertTo-Json -Compress)+[Environment]::NewLine),(New-Object Text.UTF8Encoding($false)))
+  }catch{}
+}
 function Test-Admin {
   $identity=[Security.Principal.WindowsIdentity]::GetCurrent()
   return (New-Object Security.Principal.WindowsPrincipal($identity)).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -31,12 +40,14 @@ function Get-DriverBackup([string]$Destination) {
       Assert-NoReparseParent $dir
       New-Item -ItemType Directory -Path $dir -Force|Out-Null
       Assert-NoReparseParent $dir
+      Write-OperationStatus 'backup' 'running'
       $log=& "$env:windir\System32\pnputil.exe" /export-driver '*' $dir 2>&1|Out-String
       if($LASTEXITCODE -ne 0){throw 'DRIVER_BACKUP_FAILED'}
       $infs=@(Get-ChildItem -LiteralPath $dir -Recurse -Filter '*.inf' -File)
       $hashes=@(Get-ChildItem -LiteralPath $dir -Recurse -File|ForEach-Object{[pscustomobject]@{path=$_.FullName.Substring($dir.Length+1);sha256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash}})
       $manifest=@{created=(Get-Date).ToUniversalTime().ToString('o');packages=$infs.Count;files=$hashes;scope='third-party-driver-store'}
       $manifest|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $dir 'backup.json') -Encoding UTF8
+      Write-OperationStatus 'backup' 'complete' $infs.Count
       return @{destination=$dir;packages=$infs.Count;scope='third-party-driver-store'}
 }
 . (Join-Path $PSScriptRoot 'Recovery.ps1')
@@ -79,12 +90,24 @@ function Invoke-Action {
     'windows-updates' {
       $session=New-Object -ComObject Microsoft.Update.Session
       $searcher=$session.CreateUpdateSearcher()
+      Write-OperationStatus 'windows-updates' 'running'
       $result=$searcher.Search("IsInstalled=0 and IsHidden=0 and Type='Driver'")
+      Write-OperationStatus 'windows-updates' 'complete' $result.Updates.Count
+      $firmware=@($result.Updates|Where-Object {[string]$_.DriverClass -ieq 'Firmware'});if($firmware.Count){Write-OperationStatus 'firmware' 'skipped' $firmware.Count '' 'excluded'}
       return @($result.Updates|Where-Object {[string]$_.DriverClass -ine 'Firmware'}|ForEach-Object{[pscustomobject]@{id=$_.Identity.UpdateID;revision=$_.Identity.RevisionNumber;name=$_.Title;bytes=[double]$_.MaxDownloadSize;driverClass=[string]$_.DriverClass;manufacturer=$_.DriverManufacturer;model=$_.DriverModel;date=if($_.DriverVerDate){$_.DriverVerDate.ToUniversalTime().ToString('o')}else{$null};reboot=$_.RebootRequired}})
     }
     'windows-install' {
       Assert-Admin
-      $ids=@($payload.ids);if($ids.Count -eq 0 -or $ids.Count -gt 20){throw 'INVALID_SELECTION'}
+      $ids=@($payload.ids)
+      if($payload.idsFile){
+        $plan=Get-Item -LiteralPath ([string]$payload.idsFile) -ErrorAction Stop
+        if($plan.PSIsContainer -or $plan.Length -gt 1048576){throw 'INVALID_SELECTION'}
+        $planBytes=[IO.File]::ReadAllBytes($plan.FullName);$hasher=[Security.Cryptography.SHA256]::Create()
+        try{$planHash=([BitConverter]::ToString($hasher.ComputeHash($planBytes))).Replace('-','').ToLowerInvariant()}finally{$hasher.Dispose()}
+        if($planHash -cne [string]$payload.idsSha256){throw 'UPDATE_CHANGED'}
+        $ids=@(([Text.Encoding]::UTF8.GetString($planBytes)|ConvertFrom-Json).ids)
+      }
+      if($ids.Count -eq 0 -or $ids.Count -gt 10000 -or @($ids|Select-Object -Unique).Count -ne $ids.Count){throw 'INVALID_SELECTION'}
       foreach($id in $ids){if([string]$id -notmatch '^[0-9a-fA-F-]{36}$'){throw 'INVALID_UPDATE_ID'}}
       $session=New-Object -ComObject Microsoft.Update.Session;$searcher=$session.CreateUpdateSearcher()
       $found=$searcher.Search("IsInstalled=0 and IsHidden=0 and Type='Driver'")
@@ -92,10 +115,13 @@ function Invoke-Action {
       foreach($update in $found.Updates){if($ids -contains $update.Identity.UpdateID -and [string]$update.DriverClass -ine 'Firmware'){if(-not $update.EulaAccepted){$update.AcceptEula()};$null=$collection.Add($update)}}
       if($collection.Count -ne $ids.Count){throw 'UPDATE_CHANGED'}
       $backup=$null;if($payload.backupDestination){$backup=Get-DriverBackup ([string]$payload.backupDestination)}
+      Write-OperationStatus 'download' 'running' $collection.Count
       $downloader=$session.CreateUpdateDownloader();$downloader.Updates=$collection;$download=$downloader.Download()
       if([int]$download.ResultCode -ne 2){throw 'UPDATE_DOWNLOAD_FAILED'}
+      Write-OperationStatus 'download' 'complete' $collection.Count
+      Write-OperationStatus 'install' 'running' $collection.Count
       $installer=$session.CreateUpdateInstaller();$installer.Updates=$collection;$result=$installer.Install()
-      $items=@();for($i=0;$i -lt $collection.Count;$i++){$r=$result.GetUpdateResult($i);$items+=@{id=$collection.Item($i).Identity.UpdateID;name=$collection.Item($i).Title;success=([int]$r.ResultCode -eq 2);code=[int]$r.ResultCode;hresult=$r.HResult}}
+      $items=@();for($i=0;$i -lt $collection.Count;$i++){$r=$result.GetUpdateResult($i);Write-OperationStatus 'install-item' $(if([int]$r.ResultCode -eq 2){'complete'}else{'failed'}) ($i+1) $collection.Item($i).Title ([string]$r.ResultCode);$items+=@{id=$collection.Item($i).Identity.UpdateID;name=$collection.Item($i).Title;success=([int]$r.ResultCode -eq 2);code=[int]$r.ResultCode;hresult=$r.HResult}}
       return @{backup=$backup;items=$items;reboot=[bool]$result.RebootRequired;success=([int]$result.ResultCode -eq 2)}
     }
     'network' {
@@ -124,6 +150,6 @@ function Invoke-Action {
     }
   }
 }
-try { $data=Invoke-Action; if($Action -in @('drivers','startup','windows-updates','power-profiles','package-inspect','ghosts','focus-apps')){if($null -eq $data){$data=@()}else{$data=@($data)}}; $output=@{ok=$true;data=$data}|ConvertTo-Json -Depth 12 -Compress }
-catch { $output=@{ok=$false;error=$_.Exception.Message}|ConvertTo-Json -Compress }
+try { Write-OperationStatus $Action 'running';$data=Invoke-Action;Write-OperationStatus $Action 'complete'; if($Action -in @('drivers','startup','windows-updates','power-profiles','package-inspect','ghosts','focus-apps')){if($null -eq $data){$data=@()}else{$data=@($data)}}; $output=@{ok=$true;data=$data}|ConvertTo-Json -Depth 12 -Compress }
+catch { Write-OperationStatus $Action 'failed' -1 '' $_.Exception.Message;$output=@{ok=$false;error=$_.Exception.Message}|ConvertTo-Json -Compress }
 if($ResultFile){[IO.File]::WriteAllText($ResultFile,$output,(New-Object Text.UTF8Encoding($false)))}else{[Console]::WriteLine($output)}

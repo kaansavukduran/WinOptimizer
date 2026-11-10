@@ -62,7 +62,7 @@ class Diagnostics {
   selectUpdates(payload){
     if(payload.confirm!==true)throw Error('CONFIRM_REQUIRED');
     if(!this.report||this.report.id!==payload.reportId||this.now()-this.created>TTL)throw Error('SCAN_EXPIRED');
-    const ids=payload.ids;if(!Array.isArray(ids)||!ids.length||ids.length>20||new Set(ids).size!==ids.length||ids.some(id=>!this.updates.some(u=>u.id===id)))throw Error('INVALID_SELECTION');
+    const ids=payload.ids,eligible=this.filterUpdates(this.updates);if(!Array.isArray(ids)||!ids.length||ids.length>10000||new Set(ids).size!==ids.length||ids.some(id=>!eligible.some(u=>u.id===id)))throw Error('INVALID_SELECTION');
     this.report=null;this.updates=[];return ids;
   }
   async repair(payload){

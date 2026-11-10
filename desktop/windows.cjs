@@ -7,14 +7,15 @@ function environment(exe){
   const inherited=(process.env.PSModulePath||'').split(';').filter(p=>p&&!/[\\/]PowerShell[\\/](?:6|7)(?:[\\/]|$)/i.test(p));
   return {...process.env,PSModulePath:[path.join(path.dirname(exe),'Modules'),path.join(process.env.ProgramFiles||'C:\\Program Files','WindowsPowerShell','Modules'),...inherited].join(';')};
 }
-function run(script,action,payload={},elevated=false,options={}){
+async function run(script,action,payload={},elevated=false,options={}){
+ if(options.onProgress){const dir=await fs.mkdtemp(path.join(os.tmpdir(),'aion-progress-')),progressFile=path.join(dir,'progress.jsonl'),stop=require('./progress.cjs').watchProgress(progressFile,options.onProgress);try{return await run(script,action,payload,elevated,{...options,onProgress:null,progressFile});}finally{await stop();await fs.rm(dir,{recursive:true,force:true});}}
   if(process.platform!=='win32')return Promise.reject(Error('WINDOWS_ONLY'));
   const exe=path.join(process.env.SystemRoot||'C:\\Windows','System32','WindowsPowerShell','v1.0','powershell.exe');
-  if(elevated)return elevate(exe,script,action,payload);
-  return new Promise((resolve,reject)=>{execFile(exe,command(script,action,payload),{env:environment(exe),signal:options.signal,windowsHide:true,maxBuffer:20*1024*1024,timeout:action==='windows-updates'?240000:120000,encoding:'utf8'},(error,stdout)=>{if(error?.name==='AbortError')return reject(Error('SCAN_CANCELLED'));if(error)return reject(Error(error.killed?'OPERATION_TIMEOUT':'WINDOWS_FAILED'));try{resolve(parse(stdout));}catch(e){reject(e);}});});
+  if(elevated)return elevate(exe,script,action,payload,options);
+  return new Promise((resolve,reject)=>{execFile(exe,[...command(script,action,payload),...(options.progressFile?['-ProgressFile',options.progressFile]:[])],{env:environment(exe),signal:options.signal,windowsHide:true,maxBuffer:20*1024*1024,timeout:action==='windows-updates'?240000:120000,encoding:'utf8'},(error,stdout)=>{if(error?.name==='AbortError')return reject(Error('SCAN_CANCELLED'));if(error)return reject(Error(error.killed?'OPERATION_TIMEOUT':'WINDOWS_FAILED'));try{resolve(parse(stdout));}catch(e){reject(e);}});});
 }
-async function elevate(exe,script,action,payload){
-  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'aion-uac-'));const result=path.join(dir,'result.json');const args=[...command(script,action,payload),'-ResultFile',result];
+async function elevate(exe,script,action,payload,options={}){
+  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'aion-uac-'));const result=path.join(dir,'result.json');const args=[...command(script,action,payload),'-ResultFile',result,...(options.progressFile?['-ProgressFile',options.progressFile]:[])];
   const quoted=args.map(a=>'"'+a.replace(/"/g,'')+'"').join(' ');
   const ps=`$ErrorActionPreference='Stop'; try { $p=Start-Process -FilePath '${exe.replace(/'/g,"''")}' -ArgumentList '${quoted.replace(/'/g,"''")}' -Verb RunAs -Wait -PassThru; exit $p.ExitCode } catch { exit 1223 }`;
   try{await new Promise((resolve,reject)=>{const p=spawn(exe,['-NoProfile','-NonInteractive','-EncodedCommand',Buffer.from(ps,'utf16le').toString('base64')],{env:environment(exe),windowsHide:true});p.on('error',()=>reject(Error('WINDOWS_FAILED')));p.on('exit',code=>code===0?resolve():reject(Error('ADMIN_CANCELLED')));});return parse(await fs.readFile(result,'utf8'));}finally{await fs.rm(dir,{recursive:true,force:true});}

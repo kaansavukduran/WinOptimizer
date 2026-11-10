@@ -1,6 +1,7 @@
 # Read-only inventory. A failed provider is reported as unavailable, never healthy.
 function Get-Diagnostics {
   $data=@{devices=@();audio=@();network=$null;display=@();runtimes=@();unavailable=@()}
+  Write-OperationStatus 'devices' 'running'
   try {
     $signed=@{};Get-CimInstance Win32_PnPSignedDriver | ForEach-Object {if($_.DeviceID){$signed[$_.DeviceID]=$_}}
     $data.devices=@(Get-CimInstance Win32_PnPEntity | ForEach-Object {
@@ -8,16 +9,26 @@ function Get-Diagnostics {
       [pscustomobject]@{id=$_.PNPDeviceID;name=$_.Name;code=$_.ConfigManagerErrorCode;present=$_.Present;deviceClass=$_.PNPClass;service=$_.Service;hardwareIds=@($_.HardwareID);version=$driver.DriverVersion;provider=$driver.DriverProviderName}
     })
   } catch {$data.unavailable+= 'devices'}
+  Write-OperationStatus 'devices' $(if($data.unavailable -contains 'devices'){'failed'}else{'complete'}) $data.devices.Count
+  Write-OperationStatus 'audio' 'running'
   try {$data.audio=@('AudioEndpointBuilder','Audiosrv'|ForEach-Object {$s=Get-Service -Name $_;[pscustomobject]@{id=$s.Name;status=$s.Status.ToString();startType=$s.StartType.ToString()}})} catch {$data.unavailable+= 'audio'}
+  Write-OperationStatus 'audio' $(if($data.unavailable -contains 'audio'){'failed'}else{'complete'}) $data.audio.Count
+  Write-OperationStatus 'network' 'running'
   try {
     $adapters=@(Get-NetAdapter | ForEach-Object {[pscustomobject]@{name=$_.Name;status=$_.Status.ToString();speed=$_.LinkSpeed}})
     $data.network=@{adapters=$adapters;dnsChecked=$false;dnsOk=$null}
     if($payload.online -eq $true -and @($adapters|Where-Object {$_.status -eq 'Up'}).Count -gt 0){
+      Write-OperationStatus 'dns' 'running'
       $data.network.dnsChecked=$true
       try {$answer=@(Resolve-DnsName -Name 'www.microsoft.com' -DnsOnly -QuickTimeout -ErrorAction Stop);$data.network.dnsOk=(@($answer|Where-Object {$_.IPAddress}).Count -gt 0)} catch {$data.network.dnsOk=$false}
-    }
+      Write-OperationStatus 'dns' $(if($data.network.dnsOk){'complete'}else{'failed'})
+    }else{Write-OperationStatus 'dns' 'skipped' -1 '' $(if($payload.online -ne $true){'offline'}else{'no-link'})}
   } catch {$data.unavailable+= 'network'}
+  Write-OperationStatus 'network' $(if($data.unavailable -contains 'network'){'failed'}else{'complete'})
+  Write-OperationStatus 'display' 'running'
   try {$data.display=@(Get-CimInstance Win32_VideoController | ForEach-Object {[pscustomobject]@{name=$_.Name;service=$_.InstalledDisplayDrivers;width=$_.CurrentHorizontalResolution;height=$_.CurrentVerticalResolution;code=$_.ConfigManagerErrorCode}})} catch {$data.unavailable+= 'display'}
+  Write-OperationStatus 'display' $(if($data.unavailable -contains 'display'){'failed'}else{'complete'}) $data.display.Count
+  Write-OperationStatus 'runtimes' 'running'
   try {
     # Both registry views are explicit: the host's bitness must not hide x86 runtimes.
     foreach($arch in @('x64','x86')) {
@@ -34,6 +45,7 @@ function Get-Diagnostics {
     }
     $data.runtimes+=@{id='directx-legacy';installed=((Test-Path "$env:windir\System32\d3dx9_43.dll") -and (Test-Path "$env:windir\SysWOW64\d3dx9_43.dll") -and (Test-Path "$env:windir\System32\XAudio2_7.dll") -and (Test-Path "$env:windir\SysWOW64\XAudio2_7.dll"));version='June 2010'}
   } catch {$data.unavailable+= 'runtimes'}
+  Write-OperationStatus 'runtimes' $(if($data.unavailable -contains 'runtimes'){'failed'}else{'complete'}) $data.runtimes.Count
   return $data
 }
 function Invoke-DiagnosticRepair {

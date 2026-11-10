@@ -8,6 +8,7 @@ function validateManifest(bytes,signature,key,version,channel,arch=process.arch)
   if(channel==='stable'&&m.version.includes('-'))throw Error('UPDATE_CHANNEL_MISMATCH');
   const base=`https://github.com/${REPO}/releases/download/v${m.version}/`;
   if(!m.url.startsWith(base)||!/^WinOptimizer-Aion-[a-zA-Z0-9.-]+-Windows-x64-Setup\.exe$/.test(m.url.slice(base.length)))throw Error('UPDATE_URL_INVALID');
+  if(m.portable&&(!Number.isSafeInteger(m.portable.bytes)||m.portable.bytes<=0||m.portable.bytes>500*1024*1024||!/^[a-f0-9]{64}$/.test(m.portable.sha256)||m.portable.url!==base+`WinOptimizer-Aion-${m.version}-Windows-x64-Portable.exe`))throw Error('UPDATE_MANIFEST_INVALID');
   if(compare(m.version,version)<=0)throw Error('UPDATE_NOT_NEWER');
   return m;
 }

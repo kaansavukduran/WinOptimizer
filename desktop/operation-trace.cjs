@@ -1,0 +1,9 @@
+const fs=require('node:fs');const path=require('node:path');const crypto=require('node:crypto');const {atomicWrite}=require('./settings.cjs');
+class OperationTrace {
+ constructor(dir){this.file=path.join(dir,'last-operation.json');this.current=null;this.last=null;try{const r=JSON.parse(fs.readFileSync(this.file,'utf8'));if(r.schema===1&&Array.isArray(r.events)){this.last=r;if(r.status==='running')r.status='interrupted';}}catch{}}
+ start(command){this.current={schema:1,id:crypto.randomUUID(),command,at:new Date().toISOString(),status:'running',events:[]};this.add({origin:'app',action:command,step:'request',status:'running'});atomicWrite(this.file,this.current);}
+ add(event){if(!this.current)return;const e={at:new Date().toISOString(),origin:event.origin==='native'?'native':'app',action:String(event.action||this.current.command).slice(0,80),step:String(event.step||'request').slice(0,80),status:['running','complete','failed','skipped','cancelled'].includes(event.status)?event.status:'running'};for(const k of ['reason','item','code'])if(event[k]!==undefined)e[k]=String(event[k]).slice(0,500);for(const k of ['count','processed','total'])if(Number.isSafeInteger(event[k])&&event[k]>=0)e[k]=event[k];this.current.events.push(e);}
+ finish(result,error){if(!this.current)return;const attention=result?.success===false||result?.skipped>0||result?.conflicts>0||result?.items?.some(i=>i.success===false)||result?.findings?.some(f=>['issue','unknown'].includes(f.status))||this.current.events.some(e=>e.status==='failed');this.current.status=error?(error.message==='SCAN_CANCELLED'?'cancelled':'failed'):attention?'attention':'complete';this.current.ended=new Date().toISOString();this.add({step:'request',status:error?(error.message==='SCAN_CANCELLED'?'cancelled':'failed'):'complete',reason:error?.message});this.last=this.current;this.current=null;atomicWrite(this.file,this.last);}
+ snapshot(){return this.current||this.last;}
+}
+module.exports={OperationTrace};

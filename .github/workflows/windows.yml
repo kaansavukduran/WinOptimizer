@@ -2,14 +2,7 @@ name: Windows application
 on:
   push:
     branches: [main, 'forge/**']
-    paths-ignore:
-      - 'release-metadata/**'
-      - 'docs/**'
-      - 'FORGE.md'
-      - 'README.md'
-      - 'scripts/backup.py'
-      - 'scripts/publish-release.cjs'
-      - '.github/workflows/publish.yml'
+    paths-ignore: ['release-metadata/**', 'docs/**', 'FORGE.md', 'README.md', 'scripts/backup.py', 'scripts/publish-release.cjs', '.github/workflows/publish.yml']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -17,53 +10,63 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: native/requirements.txt
       - run: npm ci
-      - name: Capture requested application version
-        shell: pwsh
-        run: '"BUILD_TARGET=$((Get-Content package.json -Raw | ConvertFrom-Json).version)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append'
-      - name: Prepare real baseline version
-        run: npm version 5.0.0-beta.1 --no-git-tag-version --allow-same-version
-      - run: npm run check
-      - name: PowerShell 5.1 real Windows integration
+      - run: python -m pip install -r native/requirements.txt pytest==8.3.5
+      - name: Backend and native Qt interface tests
+        run: |
+          npm test
+          python -m pytest -q tests/native
+      - name: Real Windows PowerShell inventory, recovery and progress protocol
         shell: powershell
         run: .\tests\windows-backend.ps1
       - name: Real Microsoft runtime download and installation
         run: node scripts/windows-runtime-smoke.cjs
-      - name: Browser integration
-        run: |
-          npx playwright install chromium
-          npm run test:e2e
-      - name: Build baseline installer
-        run: npx electron-builder --win nsis --x64 --publish never
-      - name: Install baseline package
+      - name: Install NSIS packaging tool
+        run: choco install nsis -y --no-progress
+      - name: Build native Setup and Portable packages
+        run: python scripts/build-native.py
+      - name: Install and exercise actual native app
         shell: pwsh
         run: |
           $setup = (Get-ChildItem release/*-Setup.exe | Select-Object -First 1).FullName
-          $process = Start-Process -FilePath $setup -ArgumentList '/S' -Wait -PassThru
-          if ($process.ExitCode -ne 0) { throw "Installer failed: $($process.ExitCode)" }
-      - name: Installed application real user flow
+          $p = Start-Process -FilePath $setup -ArgumentList '/S' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw 'Native Setup failed' }
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
+          $env:AION_EVIDENCE = Join-Path $pwd 'work/native-evidence/installed'
+          $p = Start-Process -FilePath $exe -ArgumentList '--smoke','seed' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw 'Native installed UI self-test failed' }
+          if (-not (Test-Path "$env:AION_EVIDENCE/verified-seed.json")) { throw 'Native evidence missing' }
+      - name: Portable launch, real scan, reopen and installed-data isolation
         shell: pwsh
         run: |
-          $exe = Join-Path $env:LOCALAPPDATA 'Programs\WinOptimizer Aion\WinOptimizer Aion.exe'
-          node scripts/windows-smoke.cjs "$exe" seed
-      - name: Build next real package
-        run: |
-          npm version $env:BUILD_TARGET --no-git-tag-version --allow-same-version
-          npm run dist:win
+          $settings = Join-Path $env:LOCALAPPDATA 'WinOptimizer Aion/settings.json'
+          $before = (Get-FileHash $settings).Hash
+          $exe = (Get-ChildItem release/*-Portable.exe | Select-Object -First 1).FullName
+          $env:AION_EVIDENCE = Join-Path $pwd 'work/native-evidence/portable'
+          $p = Start-Process -FilePath $exe -ArgumentList '--smoke','portable' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw 'Native portable UI self-test failed' }
+          $p = Start-Process -FilePath $exe -ArgumentList '--smoke','reopen' -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw 'Portable reopening failed' }
+          if ((Get-FileHash $settings).Hash -ne $before) { throw 'Portable changed installed settings' }
+          if (-not (Test-Path 'release/Data/WinOptimizer Aion/settings.json')) { throw 'Portable Data missing' }
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: windows-installers
           path: |
             release/*-Setup.exe
-            work/native-seed.json
-            work/native-diagnostics.json
-            work/native-runtime.json
-            work/screenshots/
+            release/*-Portable.exe
+            work/native-evidence/
           if-no-files-found: error
