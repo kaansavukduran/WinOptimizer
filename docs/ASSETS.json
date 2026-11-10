@@ -18,11 +18,11 @@
     },
     {
       "path": "public/assets/aion-icon.png",
-      "sha256": "74672addf1fa458b38258cd36e1024e27b93343736ec50e74d830faba693ca56"
+      "sha256": "cf9836e3c2bf0f35146d2ee726a885440869db9534d792c8241dff092598b59d"
     },
     {
       "path": "public/assets/aion.ico",
-      "sha256": "518c7e7d3ae70a8910134ea608bd4f28b2f0b621e46cdbc2ce24cf1347cece3d"
+      "sha256": "990f5fb167750a09ee264b7a53ec182c7b1bb76fd749f638fd49a945976cb450"
     }
   ],
   "optimizerSprite": {
@@ -79,5 +79,24 @@
     "feetRow": 4,
     "feetFrames": 5,
     "rendering": "Complete SVG source cells, aspect preserved, fixed destination anchor; no body translation toward pointer"
+  },
+  "applicationIcon": {
+    "master": "public/assets/aion-icon.png",
+    "windows": "public/assets/aion.ico",
+    "generatedFor": "WinOptimizer Aion",
+    "design": "Original Aion close-up on plum/pink tile with cyan maintenance gear; related to but distinct from RealLife RPG branding.",
+    "referenceRepository": "https://github.com/kaansavukduran/reallife-rpg",
+    "referencePath": "assets/branding/aion-icon.png",
+    "referenceBlob": "31762628a2cbf2d024df949088a1a04cdb5112b3",
+    "authorization": "User explicitly requested a similar, application-related logo rather than a copy. Generated with image_gen; ICO is a format conversion of that artwork.",
+    "iconSizes": [
+      16,
+      24,
+      32,
+      48,
+      64,
+      128,
+      256
+    ]
   }
 }
