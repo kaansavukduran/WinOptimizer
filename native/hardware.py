@@ -28,15 +28,15 @@ def format_value(key,value,language,text):
 
 CATEGORIES=('system','cpu','gpu','memory','memoryArrays','motherboard','bios','storage','volumes','displays','network','audio','battery','devices')
 
-def progress_state(trace):
+def progress_state(trace,categories=CATEGORIES,prefix='hardware-'):
     latest={}
     for event in trace.get('events',[]):
         step=event.get('step','')
-        if event.get('origin')=='native' and step.startswith('hardware-') and step[9:] in CATEGORIES:
-            latest[step[9:]]=event.get('status')
+        if event.get('origin')=='native' and step.startswith(prefix) and step[len(prefix):] in categories:
+            latest[step[len(prefix):]]=event.get('status')
     done=sum(status in ('complete','failed','skipped') for status in latest.values())
     active=next((key for key,value in reversed(list(latest.items())) if value=='running'),None)
-    return done,len(CATEGORIES),active
+    return done,len(categories),active
 
 def adapter_name(item,text):
     name=item.get('name') or 'GPU'

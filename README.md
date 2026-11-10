@@ -41,6 +41,14 @@ VRAM, DXGI'nin 64 bit değeridir; paylaşılan sistem belleği ayrıca gösteril
 
 [Gerçek Windows Donanım ekranı](docs/screenshots/WinOptimizer-6.2.0-Windows-Donanim.png) — test sanal makinesinin özelliklerini gösterir.
 
+## Windows Sağlığı / Windows Health
+
+**Windows Sağlığı → Windows sağlığını incele:** Windows/yeniden başlatma işaretleri, Defender, güvenlik duvarı, sistem/uygulama/çökme olayları, döküm dosyası bilgileri, yerel güncelleme geçmişi ve seçili servisler. Dokuz kategori yerel ve yönetici izni istemeden okunur; okunamayan sağlayıcılar açıkça belirtilir. Kayıt ayrıntılarını ara, kategori seç veya azaltılmış destek raporu al. Olay iletileri destek raporuna eklenmez; döküm içeriği okunmaz.
+
+**Bileşen deposunun kayıtlı durumunu denetle** ayrı bir onay ve Windows yönetici izni ister. Yalnız kayıtlı DISM durumunu okur; tam tarama, onarım veya yeniden başlatma yapmaz. Tarihsel hata/çökme kayıtları tek başına güncel arıza kanıtı değildir. [SysMender donor kapsamı ve lisansları](docs/SYSMENDER-DONOR.md).
+
+The new native Windows Health view adapts selected SysMender/WinUtil MIT inspection workflows. It does not import the donor's executable or Linux app. Local evidence, provider availability and reduced support exports remain distinct from repair or comprehensive system health claims.
+
 ## İşlem gerçekten çalışıyor mu? / Observable operations
 
 **İşlem adımları** bölümü Windows arka ucundan gelen gerçek aşamaları gösterir. Uygulama isteği ile Windows kaynaklı olaylar ayrılır. Her adımın son durumu, ölçülebilen adetleri, hata/sonuç kodu ve atlama nedeni görünür. Tamamlanan, başarısız olan ve atlanan adımlar ayrı sayılır. Toplam bilinmeyen işlerde uydurma yüzde gösterilmez; çalışan durum ve geçen süre gösterilir.

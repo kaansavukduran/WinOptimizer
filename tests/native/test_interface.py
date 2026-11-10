@@ -20,6 +20,8 @@ class FixtureBridge(QObject):
         if command=='bootstrap':data=dict(settings=self.settings,version='6.0.0',portable=self.portable,milestones=[])
         elif command=='settings.save':self.settings=payload;data=self.settings
         elif command=='operation.status':data=dict(trace=self.trace)
+        elif command=='care.snapshot':data=dict(schema=1,at='2026-11-10T12:00:00Z',readOnly=True,online=False,success=False,needsAttention=True,sections=[dict(id=key,status='unavailable' if key=='defender' else 'available' if key in ('readiness','systemEvents') else 'empty',source='Fixture local provider',items=[dict(name='Fixture Windows',version='11',build='fixture',uptimeSeconds=3600,restartSignals=[],restartUnknown=False)] if key=='readiness' else [dict(provider='Fixture event',eventId=41,level=1,message='private local event message',at='2026-11-10T12:00:00Z')] if key=='systemEvents' else []) for key in ('readiness','defender','firewall','systemEvents','appEvents','crashes','dumps','updateHistory','services')])
+        elif command=='component-check':data=dict(state='healthy',at='2026-11-10T12:00:00Z',readOnly=True,mode='recorded-only',success=True)
         elif command=='hardware':data=dict(schema=1,readOnly=True,online=False,at='2026-11-10T12:00:00Z',sections=[dict(id='gpu',status='available',source='Fixture DXGI',items=[dict(name='Fixture GPU',dedicatedVideoBytes=12*1024**3,sharedSystemBytes=16*1024**3,memorySource='DXGI'),dict(name='Fixture fallback',dedicatedVideoBytes=None,memorySource='unavailable')]),dict(id='memory',status='available',source='Fixture CIM',items=[dict(name='DIMM A',capacityBytes=32*1024**3,memoryType=34)]),dict(id='battery',status='empty',source='Fixture CIM',items=[]),dict(id='bios',status='unavailable',source='Fixture CIM',items=[])])
         elif command=='diagnostics.scan':data=dict(id='fixture-report',online=payload['online'],at='2026-11-10T12:00:00Z',findings=[dict(id=f'update:{i}',category='devices',status='update',reason='driverUpdate',evidence=dict(name=f'Fixture driver {i}'),actions=[dict(id='update-driver',kind='update')]) for i in range(24)])
         elif command=='diagnostics.updates':data=dict(success=False,reboot=True,items=[dict(id=i,name='Fixture driver',success=False,code=4) for i in payload['ids']])
@@ -62,7 +64,7 @@ def test_native_scan_cancel_never_installs(window,application):
 
 def test_native_routes_and_scaled_preferences_remain_available(window,application):
     w,bridge=window
-    for page in ('home','scanFix','cleanup','drivers','hardware','startup','workshop','tools','history','settings'):
+    for page in ('home','scanFix','cleanup','drivers','hardware','windowsCare','startup','workshop','tools','history','settings'):
         w.page=page;w.render();application.processEvents()
     for key,value in [('language','en'),('theme','contrast'),('font','dyslexic'),('scale',200),('textSize',125)]:w.save_setting(key,value)
     w.settings_section='accessibility';w.resize(540,900);w.render();application.processEvents()
@@ -197,3 +199,38 @@ def test_native_installer_launch_failure_keeps_interface_available(window,monkey
     w.install_app({'installer':'C:/Verified/Setup.exe'})
     assert w.last_error=='OPERATION_FAILED' and w.isVisible() and not w.busy
     assert w.t('errorDefault') in w.notice.text()
+
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_windows_care_scans_once_keeps_unknowns_and_copies_reduced_summary(window,application,language):
+    from PySide6.QtWidgets import QTreeWidget,QLineEdit
+    w,bridge=window;w.settings['language']=language;w.go('windowsCare');application.processEvents()
+    assert w.nav_layout.itemAt(5).widget().text()==w.t('windowsCare')
+    w.findChild(QPushButton,'care-scan').click();application.processEvents()
+    assert ('care.snapshot',{}) in bridge.calls and w.t('care.review') in w.notice.text()
+    tree=w.findChild(QTreeWidget,'care-tree');assert tree.topLevelItemCount()==9
+    assert w.t('hw.unavailable') in tree.topLevelItem(1).text(1)
+    assert w.t('hw.emptyStatus') in tree.topLevelItem(4).text(1)
+    w.findChild(QPushButton,'care-copy').click()
+    assert 'private local event message' not in application.clipboard().text()
+    assert w.t('care.historyNote') in application.clipboard().text()
+    w.findChild(QLineEdit,'care-search').setText('Fixture event');assert tree.topLevelItemCount()==1
+    w.go('home');application.processEvents();w.go('windowsCare');application.processEvents()
+    assert w.findChild(QLineEdit,'care-search').text()=='Fixture event'
+    assert len([c for c,_ in bridge.calls if c=='care.snapshot'])==1
+
+def test_component_check_cancel_never_elevates_and_accept_sends_only_confirmation(window,application):
+    w,bridge=window;w.go('windowsCare');application.processEvents()
+    QTimer.singleShot(0,lambda:application.activeModalWidget().reject())
+    w.findChild(QPushButton,'care-component-check').click();assert not any(c=='component-check' for c,_ in bridge.calls)
+    def accept():application.activeModalWidget().findChild(QDialogButtonBox).button(QDialogButtonBox.Ok).click()
+    QTimer.singleShot(0,accept);w.findChild(QPushButton,'care-component-check').click()
+    assert ('component-check',dict(confirm=True)) in bridge.calls
+    assert w.state['componentState']['state']=='healthy'
+
+def test_care_progress_counts_real_category_receipts_and_preserves_failure(window):
+    w,bridge=window;w.busy=True;w.active_command='care.snapshot'
+    bridge.trace=dict(command='care.snapshot',status='running',events=[dict(origin='native',step='care-readiness',status='complete'),dict(origin='native',step='care-defender',status='failed'),dict(origin='native',step='care-systemEvents',status='complete'),dict(origin='native',step='care-firewall',status='running')])
+    w.poll();assert w.progress.maximum()==9 and w.progress.value()==3
+    assert w.t('care.firewall') in w.notice.text() and '3/9' in w.notice.text()
+    assert 'Başarısız: 1' in w.log_hint.text()

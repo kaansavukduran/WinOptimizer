@@ -1,5 +1,5 @@
 param(
-  [Parameter(Mandatory=$true)][ValidateSet('hardware','focus-apps','focus-close','package-inspect','package-apply','runtime-verify','runtime-install','restore-points','restore-point-create','ghosts','ghost-remove','diagnostics','diagnostic-repair','health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set')][string]$Action,
+  [Parameter(Mandatory=$true)][ValidateSet('care','component-check','hardware','focus-apps','focus-close','package-inspect','package-apply','runtime-verify','runtime-install','restore-points','restore-point-create','ghosts','ghost-remove','diagnostics','diagnostic-repair','health','drivers','driver-backup','startup','startup-disable','startup-restore','windows-updates','windows-install','network','dns-flush','power-profiles','power-set')][string]$Action,
   [string]$PayloadBase64 = 'e30=',
   [string]$ResultFile = '',
   [string]$ProgressFile = ''
@@ -34,6 +34,7 @@ function Get-Startup {
 }
 . (Join-Path $PSScriptRoot 'Diagnostics.ps1')
 . (Join-Path $PSScriptRoot 'Hardware.ps1')
+. (Join-Path $PSScriptRoot 'Care.ps1')
 function Get-DriverBackup([string]$Destination) {
       Assert-Admin
       $dir=[IO.Path]::GetFullPath($Destination)
@@ -54,6 +55,8 @@ function Get-DriverBackup([string]$Destination) {
 . (Join-Path $PSScriptRoot 'Recovery.ps1')
 function Invoke-Action {
   switch($Action) {
+    'care' {return Get-LocalCare}
+    'component-check' {return Get-CareComponentState}
     'hardware' {return Get-LocalHardware}
     {$_ -in @('focus-apps','focus-close','package-inspect','package-apply','runtime-verify','runtime-install','restore-points','restore-point-create','ghosts','ghost-remove')} {return Invoke-Recovery}
     'diagnostics' {return Get-Diagnostics}
