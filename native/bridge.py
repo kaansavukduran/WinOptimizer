@@ -62,6 +62,8 @@ class Bridge(QObject):
                 reply = json.loads(line)
                 if not isinstance(reply, dict) or type(reply.get('id')) is not int or type(reply.get('ok')) is not bool or reply['id'] not in self.pending:
                     raise ValueError('Invalid response envelope')
+                if not reply['ok'] and (not isinstance(reply.get('error'), str) or not reply['error']):
+                    raise ValueError('Invalid error code')
             except (ValueError, UnicodeError):
                 self.fail('BACKEND_PROTOCOL_FAILED')
                 continue

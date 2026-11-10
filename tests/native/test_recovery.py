@@ -28,7 +28,7 @@ def protocol_bridge(application, tmp_path):
 for line in sys.stdin:
  r=json.loads(line)
  if r['command']=='exit':sys.exit(3)
- if r['command']=='bad':print('[]',flush=True);continue
+ if r['command']=='bad':print(json.dumps(r['payload']['envelope']),flush=True);continue
  print(json.dumps(dict(id=r['id'],ok=True,data=r['payload'])),flush=True)
 ''', encoding='utf-8')
     bridge = Bridge(tmp_path, tmp_path, False, 'en', sys.executable)
@@ -74,9 +74,10 @@ def test_missing_process_fails_bootstrap_and_later_requests(application, tmp_pat
     assert failures == expected_signals
 
 
-def test_bad_envelope_fails_pending_without_replaying(application, protocol_bridge):
+@pytest.mark.parametrize('envelope', [[], None, {'id':True,'ok':True}, {'id':1,'ok':'yes'}, {'id':999,'ok':True}, {'id':1,'ok':False,'error':[]}, {'id':1,'ok':False}])
+def test_bad_envelope_fails_pending_without_replaying(application, protocol_bridge, envelope):
     replies = []
-    protocol_bridge.call('bad', callback=replies.append)
+    protocol_bridge.call('bad', {'envelope':envelope}, callback=replies.append)
     until(application, lambda: bool(replies))
     assert replies == [dict(ok=False, error='BACKEND_PROTOCOL_FAILED')]
     assert protocol_bridge.unavailable and not protocol_bridge.pending
