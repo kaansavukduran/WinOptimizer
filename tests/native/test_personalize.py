@@ -51,11 +51,17 @@ def test_every_page_has_its_own_clip_quick_settings_and_pet_controls(window,appl
     assert w.page=='settings' and w.settings_section=='appearance' and w.aion.paused
     w.scroll.widget().findChild(QPushButton,'aion-pause').click();assert not w.aion.paused
 
-def test_animation_clock_success_return_reduced_motion_and_hidden_pause(window,application):
+def test_animation_clock_success_return_reduced_motion_and_hidden_pause(window,application,monkeypatch):
     w,_=window;w.settings.update(motion=True,followPointer=False);w.go('hardware');w.activateWindow();QTest.qWait(30)
-    a=w.aion;first=a.frame_source()[1].x();QTest.qWait(420)
-    assert a.frame_source()[1].x()!=first
-    a.set_state('celebrate');a.elapsed=1320;a.tick();assert a.state=='idle'
+    a=w.aion
+    # Exercise the Qt clock independently of the host's animation/foreground policy.
+    # Packaged smoke records the actual Windows motion preference separately.
+    with monkeypatch.context() as context:
+        context.setattr(a,'motion',lambda:True)
+        context.setattr(w,'isActiveWindow',lambda:True)
+        first=a.frame_source()[1].x();QTest.qWait(420)
+        assert a.frame_source()[1].x()!=first
+        a.set_state('celebrate');a.elapsed=1320;a.tick();assert a.state=='idle'
     w.save_setting('motion',False);assert not a.motion()
     a.elapsed=720;assert a.frame_source()[1].x()==0
     a.hide();assert not a.timer.isActive()
