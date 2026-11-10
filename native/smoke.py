@@ -235,14 +235,19 @@ def start(window, scenario):
                 raw=QRawFont.fromFont(window.font());assert all(raw.supportsCharacter(ord(c)) for c in 'ÇĞİÖŞÜçğıöşü')
                 window.scroll.verticalScrollBar().setValue(0)
                 window.grab().save(str(evidence/'Windows-Qt-personalize-tr-100.png'))
-                state.update(galleryIndex=0,gallery=[],stage=24)
+                window.scroll.ensureWidgetVisible(window.scroll.widget().findChild(QPushButton,'accent-picker'))
+                state.update(galleryIndex=0,gallery=[],stage=28)
+            elif stage==28:
+                window.grab().save(str(evidence/'Windows-Qt-personalize-colors.png'))
+                state['stage']=24
             elif stage==24:
                 from mascot import PAGE_CLIPS
                 page=list(PAGE_CLIPS)[state['galleryIndex']]
                 window.page=page;window.render();window.activateWindow();window.raise_()
-                window.scroll.verticalScrollBar().setValue(0)
+                window.scroll.ensureWidgetVisible(window.aion)
                 state.update(galleryPage=page,galleryAt=time.time(),galleryFirst=window.aion.frame_source()[1].x(),stage=25)
             elif stage==25:
+                window.scroll.ensureWidgetVisible(window.aion)
                 if time.time()-state['galleryAt']<.5:return
                 moving=window.aion.motion();changed=window.aion.frame_source()[1].x()!=state['galleryFirst']
                 if moving and not changed and time.time()-state['galleryAt']<3:return
