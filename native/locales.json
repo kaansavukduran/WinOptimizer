@@ -794,7 +794,8 @@
       "instance": "Aygıt örnek kimliği",
       "filter": "Sürücü sorun kodu filtresi",
       "signedYes": "Windows imzalı bildiriyor",
-      "signedNo": "Windows imzalı bildirmiyor"
+      "signedNo": "Windows imzalı bildirmiyor",
+      "selection": "Seçilen: {count} / 20. Bir işlemde 1–20 uygun paket seç. Bu sınır geri yükleme içindir; Tümünü güncelle bu sınırı kullanmaz."
     }
   },
   "en": {
@@ -1592,7 +1593,8 @@
       "instance": "Device instance ID",
       "filter": "Driver problem-code filter",
       "signedYes": "Windows reports signed",
-      "signedNo": "Windows does not report signed"
+      "signedNo": "Windows does not report signed",
+      "selection": "Selected: {count} / 20. Choose 1–20 eligible packages per operation. This recovery limit does not apply to Update all."
     }
   }
 }

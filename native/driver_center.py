@@ -126,7 +126,12 @@ def render_backups(window):
         window.label(t('n.restore_note'))
         tree=window.table(plan.get('candidates',[]),[('name',t('d.name')),('provider',t('provider')),('version',t('version')),('publisher',t('dc.publisher'))],check=True);tree.setObjectName('driver-package-tree')
         window.label(t('w.blocked')+': '+str(sum(not r.get('eligible') for r in plan.get('candidates',[]))))
-        window.button('w.apply',lambda:apply_package(window,plan,window.chosen(tree)),name='driver-package-apply',enabled=any(r.get('eligible') for r in plan.get('candidates',[])))
+        selection=window.label(t('dc.selection').format(count=0));selection.setObjectName('driver-package-selection')
+        apply=window.button('w.apply',lambda:apply_package(window,plan,window.chosen(tree)),name='driver-package-apply',enabled=False)
+        def selected():
+            count=len(window.chosen(tree));selection.setPlainText(t('dc.selection').format(count=count))
+            apply.setEnabled(not window.busy and 1<=count<=20)
+        tree.itemChanged.connect(lambda *_:selected())
     previous=window.state.get('driverPackageResult')
     if previous:
         window.label(t('dc.applied').format(changes=len(previous.get('changes',[]))))
@@ -145,7 +150,7 @@ def imported(window,value):
     queue_library(window)
 
 def apply_package(window,plan,rows):
-    if not rows:return
+    if not rows or len(rows)>20:return
     def complete(value):
         window.state.pop('package',None)
         window.store('driverPackageResult',value)

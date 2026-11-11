@@ -85,3 +85,11 @@ def test_workshop_categories_show_related_tools_and_link_to_driver_center(window
     picker=w.scroll.widget().findChild(QComboBox,'workshop-section');picker.setCurrentIndex(picker.findData('focus'))
     assert w.scroll.widget().findChild(QPushButton,'w.loadFocus') is not None and w.scroll.widget().findChild(QPushButton,'w.prepare') is None
     w.scroll.widget().findChild(QPushButton,'workshop-driver-tools').click();assert w.page=='drivers' and w.driver_section=='backups'
+
+def test_package_selection_explains_and_enforces_the_existing_twenty_package_limit(window):
+    w,b=window;w.driver_section='backups';w.state['package']=dict(id='plan',candidates=[dict(id=str(i)+'.inf',name=str(i),eligible=True) for i in range(21)]);w.go('drivers')
+    tree=w.scroll.widget().findChild(QTreeWidget,'driver-package-tree');button=w.scroll.widget().findChild(QPushButton,'driver-package-apply');assert not button.isEnabled()
+    for i in range(20):tree.topLevelItem(i).setCheckState(0,Qt.Checked)
+    assert button.isEnabled()
+    tree.topLevelItem(20).setCheckState(0,Qt.Checked);assert not button.isEnabled()
+    button.click();assert not any(c=='package.apply' for c,p in b.calls)
