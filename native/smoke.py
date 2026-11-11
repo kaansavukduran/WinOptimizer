@@ -145,7 +145,6 @@ def start(window, scenario):
                 window.grab().save(str(evidence/'Windows-Qt-unified-scan-tr-100.png'))
                 window.go('tools');state['stage']=14
             elif stage==14:
-                from PySide6.QtWidgets import QTreeWidget
                 tree=window.findChild(QTreeWidget,'tools-records-tree');assert tree and tree.topLevelItemCount()==3
                 assert window.findChild(QPushButton,'care-component-check')
                 window.scroll.verticalScrollBar().setValue(0)
@@ -157,7 +156,6 @@ def start(window, scenario):
                 window.grab().save(str(evidence/'Windows-Qt-unified-home-tr-100.png'))
                 window.go('history');state['stage']=16
             elif stage==16:
-                from PySide6.QtWidgets import QTreeWidget
                 assert window.findChild(QTreeWidget,'update-records-tree').topLevelItemCount()==1
                 window.grab().save(str(evidence/'Windows-Qt-unified-history-tr-100.png'))
                 (evidence/'unified-scan.json').write_text(json.dumps(dict(sharedScanId=window.state['report']['id'],separateDonorTab=False,sharedCategories=9,pages=['scanFix','tools','home','history'],verified=True),indent=2),encoding='utf-8')
