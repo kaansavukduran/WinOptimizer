@@ -47,6 +47,19 @@ class Service {
       case 'ghost-remove':{if(payload.confirm!==true||!this.ghosts.some(d=>d.id===payload.id))throw Error('INVALID_SELECTION');const r=await this.native(command,{id:payload.id},true);this.record(command,r);this.ghosts=[];return r;}
       case 'updates.ignore':{const entry=this.driverCandidates.find(c=>c.id===payload.id);if(!entry)throw Error('INVALID_SELECTION');if(!this.state.ignoredUpdates.some(e=>e.id===entry.id))this.state.ignoredUpdates.push({id:entry.id,name:entry.name});this.driverCandidates=this.driverCandidates.filter(c=>c.id!==entry.id);this.save();return {ignored:true};}
       case 'updates.unignore':{if(!this.state.ignoredUpdates.some(e=>e.id===payload.id))throw Error('INVALID_SELECTION');this.state.ignoredUpdates=this.state.ignoredUpdates.filter(e=>e.id!==payload.id);this.save();return {restored:true};}
+      case 'updates.ignore-many':{
+        const ids=payload.ids;
+        if(!Array.isArray(ids)||!ids.length||ids.length>10000||new Set(ids).size!==ids.length||ids.some(id=>typeof id!=='string'||!this.availableDriverOffers(this.driverCandidates).some(e=>e.id===id)))throw Error('INVALID_SELECTION');
+        const selected=this.driverCandidates.filter(e=>ids.includes(e.id));
+        const ignoredUpdates=[...this.state.ignoredUpdates,...selected.filter(entry=>!this.state.ignoredUpdates.some(e=>e.id===entry.id)).map(({id,name})=>({id,name}))];
+        const next={...this.state,ignoredUpdates};atomicWrite(this.stateFile,next);this.state=next;
+        this.driverCandidates=this.driverCandidates.filter(e=>!ids.includes(e.id));return {ignored:ids};
+      }
+      case 'updates.unignore-many':{
+        const ids=payload.ids;
+        if(!Array.isArray(ids)||!ids.length||ids.length>10000||new Set(ids).size!==ids.length||ids.some(id=>typeof id!=='string'||!this.state.ignoredUpdates.some(e=>e.id===id)))throw Error('INVALID_SELECTION');
+        const next={...this.state,ignoredUpdates:this.state.ignoredUpdates.filter(e=>!ids.includes(e.id))};atomicWrite(this.stateFile,next);this.state=next;return {restored:ids};
+      }
       case 'focus.inventory':{this.focusApps=await this.native('focus-apps')||[];return {apps:this.focusApps,powers:await this.native('power-profiles')};}
       case 'focus-apps':this.focusApps=await this.native(command)||[];return this.focusApps;
       case 'focus.start':{

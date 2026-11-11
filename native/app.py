@@ -54,6 +54,7 @@ class Window(QMainWindow):
         self.state, self.selected, self.trace, self.trace_signature = {}, set(), None, None
         self.save_serial = 0
         self.settings_section = 'appearance'
+        self.driver_section, self.workshop_section = 'updates', 'runtimes'
         self.aion_paused = False
         self.last_error, self.last_request, self.scan_online, self.filter_status = None, None, True, 'all'
         self.setWindowTitle('WinOptimizer Aion')
@@ -326,7 +327,9 @@ class Window(QMainWindow):
         outer.addWidget(buttons)
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
-        if dialog.exec() == QDialog.Accepted:
+        accepted = dialog.exec() == QDialog.Accepted
+        dialog.deleteLater()
+        if accepted:
             callback()
 
     def run(self, command, payload=None, callback=None, silent=False):
@@ -339,7 +342,7 @@ class Window(QMainWindow):
         self.active_command = command
         self.last_request = (command, payload, callback, silent)
         request = dict(command=command, payload=deepcopy(payload), callback=callback,
-                       silent=silent, page=self.page, settings_section=self.settings_section)
+                       silent=silent, page=self.page, settings_section=self.settings_section, driver_section=self.driver_section, workshop_section=self.workshop_section)
         self.notice.setText(self.t('n.waiting'))
         total={'hardware':14,'care.snapshot':9}.get(command,0)
         self.progress.setRange(0,total)
@@ -350,7 +353,7 @@ class Window(QMainWindow):
         for button in self.actions:
             button.setEnabled(False)
         if getattr(self, 'aion', None):
-            self.aion.set_state('read' if command in ('diagnostics.scan', 'care.snapshot', 'component-check', 'hardware', 'health', 'drivers', 'windows-updates') else 'repair')
+            self.aion.set_state('read' if command in recovery.READ_OPERATIONS or command=='component-check' else 'repair')
         def finished(reply):
             self.busy = False
             self.progress.hide()
@@ -494,13 +497,15 @@ class Window(QMainWindow):
             if check and row.get('eligible') is not False:
                 item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
                 item.setCheckState(0, Qt.Unchecked)
+            elif check:
+                item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)
         for index in range(len(columns)):
             tree.resizeColumnToContents(index)
         (layout or self.body).addWidget(tree)
         return tree
 
     def chosen(self, tree):
-        return [tree.topLevelItem(i).data(0, Qt.UserRole) for i in range(tree.topLevelItemCount()) if tree.topLevelItem(i).checkState(0) == Qt.Checked]
+        return [tree.topLevelItem(i).data(0, Qt.UserRole) for i in range(tree.topLevelItemCount()) if tree.topLevelItem(i).checkState(0) == Qt.Checked and tree.topLevelItem(i).data(0, Qt.UserRole).get('eligible') is not False]
 
     def hero(self):
         box = QHBoxLayout()
@@ -646,34 +651,12 @@ class Window(QMainWindow):
         render(self)
 
     def page_drivers(self):
-        self.label(self.t('driversIntro'))
-        from journey import render_return
-        render_return(self)
-        self.button('checkDrivers',lambda:self.run('windows-updates',callback=lambda r:self.store('updates',r)),True)
-        self.button('inventory',lambda:self.run('drivers',callback=lambda r:self.store('drivers',r)))
-        self.button('driverBackup',lambda:self.run('driver-backup',callback=lambda r:self.store('driverBackupResult',r)),name='driver-backup')
-        backup=self.state.get('driverBackupResult')
-        if isinstance(backup,dict):self.label(self.t('j.backupCreated').format(count=backup.get('packages',0)) if backup.get('packages',0)>0 else self.t('j.noPackages'))
-        self.button('openDriverBackups',lambda:self.open_folder('drivers'))
-        self.button('windowsUpdate',lambda:self.external('windows'))
-        updates=self.state.get('updates')
-        if updates is not None:
-            if updates:
-                self.button(f'{self.t("updateAllDrivers")} ({len(updates)})',lambda:self.install_offers(updates),True,literal=True,name='update-all')
-                tree=self.table(updates,[('name',self.t('availableUpdates')),('manufacturer',self.t('provider')),('bytes',self.t('d.bytes'))],check=True)
-                self.button('updateDrivers',lambda:self.install_offers(self.chosen(tree)) if self.chosen(tree) else None)
-                self.button('w.ignore',lambda:self.ignore_updates(self.chosen(tree)))
-            else:
-                self.label(self.t('noUpdates'))
-        if self.state.get('drivers'):
-            self.table(self.state['drivers'],[('name',self.t('d.name')),('version',self.t('version')),('provider',self.t('provider')),('problem',self.t('problem'))])
-        self.label(self.t('driverExplain'))
+        from driver_center import render
+        render(self)
 
     def ignore_updates(self,rows):
-        if not rows:
-            return
-        row=rows[0]
-        self.run('updates.ignore',dict(id=row['id']),lambda _:self.store('updates',[u for u in self.state.get('updates',[]) if u['id']!=row['id']]))
+        from driver_center import ignore
+        ignore(self,rows)
 
     def page_cleanup(self):
         self.label(self.t('cleanupIntro'))
@@ -746,61 +729,8 @@ class Window(QMainWindow):
         self.run('history',callback=lambda r:self.store('history',r),silent=True)
 
     def page_workshop(self):
-        self.label(self.t('w.intro'))
-        for key in ('oem-nvidia','oem-amd','oem-intel'):
-            self.button(key.split('-')[1].upper(),lambda _,k=key:self.external(k),literal=True)
-        self.button('w.exportHardware',lambda:self.export('offline.export'))
-        self.button('w.readHardware',lambda:self.run('offline.inventory',callback=lambda r:self.store('offline',r)))
-        if self.state.get('offline'):
-            hardware=self.table(self.state['offline']['devices'],[('name',self.t('d.name')),('hardwareIds',self.t('w.hardware'))],check=True)
-            def search():
-                selected=self.chosen(hardware)
-                if selected:self.bridge.call('hardware.search',dict(id=selected[0]['id']),self.open_reply)
-            self.button('w.catalog',search)
-        self.button('w.import',self.import_package)
-        library=self.state.get('library',{})
-        for package in library.get('packages',[]):
-            self.button(package['id'],lambda _,p=package:self.run('package.inspect',dict(id=p['id']),lambda r:self.store('package',r)),literal=True)
-        plan=self.state.get('package')
-        if plan:
-            candidates=plan.get('candidates',[])
-            self.label(self.t('w.applyHelp'))
-            self.label(self.t('w.blocked')+': '+str(sum(not c.get('eligible') for c in candidates)))
-            tree=self.table(candidates,[('name',self.t('d.name')),('version',self.t('version'))],check=True)
-            self.button('w.apply',lambda:self.apply_package(plan,self.chosen(tree)))
-        for item in library.get('ignored',[]):
-            self.button(self.t('w.unignore')+': '+item['name'],lambda _,i=item:self.run('updates.unignore',dict(id=i['id']),lambda _:self.reload_library()),literal=True)
-        if self.state.get('runtimes',{}).get('available') is False:self.label(self.t('w.runtimeUnknown'))
-        self.button('w.runtimes',lambda:self.run('runtime.inventory',callback=lambda r:self.store('runtimes',r)))
-        for key,name in [('vc-x64','Visual C++ v14 x64'),('vc-x86','Visual C++ v14 x86'),('directx-legacy','DirectX June 2010')]:
-            layout=self.group('w.runtimes')
-            self.label(name,layout=layout)
-            installed=next((i for i in self.state.get('runtimes',{}).get('items',[]) if i['id']==key),None)
-            if installed:
-                self.label(self.t('d.runtimePresent' if installed.get('installed') else 'd.runtimeOptional'),layout=layout)
-            self.button('w.prepare',lambda _,k=key:self.run('runtime.prepare',dict(id=k),lambda r:self.prepare_runtime(r)),layout=layout)
-        self.button('w.listPoints',lambda:self.run('restore-points',callback=lambda r:self.store('points',r)))
-        if 'points' in self.state:
-            self.details('n.values',json.dumps(self.state['points'],ensure_ascii=False,indent=2))
-        self.button('w.createPoint',lambda:self.confirm(self.t('confirm'),self.t('w.intro'),[self.t('w.createPoint')],lambda:self.run('restore-point-create',dict(confirm=True))))
-        for key in ('restore','protection','devices'):
-            self.button(self.t({'restore':'w.restoreWizard','protection':'w.protection','devices':'w.deviceManager'}[key]),lambda _,k=key:self.system_open(k),literal=True)
-        self.button('w.ghosts',lambda:self.run('ghosts',callback=lambda r:self.store('ghosts',r)))
-        for ghost in self.state.get('ghosts',[]):
-            self.button(ghost['name'],lambda _,g=ghost:self.confirm(self.t('confirm'),self.t('w.ghostHelp'),[g['name']],lambda:self.run('ghost-remove',dict(id=g['id'],confirm=True))),literal=True)
-        self.button('w.loadFocus',lambda:self.run('focus.inventory',callback=lambda r:self.store('focus',r)))
-        focus=self.state.get('focus')
-        if focus:
-            tree=self.table(focus.get('apps',[]),[('name',self.t('d.name'))],check=True)
-            combo=QComboBox()
-            combo.setAccessibleName(self.t('n.choose_plan'))
-            for p in focus.get('powers',[]):
-                combo.addItem(p['name'],p['id'])
-                if p.get('active'):combo.setCurrentIndex(combo.count()-1)
-            self.body.addWidget(combo)
-            self.button('w.startFocus',lambda:self.confirm(self.t('confirm'),self.t('n.normal_close'),[a['name'] for a in self.chosen(tree)]+[combo.currentText()],lambda:self.run('focus.start',dict(ids=[a['id'] for a in self.chosen(tree)],powerId=combo.currentData(),confirm=True),lambda _:self.reload_library())))
-        if library.get('focus'):
-            self.button('w.stopFocus',lambda:self.run('focus.stop',dict(confirm=True),lambda _:self.reload_library()))
+        from workshop import render
+        render(self)
 
     def reload_library(self):
         self.run('workshop.library',callback=lambda r:self.store('library',r),silent=True)

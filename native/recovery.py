@@ -6,7 +6,7 @@ BACKEND_ERRORS = frozenset(('BACKEND_UNAVAILABLE', 'BACKEND_DISCONNECTED', 'BACK
 READ_OPERATIONS = frozenset(('health', 'diagnostics.scan', 'hardware', 'drivers',
     'windows-updates', 'scan', 'startup', 'network', 'power-profiles', 'focus.inventory',
     'offline.inventory', 'ghosts', 'restore-points', 'runtime.inventory',
-    'workshop.library', 'updates.check', 'history', 'care.snapshot'))
+    'workshop.library', 'updates.check', 'history', 'care.snapshot', 'package.inspect'))
 
 WORDS = {
  'tr': dict(title='Ne oldu, şimdi ne yapmalıyım?', cancelled='Tarama iptal edildi. Önceki sonuçların bu pencerede duruyor. Hazır olduğunda taramayı yeniden başlatabilirsin.',
@@ -74,6 +74,8 @@ def render(window):
         window.page = page
         if request:
             window.settings_section = request['settings_section']
+            window.driver_section = request.get('driver_section',window.driver_section)
+            window.workshop_section = request.get('workshop_section',window.workshop_section)
         window.failure = None
         window.render()  # go(history/workshop) would start a request merely by navigating.
 

@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import time
 from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import QApplication, QPushButton, QCheckBox, QComboBox, QDialog, QDialogButtonBox
+from PySide6.QtWidgets import QApplication, QPushButton, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QTreeWidget, QLineEdit
 
 def start(window, scenario):
     evidence=Path(os.environ.get('AION_EVIDENCE',str(Path.cwd()/'work/native-evidence')))
@@ -145,7 +145,6 @@ def start(window, scenario):
                 window.grab().save(str(evidence/'Windows-Qt-unified-scan-tr-100.png'))
                 window.go('tools');state['stage']=14
             elif stage==14:
-                from PySide6.QtWidgets import QTreeWidget
                 tree=window.findChild(QTreeWidget,'tools-records-tree');assert tree and tree.topLevelItemCount()==3
                 assert window.findChild(QPushButton,'care-component-check')
                 window.scroll.verticalScrollBar().setValue(0)
@@ -157,7 +156,6 @@ def start(window, scenario):
                 window.grab().save(str(evidence/'Windows-Qt-unified-home-tr-100.png'))
                 window.go('history');state['stage']=16
             elif stage==16:
-                from PySide6.QtWidgets import QTreeWidget
                 assert window.findChild(QTreeWidget,'update-records-tree').topLevelItemCount()==1
                 window.grab().save(str(evidence/'Windows-Qt-unified-history-tr-100.png'))
                 (evidence/'unified-scan.json').write_text(json.dumps(dict(sharedScanId=window.state['report']['id'],separateDonorTab=False,sharedCategories=9,pages=['scanFix','tools','home','history'],verified=True),indent=2),encoding='utf-8')
@@ -273,11 +271,67 @@ def start(window, scenario):
                 (evidence/'personalization.json').write_text(json.dumps(dict(verified=True,bundledTurkishGlyphs=True,realFontAndAccentControls=True,settingsRestored=True,milestonesUnchanged=True,animationOffAndCompanionOffVerified=True,pages=state['gallery']),indent=2),encoding='utf-8')
                 window.appearance();window.render();state['personalizeChecked']=True
                 finish(state['personalFinalSettings'])
+            elif stage==29:
+                state['driverViewPreferences']=dict(window.settings)
+                state['driverMilestones']=list(window.state['milestones'])
+                window.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system',operationDetails=False)
+                window.appearance();window.page='drivers';window.driver_section='inventory';window.render()
+                click('driver-inventory');state['stage']=30
+            elif stage==30:
+                rows=window.state.get('drivers');assert rows and all('name' in r and 'version' in r for r in rows)
+                search=window.scroll.widget().findChild(QLineEdit,'driver-search');assert search
+                search.setText(rows[0]['name'][:8]);tree=window.scroll.widget().findChild(QTreeWidget,'driver-inventory-tree');assert 0<tree.topLevelItemCount()<=len(rows)
+                window.scroll.ensureWidgetVisible(tree)
+                state['driverCount']=len(rows);state['stage']=31
+            elif stage==31:
+                window.grab().save(str(evidence/'Windows-Qt-driver-inventory.png'))
+                picker=window.scroll.widget().findChild(QComboBox,'driver-section');picker.setCurrentIndex(picker.findData('backups'));state['stage']=32
+            elif stage==32:
+                assert 'library' in window.state
+                import tempfile
+                fixture=Path(tempfile.mkdtemp(prefix='aion-driver-inspect-'))
+                (fixture/'unsigned-fixture.inf').write_text('[Version]\nClass=Net\nProvider=WinOptimizer smoke fixture\nDriverVer=11/11/2026,1.0\n',encoding='utf-8')
+                state['driverImportFixture']=fixture
+                window.state['packageSource']=window.t('dc.imported')
+                from driver_center import imported
+                window.run('package.import',dict(directory=str(fixture)),lambda r:imported(window,r));state['stage']=33
+            elif stage==33:
+                plan=window.state.get('package');assert plan and len(plan['candidates'])==1
+                assert all(r.get('eligible') is False and r.get('signed') is False for r in plan['candidates'])
+                assert not window.scroll.widget().findChild(QPushButton,'driver-package-apply').isEnabled()
+                from PySide6.QtCore import Qt
+                tree=window.scroll.widget().findChild(QTreeWidget,'driver-package-tree');assert not tree.topLevelItem(0).flags() & Qt.ItemIsUserCheckable
+                window.scroll.ensureWidgetVisible(tree);state['driverTestPackageId']=plan['libraryId'];state['stage']=34
+            elif stage==34:
+                window.grab().save(str(evidence/'Windows-Qt-driver-package-blocked.png'))
+                # Remove only this invocation's uniquely created, unsigned test import.
+                import re,shutil
+                parts=state['driverTestPackageId'].split('/')
+                assert len(parts)==2 and parts[0]=='DriverPackages' and re.fullmatch(r'[a-f0-9-]{36}',parts[1])
+                owned=window.data/'DriverPackages'/parts[1]
+                assert owned.parent.resolve()==(window.data/'DriverPackages').resolve()
+                shutil.rmtree(owned);shutil.rmtree(state['driverImportFixture'])
+                for key in ('package','packageSource','library'):window.state.pop(key,None)
+                window.driver_section='offline';window.render();click('driver-offline-read');state['stage']=35
+            elif stage==35:
+                assert window.state.get('offline',{}).get('devices')
+                window.driver_section='ignored';window.render();click('driver-ignored-refresh');state['stage']=36
+            elif stage==36:
+                assert 'ignored' in window.state['library']
+                window.page='workshop';window.workshop_section='points';window.render();assert window.scroll.widget().findChild(QPushButton,'w.listPoints')
+                window.workshop_section='focus';window.render();assert window.scroll.widget().findChild(QPushButton,'w.loadFocus')
+                assert window.state['milestones']==state['driverMilestones']
+                (evidence/'driver-center.json').write_text(json.dumps(dict(verified=True,actualDriverRows=state['driverCount'],realUnsignedImportBlocked=True,noDriverInstalled=True,ownedFixtureRemoved=True,offlineInventory=True,ignoredLibrary=True,workshopCategories=True,milestonesUnchanged=True),indent=2),encoding='utf-8')
+                window.settings=state['driverViewPreferences'];window.driver_section='updates';window.workshop_section='runtimes';window.appearance();window.render()
+                state['driverCenterChecked']=True;finish(state['driverFinalSettings'])
         except Exception as error:
             timer.stop()
             (evidence/'FAILED.json').write_text(json.dumps({'scenario':scenario,'stage':state['stage'],'error':repr(error),'notice':window.notice.text()},indent=2),encoding='utf-8')
             window.bridge.close();QApplication.exit(1)
     def finish(settings):
+        if not state.get('driverCenterChecked'):
+            state.update(driverFinalSettings=settings,stage=29)
+            return
         if not state.get('personalizeChecked'):
             state.update(personalFinalSettings=settings,stage=22)
             return

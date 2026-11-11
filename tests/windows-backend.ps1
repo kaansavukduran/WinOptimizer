@@ -91,4 +91,5 @@ try{
   $restored=Call-Backend 'startup-restore' @{id=$name;command=$entry.command;kind='String'};if(-not $restored.restored){throw 'Not restored'}
   if((Get-ItemProperty $key).$name -ne 'C:\Windows\notepad.exe'){throw 'Restored data differs'}
 }finally{Remove-ItemProperty $key -Name $name -ErrorAction SilentlyContinue}
+& (Join-Path $PSScriptRoot 'windows-driver-null.ps1')
 Write-Host 'PASS: PS 5.1 parser, real health/drivers/network/power and reversible HKCU startup entry'
