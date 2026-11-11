@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.7.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 96904339,
+  "sha256": "11f0449f4ee187a316c8300cee3bec9a28e2915f879eac8f0acf81907c832737",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.7.0/WinOptimizer-Aion-6.7.0-Windows-x64-Setup.exe",
+  "sourceCommit": "84c2977b3c85b417c5b3f70a98bde1f66ab6f623",
+  "notes": {
+    "tr": "Sürücü merkezi beş anlaşılır bölümde: güncellemeler, aramalı envanter, tarihli yedek/geri yükleme, çevrimdışı hazırlık ve atlananlar. Seçilenlerin tamamını birlikte atla veya yeniden göster; bilinmeyen sorun kodları doğru gösterilir. Ayarlar ve ilerleme korunur.",
+    "en": "Five clear driver sections: updates, searchable inventory, dated backup/recovery, offline preparation and ignored offers. Atomically ignore or show all selected offers, preserve unknown problem codes, preferences and progress."
+  },
+  "portable": {
+    "bytes": 96755094,
+    "sha256": "736847bd7e5cf72d77d856fd26e5f3a8f16183f74d277ba2aedb088fbb2c8e58",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.7.0/WinOptimizer-Aion-6.7.0-Windows-x64-Portable.exe"
+  }
+}
