@@ -1,6 +1,16 @@
 # WinOptimizer Aion Forge
 
-Durum: **6.6.0 kararlı/latest; yazı/renk ayarları ve her sekmede Aion tamamlandı.** Windows x64, native Qt, Chromiumsuz. Kaynak/etiket `525229f452b535bce01dac5f07877d0a236f58f0`, PR #17, merge `3878fe1b8b2cef055358cccf650126fa2ade50e8`, imzalı metadata ve test-only animasyon akışı `23e7cf4051efb9f22e156ba99c2f8ceeb8c40966`, yayın `440675799`.
+Durum: **6.7.0 kararlı/latest; bütünleşik sürücü merkezi tamamlandı.** Windows x64/Qt Widgets, Chromium ve donor alt uygulama yok. Kaynak/etiket `84c2977b3c85b417c5b3f70a98bde1f66ab6f623`, PR #18, merge `c3241f9a698c28d0479eed5f1bb5f9889506d4d5`, metadata `f1c511620fdaec809e1c5bc12ccb1fc98eaa5ebb`, yayın `441086918`.
+
+Beş sürücü bölümü, aranabilir envanter, bilinmeyen kodun korunması, tarihli yerel yedekler, kaynakla bağlı paket inceleme, uygun seçim, çevrimdışı aktarım ve atomik toplu atla/geri göster mevcut kurallara bağlandı. Geri yüklemede 1–20 paket sayacı/sınırı vardır; Tümünü güncelle bu sınıra tabi değildir. Bakım atölyesi kategorilere ayrıldı. Aion, tema/font/erişilebilirlik, ortak SysMender bakımı ve geçmiş korunur.
+
+96 Qt/58 Node yerel ve Windows'ta geçti. Kaynak `42929726018`, PR `42929733618`, main `42930935244`, yayın `42931018862`, hareket açık `42931022893`, gerçek 6.6.0 → 6.7.0 güncelleme `42931252345` başarılı. İlk paket testindeki yalnız test-helper Qt import gölgelemesi düzeltildi. Gerçek PowerShell 5.1 null/missing/zero/28 kodlarını doğruladı. İmzasız test INF yalnız içe alınıp engellendi; kurulmadı, kendi fixture kaydı silindi. Payload hash/registry/runtime, ayarlar/geçmiş/milestones, on animasyon ve kilitli EXE değişimi doğrulandı.
+
+Özel Drive `15Xqf4wiTvqzkMCMsc-_aK_negXLIln1N`: dört kaynak push, merge, metadata, kapanış; tam Git geçmişi/etiketler, iki bütün EXE ve kanıt arşivi. Ham geri okuma/hash/ZIP/bundle doğrulanır; özel anahtar girmez. Eski yayınları değiştirme. Açık istekler docs/REQUEST-COVERAGE.md içinde; özel IObit kataloğu, bütün OEM/oyun bileşenleri veya tüm eski terminal özellikleri tamamlandı değildir. Sonraki geliştirme resmi Windows Update ve doğrulanmış yerel paket kapsamından devam eder; lisanslı ek kaynak varsa ayrıca bağlanır. Kullanım docs/DRIVER-CENTER.md, gerçek Windows kanıtları docs/VALIDATION.md.
+
+## Önceki 6.6.0 kaydı
+
+Durum: **6.6.0 önceki doğrulanmış sürüm; yazı/renk ayarları ve her sekmede Aion tamamlandı.** Windows x64, native Qt, Chromiumsuz. Kaynak/etiket `525229f452b535bce01dac5f07877d0a236f58f0`, PR #17, merge `3878fe1b8b2cef055358cccf650126fa2ade50e8`, imzalı metadata ve test-only animasyon akışı `23e7cf4051efb9f22e156ba99c2f8ceeb8c40966`, yayın `440675799`.
 
 Her sayfada Yazı ve tema; Ayarlar açılınca Görünüm. Font/gerçek önizleme/OpenDyslexic Türkçe glifleri, renk seçici, beş renk, doğrulanan HEX/sıfırlama ve okunaklı düğme metni. Font tüm içeriğe uygulanır. Ayarlar bağımsız, dar ekran yüzdeleri üç sütun. Yeni 24 kare aion-sections.png; on sayfada farklı klipler, fare/sevilme/pause/gerçek başarı/azaltılmış hareket ve ortak pixmap önbelleği. Ana sayfa rehberi önce gelir. Yeni Drive referansı indirildiği iddia edilmez; mevcut onaylı optimizer karakteriyle yeni pafta üretildi.
 

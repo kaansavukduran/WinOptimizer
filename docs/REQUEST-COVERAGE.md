@@ -1,6 +1,6 @@
 # İsteklerin kapsam kaydı
 
-Bu kayıt, yapılan işi başka bir uygulamanın bütün özellikleriyle eşit göstermemek için tutulur. Son yayımlanmış kanıtlar `VALIDATION.md` içindedir. 6.7.0 değişiklikleri Windows paket/güncelleme kontrollerinden sonra kararlı sürüm kabul edilir.
+Bu kayıt, yapılan işi başka bir uygulamanın bütün özellikleriyle eşit göstermemek için tutulur. Son yayımlanmış kanıtlar `VALIDATION.md` içindedir. 6.7.0, gerçek Windows Setup/Portable, hareket açık animasyon ve 6.6.0 → 6.7.0 uygulama içi güncelleme kontrollerinden geçerek kararlı yayımlandı.
 
 | Önceki istek | Durum / uygulamadaki yeri |
 | --- | --- |

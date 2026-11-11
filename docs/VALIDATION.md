@@ -1,8 +1,31 @@
 # Verification evidence
 
+## 6.7.0 integrated native driver workflows
+
+[v6.7.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.7.0) is stable/latest. Application/tag source `84c2977b3c85b417c5b3f70a98bde1f66ab6f623`, PR #18, merge `c3241f9a698c28d0479eed5f1bb5f9889506d4d5`, signed metadata `f1c511620fdaec809e1c5bc12ccb1fc98eaa5ebb`, release `441086918`.
+
+The existing driver center now separates updates, installed inventory, backup/recovery, offline preparation and ignored offers. Inventory search/problem-code filtering, dated local libraries, eligible recovery selection (1–20 per action), source-bound inspection state and atomic bulk ignore/unignore use the existing backend. Update all remains independent of filters and that recovery limit. Workshop controls are categorized within the same application. Unknown/null Windows device codes remain unknown, including a real PowerShell 5.1 fixture covering null, missing, zero and 28.
+
+96 Qt and 58 Node tests passed locally and on Windows. Initial packaged smoke testing caught a test-helper local Qt import shadowing its global; the helper was corrected before final packaging. Final source, PR and main checks passed. Installed, portable, reopened portable and upgraded packages exercised the real inventory and five sections. A uniquely generated unsigned INF was imported for inspection only, verified ineligible/noncheckable with apply disabled, then only that fixture's returned local UUID was removed. No driver was installed by this test. Actual VM inventory contained 58 rows; hardware is the test VM's. Existing scans, hardware categories, cleanup/restore, recovery, personalization, maintenance milestones, portable isolation and locked-EXE replacement still passed.
+
+[Source Windows](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42929726018), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42929733618), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42930935244), [publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42931018862), [motion enabled](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42931022893) and [actual installed 6.6.0 → 6.7.0 update](https://github.com/kaansavukduran/WinOptimizer/actions/runs/42931252345) succeeded. The update used real Settings controls and verified payload hash, registry/runtime version, prior preferences, cleanup/restore history and milestones. The animation run checked all ten page clocks using the same package and restored its test-only Windows motion setting; normal app code does not change it.
+
+| Artifact | ID | SHA-256 |
+| --- | --- | --- |
+| Source Windows | 13815553211 | `707edfa41c3f9f28cdbbcb49126595dee61ac205b50e7941a01202692241e6cf` |
+| Motion enabled | 13816312293 | `164644701b020521b794c6fbba30be6950fde57df3a6910a1b0cbc0b89b42cae` |
+| Installed update | 13814919812 | `4d3e38b487db8febcd3dd6ccf1458e219fcc451c0a728b04fc835c4444307bd5` |
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Setup | 96,904,339 | `11f0449f4ee187a316c8300cee3bec9a28e2915f879eac8f0acf81907c832737` |
+| Portable | 96,755,094 | `736847bd7e5cf72d77d856fd26e5f3a8f16183f74d277ba2aedb088fbb2c8e58` |
+
+Original ZIP CRC/hashes, five public asset digests, Ed25519 manifest and seven PE icon sizes matched. Actual Windows screenshots: [inventory](screenshots/WinOptimizer-6.7.0-Surucu-Envanteri.png), [blocked unsigned package](screenshots/WinOptimizer-6.7.0-Paket-Inceleme.png). [Private Drive backup](https://drive.google.com/drive/folders/15Xqf4wiTvqzkMCMsc-_aK_negXLIln1N): every source push, merge, metadata and closing docs, full reachable Git history/tags, whole Setup/Portable files and source/evidence archives; raw readback hashes, ZIP CRC and bundles checked. Signing keys excluded. [Request coverage](REQUEST-COVERAGE.md) explicitly records remaining proprietary catalog, OEM/game-component and legacy differences; full Driver Booster parity is not claimed.
+
 ## 6.6.0 font, color and contextual Aion animation
 
-[v6.6.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.6.0) is stable/latest. Application/tag source `525229f452b535bce01dac5f07877d0a236f58f0`, PR #17, merge `3878fe1b8b2cef055358cccf650126fa2ade50e8`, signed metadata/test-only animation workflow `23e7cf4051efb9f22e156ba99c2f8ceeb8c40966`. The metadata commit skips the redundant application push build; the unchanged app is validated by source, PR and merge builds, and the new animation workflow is dispatched separately against that exact source artifact.
+[v6.6.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.6.0) was the previous verified stable release. Application/tag source `525229f452b535bce01dac5f07877d0a236f58f0`, PR #17, merge `3878fe1b8b2cef055358cccf650126fa2ade50e8`, signed metadata/test-only animation workflow `23e7cf4051efb9f22e156ba99c2f8ceeb8c40966`. The metadata commit skips the redundant application push build; the unchanged app is validated by source, PR and merge builds, and the new animation workflow is dispatched separately against that exact source artifact.
 
 Settings opens on Appearance. Every page offers a Font and theme shortcut. Font choices, actual preview and bundled Turkish OpenDyslexic glyphs are visible; application/content fonts now update together. Native color picker, five presets, validated hex input, independent reset and black/white primary-button text are included. Theme, accent, UI/text scales and other preferences remain independent. Percentage controls fit narrow screens. [User instructions](PERSONALIZATION.md).
 
