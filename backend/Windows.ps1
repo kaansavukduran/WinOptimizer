@@ -73,7 +73,7 @@ function Invoke-Action {
       return @{os=$os.Caption;build=$os.BuildNumber;cpu=$cpu.Name;ramTotal=[double]$os.TotalVisibleMemorySize*1024;ramFree=[double]$os.FreePhysicalMemory*1024;boot=$os.LastBootUpTime.ToUniversalTime().ToString('o');disks=$disks;physical=$physical;security=$security;admin=(Test-Admin)}
     }
     'drivers' {
-      $problems=@{};Get-CimInstance Win32_PnPEntity | ForEach-Object{if($_.PNPDeviceID){$problems[$_.PNPDeviceID]=[int]$_.ConfigManagerErrorCode}}
+      $problems=@{};Get-CimInstance Win32_PnPEntity | ForEach-Object{if($_.PNPDeviceID){$problems[$_.PNPDeviceID]=if($null -eq $_.ConfigManagerErrorCode){$null}else{[int]$_.ConfigManagerErrorCode}}}
       return @((Get-CimInstance Win32_PnPSignedDriver)|Where-Object{$_.DeviceName}|ForEach-Object{[pscustomobject]@{id=$_.DeviceID;name=$_.DeviceName;provider=$_.DriverProviderName;version=$_.DriverVersion;date=if($_.DriverDate){$_.DriverDate.ToUniversalTime().ToString('o')}else{$null};signed=[bool]$_.IsSigned;inf=$_.InfName;deviceClass=$_.DeviceClass;problem=$problems[$_.DeviceID]}}|Sort-Object name)
     }
     'driver-backup' {return Get-DriverBackup ([string]$payload.destination)}
