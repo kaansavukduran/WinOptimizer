@@ -60,3 +60,14 @@ def test_narrow_large_text_numeric_reset_stacks_and_keeps_words_intact(window,ap
  assert reset.height()>=reset.heightForWidth(reset.width()) and w.scroll.horizontalScrollBar().maximum()==0
  before=copy.deepcopy(b.calls);w.resize(1240,900);QTest.qWait(80)
  assert row.row.direction()==QBoxLayout.LeftToRight and spin.value()==200 and b.calls==before
+
+def test_large_to_normal_font_transition_does_not_keep_oversized_paragraph_blocks(window,application):
+ from widgets import Paragraph,wrapped
+ w,b=window;w.settings.update(language='en',theme='light',scale=200,textSize=125,font='dyslexic',operationDetails=False)
+ w.resize(540,900);w.appearance();w.go('settings');QTest.qWait(100)
+ w.settings.update(language='tr',theme='dark',scale=100,textSize=100,font='system')
+ w.resize(1028,749);w.appearance();w.go('home');w.notice.setText(w.t('ux.ready'));QTest.qWait(600)
+ for paragraph in [w.notice]+w.scroll.widget().findChildren(Paragraph):
+  lines=wrapped(paragraph.toPlainText(),paragraph.font(),max(1,paragraph.viewport().width()-4)).count('\n')+1
+  assert paragraph.height()<=max(80,(lines+1)*paragraph.fontMetrics().lineSpacing()*2+32)
+ assert w.scroll.horizontalScrollBar().maximum()==0
