@@ -32,3 +32,5 @@ Windows ölçüsü: geniş açık/TR 1240×900; geniş koyu/sistem-font profilin
 Gerçek yeni kurulum Setup ve Portable, ilk açılış JSON kaydında koyu tema + sistem fontu doğruladı. Hareket açık koşuda on sayfanın Aion saati ilerledi; işletim sistemi tercihi test sonunda geri kondu. [Ekranlar](SCREEN_INVENTORY.md#6100-geometri-ve-optik-denge), [kanıtlar](VALIDATION.md#6100-aionia-v15-geometric-consistency-and-optical-balance).
 
 Yalnız eşzamanlı Qt render çağrısı: kaynak Setup P95 61.58 ms / önceden belirlenen 2000 ms bütçe (50 kayıt). Bu başlangıç, uçtan uca gecikme, FPS, CPU/RAM/enerji benchmarkı değildir.
+
+Görsel inceleme, asistanın gerçek Windows PNG dosyalarını view_image ile incelemesidir. Gerçek kullanıcı araştırması ve insan katılımcıyla görev testi NOT TESTED olarak kalır.
