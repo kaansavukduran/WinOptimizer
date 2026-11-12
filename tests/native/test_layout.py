@@ -103,3 +103,12 @@ def test_reduced_scale_navigation_does_not_clip_wrapped_tab_buttons(window,appli
         for button in w.nav_widget.findChildren(QPushButton):
             assert viewport.rect().contains(QRect(button.mapTo(viewport,button.rect().topLeft()),button.size()))
     else:assert w.page_picker.isVisible() and w.page_picker.count()==10
+
+@pytest.mark.parametrize('retry',[True,False])
+def test_error_recovery_has_one_primary_action_instead_of_competing_page_action(window,application,retry):
+    w,b=window;w.page='hardware'
+    request=dict(command='hardware' if retry else 'power-set',payload={},callback=None,silent=False,page='hardware',settings_section='appearance')
+    before=list(b.calls);w.error('OPERATION_TIMEOUT',request=request);QTest.qWait(30)
+    primary=[x for x in w.scroll.widget().findChildren(QPushButton) if x.property('primary')]
+    assert len(primary)==1 and primary[0].objectName()==('recovery-retry' if retry else 'recovery-origin')
+    assert b.calls==before and not w.scroll.widget().findChild(QPushButton,'hardware-scan').property('primary')

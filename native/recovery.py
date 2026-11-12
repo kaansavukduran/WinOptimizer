@@ -96,7 +96,7 @@ def render(window):
     if retry:
         window.button(words['retry'], again, True, layout, literal=True, name='recovery-retry')
     if window.ready:
-        window.button(words['origin'], origin, layout=layout, literal=True, name='recovery-origin')
+        window.button(words['origin'], origin, primary=not retry, layout=layout, literal=True, name='recovery-origin')
     window.button(words['details'], details, layout=layout, literal=True, name='recovery-details')
     window.button(words['copy'], copy, layout=layout, literal=True, name='recovery-copy')
     if window.ready:
@@ -105,5 +105,5 @@ def render(window):
             window.render()
         window.button(words['dismiss'], dismiss, layout=layout, literal=True, name='recovery-dismiss')
     else:
-        window.button(words['close'], window.close, layout=layout, literal=True, name='recovery-close')
+        window.button(words['close'], window.close, primary=True, layout=layout, literal=True, name='recovery-close')
     window.body.addWidget(panel)

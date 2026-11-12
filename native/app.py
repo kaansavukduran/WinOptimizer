@@ -291,7 +291,7 @@ class Window(QMainWindow):
     def button(self, key, callback, primary=False, layout=None, enabled=True, literal=False, name=None, danger=False):
         button = QPushButton(key if literal else self.t(key))
         button.setObjectName(name or key)
-        button.setProperty('primary', primary)
+        button.setProperty('primary',primary and (not self.failure or name in ('recovery-retry','recovery-origin','recovery-close')))
         button.setProperty('danger',danger or key in ('purge','disable'))
         button.setEnabled(enabled and not self.busy)
         button.clicked.connect(callback)
