@@ -1,7 +1,7 @@
 import math
 from functools import lru_cache
 from PySide6.QtCore import Qt, QTimer, QRect
-from PySide6.QtGui import QPixmap, QPainter, QCursor
+from PySide6.QtGui import QPixmap, QPainter, QCursor, QColor, QPen
 from PySide6.QtWidgets import QWidget, QApplication, QToolTip
 
 PAGE_CLIPS = {'home':('core',0), 'scanFix':('core',1), 'cleanup':('sections',0),
@@ -99,6 +99,10 @@ class Aion(QWidget):
         ratio = min(self.width() / cell[0], self.height() / cell[1])
         w, h = int(cell[0] * ratio), int(cell[1] * ratio)
         painter.drawPixmap(QRect((self.width() - w) // 2, self.height() - h, w, h), sheet, source)
+        if self.hasFocus():
+            color=getattr(self.window(),'visual_tokens',{}).get('focus','#066f82')
+            painter.setPen(QPen(QColor(color),2))
+            painter.drawRect(self.rect().adjusted(2,2,-3,-3))
 
     def hideEvent(self, event):
         self.timer.stop()

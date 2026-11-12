@@ -1,0 +1,278 @@
+{
+  "standardVersion": "1.1",
+  "reviewDate": "2026-11-12",
+  "folder": "https://drive.google.com/drive/folders/1CXbBM41DUkPYJwyuKTdcsmW2UmjKBE95",
+  "references": [
+    {
+      "name": "Tavsan_Emre_Modelleme_Paftasi.png",
+      "driveId": "1_gDPSpL7sQDdO791wWfx4zzZWQksbZPk",
+      "url": "https://drive.google.com/file/d/1_gDPSpL7sQDdO791wWfx4zzZWQksbZPk/view?usp=drivesdk",
+      "bytes": 1509493,
+      "sha256": "4c955e003fe771d91ac7673cec71076efca37dc6624ca173547d86ca80578e60",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Omer_Motion_Sprite.png",
+      "driveId": "1LwSj8oAgWVIxEri2qbFN9WkQNtmJTLR6",
+      "url": "https://drive.google.com/file/d/1LwSj8oAgWVIxEri2qbFN9WkQNtmJTLR6/view?usp=drivesdk",
+      "bytes": 2785446,
+      "sha256": "145cb66faba9ca0b7bde64fc55da1fa2a8d414c8c7fbb3bb371323b03751064c",
+      "size": [
+        1448,
+        1086
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Omer_Canonical_Sprite.png",
+      "driveId": "1pDPvroikI4r_GRlPqaA1Qj1bvebal0zp",
+      "url": "https://drive.google.com/file/d/1pDPvroikI4r_GRlPqaA1Qj1bvebal0zp/view?usp=drivesdk",
+      "bytes": 2637221,
+      "sha256": "7969f14b2b15d92f3352350546e8cd55cd3d663ecef6f768fa4f1289d727c1bb",
+      "size": [
+        1086,
+        1448
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Omer_Modelleme_Paftasi.png",
+      "driveId": "18MZh4IRi2Z95sy3rcHzdSS9YSkw9GNzA",
+      "url": "https://drive.google.com/file/d/18MZh4IRi2Z95sy3rcHzdSS9YSkw9GNzA/view?usp=drivesdk",
+      "bytes": 1827651,
+      "sha256": "bf4e8cf799d43df1e4f014a17f201defe12ba2a88d9120f6899ca047e3bf6ca2",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Kuzu_Motion_Sprite.png",
+      "driveId": "1b3UAN9d4GIG_CTynWqdI_TxUB_zmCfh2",
+      "url": "https://drive.google.com/file/d/1b3UAN9d4GIG_CTynWqdI_TxUB_zmCfh2/view?usp=drivesdk",
+      "bytes": 2785832,
+      "sha256": "be50626466064f8cde5f75cfbb31ea1543caf0293971b5d456cd7bd7940a893e",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Kuzu_Canonical_Sprite.png",
+      "driveId": "1aR4kBvPm1kHr6rFoK2GhtiRIFtHBTtyI",
+      "url": "https://drive.google.com/file/d/1aR4kBvPm1kHr6rFoK2GhtiRIFtHBTtyI/view?usp=drivesdk",
+      "bytes": 3011991,
+      "sha256": "8b60d58e55798aeed7edde058342beb66647eb5d1a8735f867fbb586c2eb9083",
+      "size": [
+        948,
+        1659
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Kuzu_Modelleme_Paftasi_v02.png",
+      "driveId": "1Q-o9BJq2aCCG4WgrlPzStTxXKUAH2SqJ",
+      "url": "https://drive.google.com/file/d/1Q-o9BJq2aCCG4WgrlPzStTxXKUAH2SqJ/view?usp=drivesdk",
+      "bytes": 1666875,
+      "sha256": "e04e4153e705cdc3031b3b208ae185b95c3b80f48f85cc9ddd92a29bfe3682f6",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Kuzu_Modelleme_Paftasi_v01.png",
+      "driveId": "1hjYYXmMbn_U9C3H2GYm-wv9fBLn9fNJ4",
+      "url": "https://drive.google.com/file/d/1hjYYXmMbn_U9C3H2GYm-wv9fBLn9fNJ4/view?usp=drivesdk",
+      "bytes": 1704927,
+      "sha256": "05e857bacfae107fb46614bfc77bf1ccd1e4130982f596cc8272f2bda9406839",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Kurt_Motion_Sprite.png",
+      "driveId": "1PoJtQsac2F2y36fy-siNBHjY-q4iyDZi",
+      "url": "https://drive.google.com/file/d/1PoJtQsac2F2y36fy-siNBHjY-q4iyDZi/view?usp=drivesdk",
+      "bytes": 2944863,
+      "sha256": "06db7e167e22815ccce2b15b78ccba41d6987eca465f5278a0592af85094b099",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Kurt_Canonical_Sprite.png",
+      "driveId": "1ungTqWrrVFQPk5j0NjhMmfNpsm3QsXPM",
+      "url": "https://drive.google.com/file/d/1ungTqWrrVFQPk5j0NjhMmfNpsm3QsXPM/view?usp=drivesdk",
+      "bytes": 2670658,
+      "sha256": "6f5eb1f33b92f4b0f77be626d9c50ab997bb79b37237d3f8857de723469e0ba3",
+      "size": [
+        887,
+        1774
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Kurt_Modelleme_Paftasi.png",
+      "driveId": "1M6wTrq2GeGCl7bGGMFQLrkznRBwx2Tje",
+      "url": "https://drive.google.com/file/d/1M6wTrq2GeGCl7bGGMFQLrkznRBwx2Tje/view?usp=drivesdk",
+      "bytes": 1775431,
+      "sha256": "98462238f944593a4547fc2f8498c17ba580ebfc6ce0f5e62a2adeaf0465b62e",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Aion_Motion_Sprite.png",
+      "driveId": "1FJC14xFxwZIJ5zT_h-Y8Qwn3X7N1BINf",
+      "url": "https://drive.google.com/file/d/1FJC14xFxwZIJ5zT_h-Y8Qwn3X7N1BINf/view?usp=drivesdk",
+      "bytes": 3058751,
+      "sha256": "9312191d6aebca0fd96db16ddae7391316890f627096d77d619d7588989876d2",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Aion_Canonical_Sprite.png",
+      "driveId": "1Tr08dHxAzixvNSI5bi91PnhNyooWDVnX",
+      "url": "https://drive.google.com/file/d/1Tr08dHxAzixvNSI5bi91PnhNyooWDVnX/view?usp=drivesdk",
+      "bytes": 2650092,
+      "sha256": "789fe4e54752e0f11da49eff5d43ab92e0c726ca919ca136c906991143844687",
+      "size": [
+        1254,
+        1254
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Aion_Turnaround.png",
+      "driveId": "1QTvyY2yknmLsq1OnkKTSROq3xhge8ZEt",
+      "url": "https://drive.google.com/file/d/1QTvyY2yknmLsq1OnkKTSROq3xhge8ZEt/view?usp=drivesdk",
+      "bytes": 1538088,
+      "sha256": "981ba10ff00286c29a5cc58015363b390c5887fb89b818b762a2df17b60cfd18",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Aion_T_Poz_Pafta_Varyant_A.png",
+      "driveId": "1SfHCRio4NEBBG4u-r2d4evRB0VP8GKRE",
+      "url": "https://drive.google.com/file/d/1SfHCRio4NEBBG4u-r2d4evRB0VP8GKRE/view?usp=drivesdk",
+      "bytes": 1662783,
+      "sha256": "e292ac842b19283057c9e162bcd17831f514f9fd9ac945d6fa41e481d470055a",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Aion_T_Poz_Pafta_Varyant_B.png",
+      "driveId": "13vQfRtojqItmKmCqjkv3dJcdnRVwuFrz",
+      "url": "https://drive.google.com/file/d/13vQfRtojqItmKmCqjkv3dJcdnRVwuFrz/view?usp=drivesdk",
+      "bytes": 1961520,
+      "sha256": "3fb888eaa6f9388e6e773316ac00a4c60854405bf8b1c2d743b3fb9a7bf015c6",
+      "size": [
+        1536,
+        1024
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Aion_Ana_Karakter_Referansi.png",
+      "driveId": "1SGDOppBxDzax-tDlGl6BgNuhvpGmDXFA",
+      "url": "https://drive.google.com/file/d/1SGDOppBxDzax-tDlGl6BgNuhvpGmDXFA/view?usp=drivesdk",
+      "bytes": 1329627,
+      "sha256": "76b3e45de9187a89473d84f70f13b120ff73fde8f5cd44bc5fcfb9de40ab7f11",
+      "size": [
+        1254,
+        1254
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Aion_canonical-base.png",
+      "driveId": "13KnxjqSFIlhLcl_fYk5hRnh3HrOmPPn9",
+      "url": "https://drive.google.com/file/d/13KnxjqSFIlhLcl_fYk5hRnh3HrOmPPn9/view?usp=drivesdk",
+      "bytes": 1332289,
+      "sha256": "ff4c34ab2086eaed19188d7d10dc5ca1d51ba6f52d854295c0eebe511349ee94",
+      "size": [
+        1254,
+        1254
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    },
+    {
+      "name": "Fragaria_Cilek_Gorsel_Referansi.jpg",
+      "driveId": "1dU0VP3r8Jayjpct5pdTHzsvinQKw_S4O",
+      "url": "https://drive.google.com/file/d/1dU0VP3r8Jayjpct5pdTHzsvinQKw_S4O/view?usp=drivesdk",
+      "bytes": 144131,
+      "sha256": "e72d624a012cb86e5b21011452fd1a8fb1954b2f19c68b51d8910bebef093828",
+      "size": [
+        1058,
+        1487
+      ],
+      "review": "visually inspected",
+      "approval": "reference only; final canon approval not established",
+      "includedInRuntime": false
+    }
+  ],
+  "notes": [
+    "Source/approval folder was empty at review.",
+    "Emre model sheet exists; no Emre sprite sheet was present.",
+    "Existing user-requested WinOptimizer Aion and icon retained. No new character or logo variant selected."
+  ]
+}

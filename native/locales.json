@@ -796,6 +796,31 @@
       "signedYes": "Windows imzalı bildiriyor",
       "signedNo": "Windows imzalı bildirmiyor",
       "selection": "Seçilen: {count} / 20. Bir işlemde 1–20 uygun paket seç. Bu sınır geri yükleme içindir; Tümünü güncelle bu sınırı kullanmaz."
+    },
+    "ux": {
+      "help": "Kullanım rehberi",
+      "section": "Bölüm",
+      "close": "Kapat",
+      "guideTitle": "Aion ile adım adım bakım",
+      "loading": "Açılıyor · İşlem motoru bekleniyor. Henüz işlem başlamadı.",
+      "ready": "Hazır · Tara ve Düzelt ile başla.",
+      "firstMinute": "1. Tara ve Düzelt ile bilgisayarı kontrol et.\n2. Sonuçlarda ne bulunduğunu ve öneriyi oku.\n3. Yapılacak değişikliği incele ve onayla. Tarama tek başına ayar değiştirmez.",
+      "feedback": "İşlem sürerken üstte gerçek aşama veya Windows yanıtı bekleniyor açıklaması görünür. Belirsiz ilerleme yüzdelik tamamlanma değildir. Alttaki İşlem adımları; tamamlanan, başarısız ve atlanan işleri nedenleriyle gösterir. Bir hata veya kontrol edilemeyen sonuç sağlıklı sayılmaz.",
+      "keys": "Klavye: Tab / Shift+Tab ile denetimler arasında gez; Enter veya Boşluk ile odaktaki düğmeyi kullan. Ctrl+1…9 ilk dokuz bölümü, Ctrl+0 Ayarlar’ı açar. F1 bu rehberi açar; Esc rehberi kapatır. Dar pencerede üstteki Bölüm listesini kullan. Ayarlar → Görünüm: yazı tipi, renk, tema ve ölçek; Aion ve Bildirimler: hareketi azaltma veya Aion’u kapatma.",
+      "pages": {
+        "home": "Bakım rehberindeki üç gerçek görev ve sıradaki adım burada açıklanır. Bir bölüme gitmek görevi tamamlamaz.",
+        "scanFix": "Yeniden tara ile başla. Çevrimiçi kontrol Windows Update tekliflerini de arar. Sonuçları oku; uygun teklifler için Tümünü güncelle hepsini tek onayla kapsar. Firmware kapsam dışıdır.",
+        "cleanup": "Önce temizlik adaylarını tara. Ne kadar alan ve hangi dosyaların taşınacağını incele; sonra onayla. Geçmiş ve yedekler’den geri alabilirsin.",
+        "drivers": "Bölüm listesinden güncellemeler, yüklü sürücüler, yedekler ve geri yükleme, çevrimdışı hazırlık veya atlananları seç. Geri yükleme paketleri önce incelenir; Windows daha uygun sürücüyü koruyabilir.",
+        "hardware": "Donanımı tara; kategori veya metinle ara ve ayrıntıları aç. Bulunamayan bilgi tahmin edilmez. Bu bölüm donanım ayarlarını değiştirmez.",
+        "startup": "Başlangıç öğelerini listele. Değiştirmek istediğin öğeyi inceleyip seç; uygulama izin verilen işlemi onayından sonra yapar.",
+        "workshop": "Oyun bileşenleri, geri yükleme noktaları, geçici oyun odağı ve aygıt araçları arasından seç. Her eylemin kapsamını ve onay ekranını oku.",
+        "tools": "Windows bakım ve tanılama araçlarını açıklamalarıyla incele. Yönetici izni isteyen eylemde Windows ayrıca izin sorabilir.",
+        "history": "Önceki işlemleri, temizlik geri alma kayıtlarını ve yedekleri incele. Bir işlem kaydı, bütün bilgisayarın hatasız olduğunun kanıtı değildir.",
+        "settings": "Görünüm’de font, tema, renk ve bağımsız arayüz/yazı ölçeği vardır. Erişilebilirlik ve oyunlaştırma bölümlerinde satır aralığı, hareket ve Aion seçeneklerini düzenle. Güncellemeler’den uygulama sürümünü kontrol et."
+      },
+      "helpButton": "Yardım",
+      "details": "İşlem ayrıntıları"
     }
   },
   "en": {
@@ -1595,6 +1620,31 @@
       "signedYes": "Windows reports signed",
       "signedNo": "Windows does not report signed",
       "selection": "Selected: {count} / 20. Choose 1–20 eligible packages per operation. This recovery limit does not apply to Update all."
+    },
+    "ux": {
+      "help": "Usage guide",
+      "section": "Section",
+      "close": "Close",
+      "guideTitle": "Step-by-step care with Aion",
+      "loading": "Opening · Waiting for the operation engine. No operation has started.",
+      "ready": "Ready · Begin with Scan & Fix.",
+      "firstMinute": "1. Check the computer with Scan & Fix.\n2. Read the findings and recommendations.\n3. Review and confirm any proposed change. Scanning alone does not change settings.",
+      "feedback": "While work runs, the top status shows the actual stage or explains that Windows is still responding. Indeterminate progress is not a completion percentage. Operation steps below distinguish completed, failed and skipped work with reasons. An error or unavailable check is not counted as healthy.",
+      "keys": "Keyboard: Tab / Shift+Tab move between controls; Enter or Space activates the focused button. Ctrl+1…9 open the first nine sections; Ctrl+0 opens Settings. F1 opens this guide; Esc closes it. Use the Section list in a narrow window. Settings → Appearance contains font, color, theme and scaling; Aion & Notifications controls reduced motion and Aion visibility.",
+      "pages": {
+        "home": "The care guide explains its three real tasks and the next action. Navigation alone never completes a task.",
+        "scanFix": "Start with Scan again. Online checks also query Windows Update offers. Review the results; Update all includes every eligible offer with one confirmation. Firmware is excluded.",
+        "cleanup": "Scan cleanup candidates first. Review the space and files to be moved, then confirm. History & Backups can restore them.",
+        "drivers": "Choose updates, installed drivers, backup/recovery, offline preparation or ignored offers. Recovery packages are inspected first; Windows may keep a better driver.",
+        "hardware": "Scan hardware, filter by category or text and expand details. Missing information is not guessed. This section does not change hardware settings.",
+        "startup": "List startup entries. Review and select the entry to change; supported changes run after your confirmation.",
+        "workshop": "Choose game runtimes, restore points, temporary game focus or device tools. Read the scope and confirmation for each action.",
+        "tools": "Review the descriptions of Windows maintenance and diagnostic tools. Actions requiring elevation may also prompt for Windows permission.",
+        "history": "Review past operations, cleanup restoration records and backups. One completed operation does not prove that the entire computer is error-free.",
+        "settings": "Appearance contains font, theme, color and independent UI/text scales. Accessibility and gamification include line spacing, motion and Aion controls. Check the app version under Updates."
+      },
+      "helpButton": "Help",
+      "details": "Operation details"
     }
   }
 }
