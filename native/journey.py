@@ -1,6 +1,7 @@
 """Explain the three existing, persistent care milestones and reveal their actions."""
 from PySide6.QtCore import Qt,QTimer,QObject,QEvent,Slot
 from PySide6.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QLabel,QProgressBar,QPushButton,QFrame
+from widgets import ActionRow
 
 ACTIONS={'health':'healthScan','scan':'scan','drivers':'driverBackup'}
 STEPS=(('health','stepHealth','home','health-scan'),('scan','stepScan','cleanup','cleanup-scan'),('drivers','stepDrivers','drivers','driver-backup'))
@@ -74,11 +75,14 @@ def render(window):
         window.button('j.review',lambda:window.go('scanFix'),layout=panel,name='journey-review')
     for number,(key,title,_,_) in enumerate(STEPS,1):
         status=t('j.done' if key in completed else 'j.pending')
-        box=QWidget();box.setObjectName('journey-step-'+key);layout=QVBoxLayout(box);layout.setContentsMargins(0,6,0,6);layout.setSpacing(6);panel.addWidget(box)
-        header=QVBoxLayout() if window.width()<900 or window.settings.get('scale',100)>=150 else QHBoxLayout();layout.addLayout(header)
-        title_label=QLabel(f'{number}. {t(title)}');title_label.setWordWrap(True);font=title_label.font();font.setBold(True);title_label.setFont(font);header.addWidget(title_label)
+        gap=round(8*window.settings.get('scale',100)/100)
+        box=QWidget();box.setObjectName('journey-step-'+key);layout=QVBoxLayout(box);layout.setContentsMargins(0,gap,0,gap);layout.setSpacing(gap);panel.addWidget(box)
+        copy=QWidget();header=QVBoxLayout(copy);header.setContentsMargins(0,0,0,0);header.setSpacing(4)
+        title_label=QLabel(f'{number}. {t(title)}');title_label.setProperty('careTitle',True);title_label.setWordWrap(True);font=title_label.font();font.setBold(True);title_label.setFont(font);header.addWidget(title_label)
         label=QLabel(status);label.setWordWrap(True);label.setObjectName('journey-status-'+key);header.addWidget(label)
         button=window.button('j.reopen' if key in completed else 'j.open',lambda _,k=key:reveal_step(window,k),layout=header,name='journey-open-'+key)
+        header.removeWidget(button)
+        row=ActionRow(copy,button,(t('j.reopen'),t('j.open')),window);layout.addWidget(row)
         button.setAccessibleName(t(title)+' · '+button.text())
         window.label(t('j.explain.'+key).format(action=t(ACTIONS[key])),layout=layout)
         box.setAccessibleName(title_label.text()+' · '+status)

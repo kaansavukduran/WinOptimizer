@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const DEFAULTS = Object.freeze({schema:1,operationDetails:true,followPointer:true,petting:true,mascotSize:100,language:'tr',theme:'system',scale:100,textSize:100,font:'system',lineHeight:1.5,letterSpacing:0,accent:'#b82e69',density:'comfortable',motion:true,sound:false,gamification:true,companion:true,channel:'beta'});
+const DEFAULTS = Object.freeze({schema:1,operationDetails:true,followPointer:true,petting:true,mascotSize:100,language:'tr',theme:'dark',scale:100,textSize:100,font:'system',lineHeight:1.5,letterSpacing:0,accent:'#b82e69',density:'comfortable',motion:true,sound:false,gamification:true,companion:true,channel:'beta'});
 function normalize(input={}, locale='tr') {
   const out={...DEFAULTS,language:locale.toLowerCase().startsWith('en')?'en':'tr'};
   for (const [k,values] of Object.entries({language:['tr','en'],theme:['light','dark','system','contrast'],font:['system','readable','dyslexic'],density:['comfortable','compact'],channel:['stable','beta']})) if(values.includes(input[k])) out[k]=input[k];

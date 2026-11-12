@@ -2,7 +2,7 @@
 import re
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QBoxLayout, QGridLayout, QLineEdit, QColorDialog, QPushButton
+from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QBoxLayout, QGridLayout, QLineEdit, QColorDialog, QPushButton, QSizePolicy
 from mascot import Aion
 from widgets import Button as QPushButton
 
@@ -57,7 +57,8 @@ def header(window,title=True):
     def open_settings():
         window.settings_section='appearance'
         window.go('settings')
-    window.button('look.quick',open_settings,layout=controls,name='quick-appearance')
+    quick=window.button('look.quick',open_settings,layout=controls,name='quick-appearance')
+    policy=quick.sizePolicy();policy.setHorizontalPolicy(QSizePolicy.Maximum);quick.setSizePolicy(policy)
     pause=window.button('Ⅱ',window.toggle_pause,layout=controls,literal=True,name='aion-pause')
     window.aion_pause=pause
     pause.setFixedWidth(round(44*window.settings.get('scale',100)/100))

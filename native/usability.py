@@ -1,8 +1,8 @@
 """Native navigation and contextual guidance; never starts a Windows operation."""
-from PySide6.QtCore import Qt, QSignalBlocker
+from PySide6.QtCore import Qt, QSignalBlocker, QTimer
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QWidget, QLabel, QHBoxLayout, QVBoxLayout, QBoxLayout,
-    QPushButton, QComboBox, QDialog, QDialogButtonBox, QScrollArea)
+    QPushButton, QComboBox, QDialog, QDialogButtonBox, QScrollArea, QSizePolicy)
 
 from widgets import Button as QPushButton, Choice as QComboBox
 
@@ -15,7 +15,8 @@ def setup(window):
     window.brand=QLabel('WinOptimizer Aion'); window.brand.setObjectName('app-brand')
     window.brand.setWordWrap(True);row.addWidget(window.brand,1)
     window.help_button=QPushButton(); window.help_button.setObjectName('context-help')
-    window.help_button.clicked.connect(lambda:show_help(window)); row.addWidget(window.help_button)
+    policy=window.help_button.sizePolicy();policy.setHorizontalPolicy(QSizePolicy.Maximum);window.help_button.setSizePolicy(policy)
+    window.help_button.clicked.connect(lambda:show_help(window));row.addStretch();row.addWidget(window.help_button)
     window.outer.insertWidget(0,bar)
     window.compact_nav=QWidget(); layout=QHBoxLayout(window.compact_nav); layout.setContentsMargins(0,0,0,0)
     window.nav_label=QLabel(); layout.addWidget(window.nav_label)
@@ -30,6 +31,15 @@ def setup(window):
         shortcut.activated.connect(lambda p=page:navigate(window,p)); window.nav_shortcuts.append(shortcut)
     help_key=QShortcut(QKeySequence('F1'),window);help_key.activated.connect(lambda:show_help(window))
     window.nav_shortcuts.append(help_key)
+    window.initial_nav_focus=QTimer(window);window.initial_nav_focus.setSingleShot(True)
+    window.initial_nav_focus.timeout.connect(lambda:focus_navigation(window))
+
+def focus_navigation(window):
+    if not window.ready or window.busy:return
+    if window.page_picker.isVisible():window.page_picker.setFocus(Qt.OtherFocusReason)
+    else:
+        for button in window.nav_widget.findChildren(QPushButton):
+            if button.isChecked():button.setFocus(Qt.OtherFocusReason);break
 
 def navigate(window,page):
     if window.ready and page in PAGES:
@@ -88,6 +98,8 @@ def adapt(window):
     from PySide6.QtWidgets import QFormLayout,QGridLayout
     body=window.scroll.widget()
     if body:
+        from widgets import ActionRow
+        for row in body.findChildren(ActionRow):row.adapt()
         for form in body.findChildren(QFormLayout):
             form.setRowWrapPolicy(QFormLayout.WrapAllRows if width<900 or window.settings.get('scale',100)>=150 else QFormLayout.WrapLongRows)
             for index in range(form.rowCount()):

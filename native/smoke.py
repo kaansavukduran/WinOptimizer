@@ -1,5 +1,6 @@
 """Opt-in packaged UI self-test. Only --smoke activates it; never normal startup."""
 import hashlib
+import math
 import json
 import os
 from pathlib import Path
@@ -30,6 +31,9 @@ def start(window, scenario):
             if not window.ready or window.busy:return
             stage=state['stage']
             if stage==0:
+                if scenario in ('seed','portable'):
+                    assert window.settings['theme']=='dark' and window.settings['font']=='system',('Fresh AIONIA defaults',window.settings)
+                    (evidence/'first-launch.json').write_text(json.dumps(dict(verified=True,actualPackagedWindows=True,theme=window.settings['theme'],font=window.settings['font'],scenario=scenario)),encoding='utf-8')
                 if scenario=='verify':
                     for key,value in [('scale',135),('textSize',125),('font','dyslexic'),('theme','dark'),('language','en')]:assert window.settings[key]==value,(key,window.settings)
                 if scenario in ('portable','reopen'):
@@ -357,12 +361,12 @@ def start(window, scenario):
                 state['layoutSettingsSection']=window.settings_section
                 state['layoutMilestones']=list(window.state['milestones'])
                 state['layoutPages']=list(__import__('usability').PAGES)
-                state['layoutProfiles']=[dict(id='wide-light-tr',width=1240,language='tr',theme='light',scale=100,textSize=100),dict(id='compact-dark-en',width=540,language='en',theme='dark',scale=100,textSize=100),dict(id='large-dark-tr',width=540,language='tr',theme='dark',scale=200,textSize=125),dict(id='large-light-en',width=540,language='en',theme='light',scale=200,textSize=125)]
+                state['layoutProfiles']=[dict(id='wide-light-tr',width=1240,language='tr',theme='light',scale=100,textSize=100),dict(id='compact-dark-en',width=540,language='en',theme='dark',scale=100,textSize=100),dict(id='large-dark-tr',width=540,language='tr',theme='dark',scale=200,textSize=125),dict(id='large-light-en',width=540,language='en',theme='light',scale=200,textSize=125),dict(id='wide-dark-system-tr',width=1600,language='tr',theme='dark',font='system',scale=100,textSize=100)]
                 state.update(layoutIndex=0,layoutRows=[],stage=41)
             elif stage==41:
                 index=state['layoutIndex'];profile=state['layoutProfiles'][index//10];page=state['layoutPages'][index%10]
                 window.settings.update({k:v for k,v in profile.items() if k not in ('id','width')})
-                window.settings.update(font='dyslexic',operationDetails=False,motion=False)
+                window.settings.update(font=profile.get('font','dyslexic'),operationDetails=False,motion=False)
                 window.resize(profile['width'],900);window.appearance();window.page=page
                 if page=='settings':window.settings_section='appearance'
                 began_render=time.perf_counter();window.render();state['layoutRenderMs']=(time.perf_counter()-began_render)*1000
@@ -371,12 +375,19 @@ def start(window, scenario):
             elif stage==42:
                 # Real Qt geometry after its deferred text layout, not only a pixel diff.
                 assert window.scroll.horizontalScrollBar().maximum()==0,(state['layoutProfile'],state['layoutPage'],window.scroll.widget().width(),window.scroll.viewport().width())
-                from widgets import Button
+                from widgets import Button,ActionRow
+                from PySide6.QtCore import QPoint
                 buttons=window.scroll.widget().findChildren(QPushButton)
                 assert sum(bool(b.property('primary')) for b in buttons)<=1
                 assert all(b.height()>=b.heightForWidth(b.width()) for b in buttons if isinstance(b,Button) and b.isVisible())
                 assert state['layoutRenderMs']<=2000,('Synchronous Qt render exceeded the predeclared 2000 ms CI budget',state['layoutRenderMs'])
                 profile,page=state['layoutProfile'],state['layoutPage']
+                content=window.scroll.widget();viewport=window.scroll.viewport()
+                offset=content.mapTo(viewport,QPoint(0,0)).x()
+                assert abs(2*offset+content.width()-viewport.width())<=2,('Content is not optically centered',offset,content.width(),viewport.width())
+                rows=content.findChildren(ActionRow)
+                assert len({r.action.width() for r in rows})<=1,('Unequal equivalent care actions',[(r.action.text(),r.action.width()) for r in rows])
+                assert all(r.row.direction()==r.row.TopToBottom or r.copy.width()>=r.width()/2 for r in rows)
                 window.grab().save(str(evidence/('Windows-Qt-layout-'+profile['id']+'-'+page+'.png')))
                 if page=='settings' and profile['scale']==200:
                     from PySide6.QtWidgets import QSpinBox
@@ -387,12 +398,12 @@ def start(window, scenario):
                     target=window.scroll.widget().findChild(QSpinBox,'setting-scale');assert target
                     window.scroll.ensureWidgetVisible(target)
                     window.grab().save(str(evidence/('Windows-Qt-layout-'+profile['id']+'-settings-scale.png')))
-                state['layoutRows'].append(dict(profile=profile['id'],page=page,requestedWidth=profile['width'],actualWidth=window.width(),actualHeight=window.height(),viewportWidth=window.scroll.viewport().width(),outerHorizontalMaximum=0,primaryActions=sum(bool(b.property('primary')) for b in buttons),synchronousRenderMs=round(state['layoutRenderMs'],2)))
+                state['layoutRows'].append(dict(profile=profile['id'],page=page,requestedWidth=profile['width'],actualWidth=window.width(),actualHeight=window.height(),viewportWidth=viewport.width(),bodyWidth=content.width(),bodyOffset=offset,equivalentActionWidths=[r.action.width() for r in rows],outerHorizontalMaximum=0,primaryActions=sum(bool(b.property('primary')) for b in buttons),synchronousRenderMs=round(state['layoutRenderMs'],2)))
                 state['layoutIndex']+=1
-                if state['layoutIndex']<40:state['stage']=41;return
+                if state['layoutIndex']<len(state['layoutProfiles'])*10:state['stage']=41;return
                 assert window.state['milestones']==state['layoutMilestones']
                 timings=sorted(r['synchronousRenderMs'] for r in state['layoutRows'])
-                (evidence/'aionia-layout.json').write_text(json.dumps(dict(verified=True,standard='AIONIA 1.2',actualPackagedWindows=True,rows=state['layoutRows'],renderBudgetMs=2000,p95SynchronousRenderMs=timings[37],preferencesRestored=True,milestonesUnchanged=True,physicalDeviceCertification=False),indent=2),encoding='utf-8')
+                (evidence/'aionia-layout.json').write_text(json.dumps(dict(verified=True,standard='AIONIA 1.5',actualPackagedWindows=True,rows=state['layoutRows'],renderBudgetMs=2000,p95SynchronousRenderMs=timings[math.ceil(len(timings)*.95)-1],preferencesRestored=True,milestonesUnchanged=True,physicalDeviceCertification=False),indent=2),encoding='utf-8')
                 window.settings=state['layoutPreferences'];window.settings_section=state['layoutSettingsSection'];window.resize(*state['layoutSize']);window.appearance();window.render()
                 state['layoutChecked']=True;finish(state['layoutFinalSettings'])
         except Exception as error:
