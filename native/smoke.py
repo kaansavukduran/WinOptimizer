@@ -5,7 +5,8 @@ import os
 from pathlib import Path
 import sys
 import time
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QPushButton, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QTreeWidget, QLineEdit
 
 def start(window, scenario):
@@ -299,7 +300,6 @@ def start(window, scenario):
                 plan=window.state.get('package');assert plan and len(plan['candidates'])==1
                 assert all(r.get('eligible') is False and r.get('signed') is False for r in plan['candidates'])
                 assert not window.scroll.widget().findChild(QPushButton,'driver-package-apply').isEnabled()
-                from PySide6.QtCore import Qt
                 tree=window.scroll.widget().findChild(QTreeWidget,'driver-package-tree');assert not tree.topLevelItem(0).flags() & Qt.ItemIsUserCheckable
                 window.scroll.ensureWidgetVisible(tree);state['driverTestPackageId']=plan['libraryId'];state['stage']=34
             elif stage==34:
@@ -324,6 +324,33 @@ def start(window, scenario):
                 (evidence/'driver-center.json').write_text(json.dumps(dict(verified=True,actualDriverRows=state['driverCount'],realUnsignedImportBlocked=True,noDriverInstalled=True,ownedFixtureRemoved=True,offlineInventory=True,ignoredLibrary=True,workshopCategories=True,milestonesUnchanged=True),indent=2),encoding='utf-8')
                 window.settings=state['driverViewPreferences'];window.driver_section='updates';window.workshop_section='runtimes';window.appearance();window.render()
                 state['driverCenterChecked']=True;finish(state['driverFinalSettings'])
+            elif stage==37:
+                state['usabilityPreferences']=dict(window.settings)
+                state['usabilitySize']=(window.width(),window.height())
+                state['usabilityMilestones']=list(window.state['milestones'])
+                window.settings.update(language='tr',theme='dark',accent='#ffffff',scale=150,textSize=125,font='dyslexic',operationDetails=False)
+                window.resize(540,900);window.appearance();window.page='home';window.render()
+                window.activateWindow();window.raise_();state['stage']=38
+            elif stage==38:
+                from usability import PAGES
+                from personalize import contrast
+                assert window.compact_nav.isVisible() and not window.nav_scroll.isVisible()
+                assert [window.page_picker.itemData(i) for i in range(10)]==list(PAGES)
+                t=window.visual_tokens
+                assert min(contrast(t['focus'],t[s]) for s in ['background','surface'])>=3
+                QTest.keyClick(window,Qt.Key_5,Qt.ControlModifier)
+                assert window.page=='hardware' and window.page_picker.currentData()=='hardware'
+                window.grab().save(str(evidence/'Windows-Qt-compact-navigation.png'))
+                QTest.keyClick(window,Qt.Key_F1);assert window.help_dialog
+                state['stage']=39
+            elif stage==39:
+                assert window.help_dialog.isVisible()
+                window.help_dialog.grab().save(str(evidence/'Windows-Qt-usage-guide.png'))
+                QTest.keyClick(window.help_dialog,Qt.Key_Escape);assert window.help_dialog is None
+                assert window.state['milestones']==state['usabilityMilestones']
+                window.settings=state['usabilityPreferences'];window.resize(*state['usabilitySize']);window.appearance();window.render()
+                (evidence/'aionia-usability.json').write_text(json.dumps(dict(verified=True,standard='AIONIA 1.1',actualPackagedQt=True,compactNavigationAllTenPages=True,realKeyboardNavigation=True,localizedContextHelp=True,focusContrastVerified=True,preferencesRestored=True,milestonesUnchanged=True),indent=2),encoding='utf-8')
+                state['usabilityChecked']=True;finish(state['usabilityFinalSettings'])
         except Exception as error:
             timer.stop()
             (evidence/'FAILED.json').write_text(json.dumps({'scenario':scenario,'stage':state['stage'],'error':repr(error),'notice':window.notice.text()},indent=2),encoding='utf-8')
@@ -334,6 +361,9 @@ def start(window, scenario):
             return
         if not state.get('personalizeChecked'):
             state.update(personalFinalSettings=settings,stage=22)
+            return
+        if not state.get('usabilityChecked'):
+            state.update(usabilityFinalSettings=settings,stage=37)
             return
         if not state.get('recoveryChecked'):
             assert not window.busy

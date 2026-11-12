@@ -10,7 +10,7 @@ class Paragraph(QTextEdit):
         self.setReadOnly(True)
         self.setPlainText(value)
         self.setFrameShape(QFrame.NoFrame)
-        self.setStyleSheet('QTextEdit { border: none; background: transparent; padding: 0; }')
+        self.setStyleSheet('QTextEdit { background: transparent; padding: 0; }')
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Minimum)

@@ -26,6 +26,21 @@ def ink(hex_color):
     luminance=sum(a*b for a,b in zip(channels,(.2126,.7152,.0722)))
     return '#000000' if (luminance+.05)/.05 >= 1.05/(luminance+.05) else '#ffffff'
 
+def luminance(hex_color):
+    color=QColor(hex_color)
+    values=[c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4 for c in (color.redF(),color.greenF(),color.blueF())]
+    return sum(a*b for a,b in zip(values,(.2126,.7152,.0722)))
+
+def contrast(first,second):
+    a,b=sorted((luminance(first),luminance(second)))
+    return (b+.05)/(a+.05)
+
+def focus_color(accent,bg,surface):
+    # User colors remain free. Keyboard focus must stay visible on both surfaces.
+    if min(contrast(accent,bg),contrast(accent,surface))>=3:return accent
+    return max(('#63d5fa','#f4a9cd','#003b55','#741a46','#000000','#ffffff'),
+               key=lambda c:min(contrast(c,bg),contrast(c,surface)))
+
 def header(window,title=True):
     wrapper=ResponsiveRow(window.body.parentWidget(),window);window.companion_header=wrapper;row=wrapper.row;copy=QVBoxLayout()
     if title:window.label(window.t(window.page),heading=True,layout=copy)
