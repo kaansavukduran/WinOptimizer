@@ -371,9 +371,22 @@ def start(window, scenario):
                 if page=='settings':window.settings_section='appearance'
                 began_render=time.perf_counter();window.render();state['layoutRenderMs']=(time.perf_counter()-began_render)*1000
                 window.notice.setText(window.t('ux.ready'));window.scroll.verticalScrollBar().setValue(0)
-                state.update(layoutProfile=profile,layoutPage=page,stage=42)
+                state.update(layoutProfile=profile,layoutPage=page,layoutCaptureAfter=time.monotonic()+.8,layoutGeometry=None,stage=42)
             elif stage==42:
                 # Real Qt geometry after its deferred text layout, not only a pixel diff.
+                from widgets import Paragraph,wrapped
+                content=window.scroll.widget()
+                paragraphs=[window.notice]+content.findChildren(Paragraph)
+                geometry=(window.width(),window.height(),content.width(),content.height(),tuple((p.width(),p.height(),round(p.document().size().height(),2)) for p in paragraphs))
+                if time.monotonic()<state['layoutCaptureAfter'] or any(p.fit_timer.isActive() for p in paragraphs):return
+                if geometry!=state['layoutGeometry']:
+                    state['layoutGeometry']=geometry
+                    return
+                # A normal-font one-line paragraph must not retain a large-font block.
+                for paragraph in paragraphs:
+                    lines=wrapped(paragraph.toPlainText(),paragraph.font(),max(1,paragraph.viewport().width()-4)).count('\n')+1
+                    limit=max(80,(lines+1)*paragraph.fontMetrics().lineSpacing()*max(2,window.settings.get('lineHeight',1.5))+32)
+                    assert paragraph.height()<=limit,('Unsettled or oversized text block',paragraph.toPlainText()[:60],paragraph.height(),limit)
                 assert window.scroll.horizontalScrollBar().maximum()==0,(state['layoutProfile'],state['layoutPage'],window.scroll.widget().width(),window.scroll.viewport().width())
                 from widgets import Button,ActionRow
                 from PySide6.QtCore import QPoint
@@ -403,7 +416,7 @@ def start(window, scenario):
                 if state['layoutIndex']<len(state['layoutProfiles'])*10:state['stage']=41;return
                 assert window.state['milestones']==state['layoutMilestones']
                 timings=sorted(r['synchronousRenderMs'] for r in state['layoutRows'])
-                (evidence/'aionia-layout.json').write_text(json.dumps(dict(verified=True,standard='AIONIA 1.5',actualPackagedWindows=True,rows=state['layoutRows'],renderBudgetMs=2000,p95SynchronousRenderMs=timings[math.ceil(len(timings)*.95)-1],preferencesRestored=True,milestonesUnchanged=True,physicalDeviceCertification=False),indent=2),encoding='utf-8')
+                (evidence/'aionia-layout.json').write_text(json.dumps(dict(verified=True,standard='AIONIA 1.5',actualPackagedWindows=True,rows=state['layoutRows'],renderBudgetMs=2000,p95SynchronousRenderMs=timings[math.ceil(len(timings)*.95)-1],settledCapture=True,captureMinimumDelayMs=800,paragraphBoundsVerified=True,preferencesRestored=True,milestonesUnchanged=True,physicalDeviceCertification=False),indent=2),encoding='utf-8')
                 window.settings=state['layoutPreferences'];window.settings_section=state['layoutSettingsSection'];window.resize(*state['layoutSize']);window.appearance();window.render()
                 state['layoutChecked']=True;finish(state['layoutFinalSettings'])
         except Exception as error:
