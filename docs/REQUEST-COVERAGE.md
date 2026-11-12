@@ -4,6 +4,7 @@ Bu kayıt, yapılan işi başka bir uygulamanın bütün özellikleriyle eşit g
 
 | Önceki istek | Durum / uygulamadaki yeri |
 | --- | --- |
+| AIONIA v1.1 teknoloji bağımsız kalite standardı | 6.8: Dar ekran/klavye/rehber/kontrast/açılış; mevcut Qt ve onaylı Aion korunur. Gerçek Windows ve güncelleme PASS; yardımcı teknoloji, fiziksel cihaz, perf ve tam denetim sınırları AIONIA-QA.md içinde. |
 | Yalnız Windows, Chromium olmadan bağımsız uygulama | Tamam: Python/Qt Widgets, paketli Node, Windows PowerShell. Başka OS paketi veya donor alt uygulama yok. |
 | Setup ve portable, ayrı sürümler, uygulama içi güncelleme | Tamam: sürümlü iki EXE; imzalı güncelleme metadatası ve dosya özeti, gerçek iki paketle güncelleme kontrolü. Portable Data klasörünü korur. |
 | Tarama ve düzeltme, her adımın çalıştığını görebilme | Tamamlanan kapsam: Windows aygıt kodları, servis/ağ/ekran/bileşen göstergeleri ve dokuz ortak bakım kategorisi. Gerçek adım günlüğü, belirsiz/bilinen toplamlı ilerleme, iptal ve açık hata yolu. Her Windows arızasını saptama iddiası yok. |

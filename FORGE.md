@@ -1,6 +1,18 @@
 # WinOptimizer Aion Forge
 
-Durum: **6.7.0 kararlı/latest; bütünleşik sürücü merkezi tamamlandı.** Windows x64/Qt Widgets, Chromium ve donor alt uygulama yok. Kaynak/etiket `84c2977b3c85b417c5b3f70a98bde1f66ab6f623`, PR #18, merge `c3241f9a698c28d0479eed5f1bb5f9889506d4d5`, metadata `f1c511620fdaec809e1c5bc12ccb1fc98eaa5ebb`, yayın `441086918`.
+Durum: **6.8.0 kararlı/latest; AIONIA v1.1 masaüstü kullanılabilirliği tamamlandı.** Kaynak/etiket `0d31aa570f099011c141d249e27e75ee7b3a3b31`, PR #19, merge `b7235a8da68246ab6119af05f996bee9c518ca7b`, metadata `a7b4bc8bb6df8fd1e625210e3528031f05fa2348`, yayın `442995150`.
+
+Kullanıcı Godot değil normal uygulama olduğunu açıkladı ve v1.1 teknoloji bağımsız standardı verdi. Resmi Drive belgesi bölüm 11 geçerlidir; Windows Python/Qt/headless Node/PowerShell altyapısını değiştirme. Yeni motor/framework/telemetri yok. 00_BAŞLA ve 19 görsel incelendi; onaysız canonical adı/logo/Emre sprite'ı kesinleşmiş kabul edilmez. Mevcut Aion ve çarklı ikon korunur; diğer karakterleri bu araca zorla ekleme. Standart uygulaması docs/AIONIA_STANDARD.md; tasarım/asset kaynakları APP_DESIGN.md, ART_BIBLE.md, AIONIA-REFERENCES.json.
+
+Dar pencere/büyük yazıda on bölümlü seçici, F1 bağlamsal rehber, Ctrl+1…9/Ctrl+0, görünür klavye odağı/kontrast ve açık açılış durumu eklendi. İşlem günlüğü kendi kaydırma alanında. Büyük yazıda başlık sadeleşir, sürüm Ayarlar/Hakkında'da kalır. Yardım/gezinti sistem değişikliği veya puan üretmez. Mevcut onay/backup/imza/hash/mahremiyet kuralları korunur.
+
+133 Qt/58 Node yerel ve Windows PASS. Kaynak `43227313949`, PR `43227324236`, main `43228876061`, yayın `43228931961`, hareket `43228681381`, gerçek 6.7.0 → 6.8.0 güncelleme `43229351327` başarılı. İlk Windows testinin 2000 px varsayımı gerçek masaüstü/yerleşmiş odakla düzeltildi. Exact payload/registry/runtime, bütün önceki tercihler (test beta kanalı dışında), geçmiş/milestones, yeni usability ve eski tüm smoke kanıtları doğrulandı. Kaynak paket artifact `13948692622`. NVDA/Narrator, fiziksel cihaz/perf, kullanıcı araştırması, tam WCAG ve pentest NOT TESTED; mutlak erişilebilirlik/güvenlik iddiası kullanma.
+
+Özel Drive `10nIOqRara8hCja2YPjZpCNMVqW1MmmWG`: üç source push + merge + metadata + kapanış; tüm Git/etiketler, iki bütün EXE ve kanıtlar. Ham geri okuma/hash/ZIP/bundle kontrolü yapılır, özel anahtar yedeğe girmez. Eski yayınları/etiketleri değiştirme. Sonraki tur bu doğrulanmış noktadan başlar. Driver Booster/legacy paritesi tamamlandı değildir: docs/REQUEST-COVERAGE.md. Sonuç matrisi docs/AIONIA-QA.md, tam kanıt docs/VALIDATION.md.
+
+## Önceki 6.7.0 kaydı
+
+Durum: **6.7.0 önceki doğrulanmış kararlı sürüm; bütünleşik sürücü merkezi tamamlandı.** Windows x64/Qt Widgets, Chromium ve donor alt uygulama yok. Kaynak/etiket `84c2977b3c85b417c5b3f70a98bde1f66ab6f623`, PR #18, merge `c3241f9a698c28d0479eed5f1bb5f9889506d4d5`, metadata `f1c511620fdaec809e1c5bc12ccb1fc98eaa5ebb`, yayın `441086918`.
 
 Beş sürücü bölümü, aranabilir envanter, bilinmeyen kodun korunması, tarihli yerel yedekler, kaynakla bağlı paket inceleme, uygun seçim, çevrimdışı aktarım ve atomik toplu atla/geri göster mevcut kurallara bağlandı. Geri yüklemede 1–20 paket sayacı/sınırı vardır; Tümünü güncelle bu sınıra tabi değildir. Bakım atölyesi kategorilere ayrıldı. Aion, tema/font/erişilebilirlik, ortak SysMender bakımı ve geçmiş korunur.
 

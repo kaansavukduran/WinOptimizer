@@ -1,8 +1,33 @@
 # Verification evidence
 
+## 6.8.0 AIONIA v1.1 native desktop usability
+
+[v6.8.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.8.0) is stable/latest. Application/tag source `0d31aa570f099011c141d249e27e75ee7b3a3b31`, PR #19, merge `b7235a8da68246ab6119af05f996bee9c518ca7b`, signed metadata `a7b4bc8bb6df8fd1e625210e3528031f05fa2348`, release `442995150`.
+
+AIONIA v1.1 section 11 is applied as a technology-independent product standard. The existing Windows Python/Qt Widgets architecture and user-requested Aion/icon are retained. No new runtime dependency, engine, framework, telemetry or runtime Drive access is added. Official 00_BAŞLA, v1.0 then updated v1.1 and all 19 copied images were actually read/downloaded/visually inspected; hashes and approval uncertainty are recorded. Existing source art is not replaced by an unapproved variant. [Product scope](AIONIA_STANDARD.md), [design](APP_DESIGN.md), [art/provenance](ART_BIBLE.md), [PASS/FAIL/NOT TESTED matrix](AIONIA-QA.md).
+
+Native section navigation adapts to measured tab widths and retains selection/focus. F1 guidance is local, page-specific, TR/EN, scrollable and closes with Esc. Ctrl+1…9/Ctrl+0 navigate without confirming changes. Startup explains engine connection and stops loading on failure. Shared focus/border/text/selection tokens, including custom accents, are measured; active text pairs meet 4.5:1 and focus/border pairs meet 3:1. This is not a whole-product WCAG certification. Large text has simplified chrome and an independently scrollable operation panel.
+
+133 Qt and 58 Node tests passed locally and on Windows. A new large-text check caught clipped chrome/oversized log layout and prompted the final layout fix. The first Windows round failed a test-only assumption that a top-level window could remain 2000 px wide; it now uses the actual work area, supported compact density and settled focus. Final source and PR passed without weakened visibility/focus conditions. Installed/portable/reopened packages exercised real new navigation/help/shortcuts and all earlier scan, shared care, hardware, package eligibility, recovery, personalization and journey checks. The source Windows artifact contains explicit `aionia-usability.json` receipts for both modes; smoke never installed an unsigned driver.
+
+[Source](https://github.com/kaansavukduran/WinOptimizer/actions/runs/43227313949), [PR](https://github.com/kaansavukduran/WinOptimizer/actions/runs/43227324236), [main](https://github.com/kaansavukduran/WinOptimizer/actions/runs/43228876061), [publication](https://github.com/kaansavukduran/WinOptimizer/actions/runs/43228931961), [motion enabled](https://github.com/kaansavukduran/WinOptimizer/actions/runs/43228681381) and [actual installed 6.7.0 → 6.8.0 update](https://github.com/kaansavukduran/WinOptimizer/actions/runs/43229351327) all succeeded. The update invoked real baseline app controls, then verified exact installed Portable payload hash, registry/runtime version, prior preferences, cleanup/restore history and health/scan milestones. New usability/driver/personalization/recovery receipts also passed after upgrading. The test-only motion runner advanced all ten page clocks and restored its original OS motion preference.
+
+| Artifact | ID | SHA-256 |
+| --- | --- | --- |
+| Source Windows | 13948692622 | `6f6762f6771ad45573ece9f96ef85eec14b63a25c3a54aa53645afe107894752` |
+| Motion enabled | 13948907332 | `3d45a6bb7bc177c6046e79f35ce21ad3b3da08c5f6e4e5f0b789c66c665d49ee` |
+| Installed update | 13950401036 | `49c2abfb67fadd46e1957118e0495da0b9d7e3b219bbe90203f15bb1f34513ce` |
+
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| Setup | 97,169,205 | `fedb42e1b4bdc9bbb143b4842cb86a5fe60dac3961695207bdc5535478f5db82` |
+| Portable | 97,018,106 | `8a45999b82bd198a0b2c7ac112a18baa9199b327f4d8eb61abb2e4cecdb064da` |
+
+Original ZIP CRC/hashes, five public asset digests, Ed25519 update metadata signature and all seven icon sizes in both EXEs matched. This does not add an Authenticode certificate. [Actual Windows image](screenshots/WinOptimizer-6.8.0-Surucu-Merkezi.png). [Private Drive backup](https://drive.google.com/drive/folders/10nIOqRara8hCja2YPjZpCNMVqW1MmmWG): all three source pushes, merge, metadata and closing docs; full reachable Git history/tags, whole Setup/Portable and source/evidence; raw readback bytes/hash, ZIP CRC and bundles checked. Private signing keys excluded. NVDA/Narrator, physical touch/high-DPI/low-end hardware, performance benchmarks, user research, full WCAG audit and penetration testing remain NOT TESTED. Proprietary driver catalog and other prior parity gaps remain in `REQUEST-COVERAGE.md`.
+
 ## 6.7.0 integrated native driver workflows
 
-[v6.7.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.7.0) is stable/latest. Application/tag source `84c2977b3c85b417c5b3f70a98bde1f66ab6f623`, PR #18, merge `c3241f9a698c28d0479eed5f1bb5f9889506d4d5`, signed metadata `f1c511620fdaec809e1c5bc12ccb1fc98eaa5ebb`, release `441086918`.
+[v6.7.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.7.0) was the previous verified stable release. Application/tag source `84c2977b3c85b417c5b3f70a98bde1f66ab6f623`, PR #18, merge `c3241f9a698c28d0479eed5f1bb5f9889506d4d5`, signed metadata `f1c511620fdaec809e1c5bc12ccb1fc98eaa5ebb`, release `441086918`.
 
 The existing driver center now separates updates, installed inventory, backup/recovery, offline preparation and ignored offers. Inventory search/problem-code filtering, dated local libraries, eligible recovery selection (1–20 per action), source-bound inspection state and atomic bulk ignore/unignore use the existing backend. Update all remains independent of filters and that recovery limit. Workshop controls are categorized within the same application. Unknown/null Windows device codes remain unknown, including a real PowerShell 5.1 fixture covering null, missing, zero and 28.
 
