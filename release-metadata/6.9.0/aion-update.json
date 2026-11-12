@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.9.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 97183774,
+  "sha256": "6eda0bdfce468cd19d83f15054f576f2a406543239a0989f377f12717ec9b9e9",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.9.0/WinOptimizer-Aion-6.9.0-Windows-x64-Setup.exe",
+  "sourceCommit": "34468ca6720898fed73e454f2c5620ad1ce98135",
+  "notes": {
+    "tr": "AIONIA v1.2: satıra bölünen yerel kontroller, daha açık kategori/başlıklar, tek ana eylem, yeniden dizilen formlar ve büyütülmüş yazıda bütünlüğünü koruyan yüzde/renk seçenekleri. Ayarlar ve geçmiş korunur.",
+    "en": "AIONIA v1.2: wrapping native controls, clear section headings, one primary action, responsive forms and intact percentage/color presets at large text sizes. Settings and history are preserved."
+  },
+  "portable": {
+    "bytes": 97032507,
+    "sha256": "098add5ead9a52b284fdb09c71d36ea883900526bc61ed096931bcde11553974",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.9.0/WinOptimizer-Aion-6.9.0-Windows-x64-Portable.exe"
+  }
+}
