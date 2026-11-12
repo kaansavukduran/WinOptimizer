@@ -354,6 +354,7 @@ def start(window, scenario):
             elif stage==40:
                 state['layoutPreferences']=dict(window.settings)
                 state['layoutSize']=(window.width(),window.height())
+                state['layoutSettingsSection']=window.settings_section
                 state['layoutMilestones']=list(window.state['milestones'])
                 state['layoutPages']=list(__import__('usability').PAGES)
                 state['layoutProfiles']=[dict(id='wide-light-tr',width=1240,language='tr',theme='light',scale=100,textSize=100),dict(id='compact-dark-en',width=540,language='en',theme='dark',scale=100,textSize=100),dict(id='large-dark-tr',width=540,language='tr',theme='dark',scale=200,textSize=125),dict(id='large-light-en',width=540,language='en',theme='light',scale=200,textSize=125)]
@@ -363,6 +364,7 @@ def start(window, scenario):
                 window.settings.update({k:v for k,v in profile.items() if k not in ('id','width')})
                 window.settings.update(font='dyslexic',operationDetails=False,motion=False)
                 window.resize(profile['width'],900);window.appearance();window.page=page
+                if page=='settings':window.settings_section='appearance'
                 began_render=time.perf_counter();window.render();state['layoutRenderMs']=(time.perf_counter()-began_render)*1000
                 window.notice.setText(window.t('ux.ready'));window.scroll.verticalScrollBar().setValue(0)
                 state.update(layoutProfile=profile,layoutPage=page,stage=42)
@@ -391,7 +393,7 @@ def start(window, scenario):
                 assert window.state['milestones']==state['layoutMilestones']
                 timings=sorted(r['synchronousRenderMs'] for r in state['layoutRows'])
                 (evidence/'aionia-layout.json').write_text(json.dumps(dict(verified=True,standard='AIONIA 1.2',actualPackagedWindows=True,rows=state['layoutRows'],renderBudgetMs=2000,p95SynchronousRenderMs=timings[37],preferencesRestored=True,milestonesUnchanged=True,physicalDeviceCertification=False),indent=2),encoding='utf-8')
-                window.settings=state['layoutPreferences'];window.resize(*state['layoutSize']);window.appearance();window.render()
+                window.settings=state['layoutPreferences'];window.settings_section=state['layoutSettingsSection'];window.resize(*state['layoutSize']);window.appearance();window.render()
                 state['layoutChecked']=True;finish(state['layoutFinalSettings'])
         except Exception as error:
             timer.stop()
