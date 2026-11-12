@@ -36,24 +36,31 @@ function Invoke-Control($Element,[string]$Name){
   else{throw ('Native control has no supported activation pattern: '+$Name)}
   $script:receipts+=@{control=$Name;action=$action;at=(Get-Date).ToUniversalTime().ToString('o')}
 }
+function Select-VisibleItem($Combo,[string]$Name){
+  $Combo.SetFocus()
+  $Combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+  # Qt popup windows can be siblings of the main window in the accessibility tree.
+  $item=Find-Control ([System.Windows.Automation.AutomationElement]::RootElement) $Name ([System.Windows.Automation.ControlType]::ListItem)
+  $rect=$item.Current.BoundingRectangle
+  if($item.Current.IsOffscreen -or $rect.Width -le 0 -or $rect.Height -le 0){throw ($Name+' popup item is not visibly clickable')}
+  # Selection alone does not activate a Qt combo item; click its discovered visible bounds.
+  $null=[AionUiMouse]::SetCursorPos([int]($rect.X+$rect.Width/2),[int]($rect.Y+$rect.Height/2))
+  [AionUiMouse]::mouse_event(2,0,0,0,[UIntPtr]::Zero)
+  [AionUiMouse]::mouse_event(4,0,0,0,[UIntPtr]::Zero)
+  $script:receipts+=@{control=$Name;action='UIA bounding rectangle + Windows click'}
+}
 try {
   $null=Start-Process -FilePath $Exe -PassThru
   $desktop=[System.Windows.Automation.AutomationElement]::RootElement
   $window=Find-Control $desktop 'WinOptimizer Aion' ([System.Windows.Automation.ControlType]::Window)
   $script:baselineProcessId=$window.Current.ProcessId
-  Invoke-Control (Find-Control $window 'Settings' ([System.Windows.Automation.ControlType]::CheckBox)) 'Settings'
+  # Since 6.8.0, compact/large-text windows expose the same pages in a native picker.
+  $settingsTab=$null
+  try{$settingsTab=Find-Control $window 'Settings' ([System.Windows.Automation.ControlType]::CheckBox) 2}catch{}
+  if($settingsTab -and -not $settingsTab.Current.IsOffscreen){Invoke-Control $settingsTab 'Settings'}
+  else{Select-VisibleItem (Find-Control $window 'Section' ([System.Windows.Automation.ControlType]::ComboBox)) 'Settings'}
   $combo=Find-Control $window 'Settings' ([System.Windows.Automation.ControlType]::ComboBox)
-  $combo.SetFocus()
-  $combo.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
-  # Qt popup windows can be siblings of the main window in the accessibility tree.
-  $item=Find-Control $desktop 'Updates' ([System.Windows.Automation.ControlType]::ListItem)
-  $rect=$item.Current.BoundingRectangle
-  if($item.Current.IsOffscreen -or $rect.Width -le 0 -or $rect.Height -le 0){throw 'Updates popup item is not visibly clickable'}
-  # Click the UIA-discovered row: selection alone does not activate a Qt combo item.
-  $null=[AionUiMouse]::SetCursorPos([int]($rect.X+$rect.Width/2),[int]($rect.Y+$rect.Height/2))
-  [AionUiMouse]::mouse_event(2,0,0,0,[UIntPtr]::Zero)
-  [AionUiMouse]::mouse_event(4,0,0,0,[UIntPtr]::Zero)
-  $script:receipts+=@{control='Updates';action='UIA bounding rectangle + Windows click'}
+  Select-VisibleItem $combo 'Updates'
   Invoke-Control (Find-Control $window 'Check for updates' ([System.Windows.Automation.ControlType]::Button)) 'Check for updates'
   $install=Find-Control $window 'Update and restart' ([System.Windows.Automation.ControlType]::Button) 120
   Invoke-Control $install 'Update and restart'
