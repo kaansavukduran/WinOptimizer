@@ -112,3 +112,14 @@ def test_error_recovery_has_one_primary_action_instead_of_competing_page_action(
     primary=[x for x in w.scroll.widget().findChildren(QPushButton) if x.property('primary')]
     assert len(primary)==1 and primary[0].objectName()==('recovery-retry' if retry else 'recovery-origin')
     assert b.calls==before and not w.scroll.widget().findChild(QPushButton,'hardware-scan').property('primary')
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_percentage_and_palette_grids_keep_numbers_and_words_intact_when_resized(window,application,language):
+    w,_=window;w.settings.update(language=language,scale=200,textSize=125,font='dyslexic',operationDetails=False)
+    w.resize(1240,900);w.appearance();w.go('settings');QTest.qWait(50)
+    w.resize(540,900);QTest.qWait(80)
+    for button in w.scroll.widget().findChildren(Button):
+        if '%' in button.text() or button.objectName().startswith('accent-preset-'):
+            largest=max(button.text().split(),key=button.fontMetrics().horizontalAdvance)
+            assert button.fontMetrics().horizontalAdvance(largest)<=button.width()-2*button.margin()
+    assert w.scroll.horizontalScrollBar().maximum()==0

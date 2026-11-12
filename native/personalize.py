@@ -114,7 +114,7 @@ def accent_controls(window,form):
             status.setPlainText(window.t('look.colorInvalid'))
     entry.editingFinished.connect(custom)
     layout.addWidget(entry)
-    palette=QGridLayout();layout.addLayout(palette)
+    palette=QGridLayout();palette.setProperty('responsiveColumns',2);layout.addLayout(palette)
     for index,(name,color) in enumerate(PALETTE):
         b=QPushButton(window.t('look.'+name));b.setObjectName('accent-preset-'+name);b.setCheckable(True)
         b.setProperty('accentColor',color);b.setChecked(window.settings.get('accent','').lower()==color)

@@ -376,6 +376,15 @@ def start(window, scenario):
                 assert state['layoutRenderMs']<=2000,('Synchronous Qt render exceeded the predeclared 2000 ms CI budget',state['layoutRenderMs'])
                 profile,page=state['layoutProfile'],state['layoutPage']
                 window.grab().save(str(evidence/('Windows-Qt-layout-'+profile['id']+'-'+page+'.png')))
+                if page=='settings' and profile['scale']==200:
+                    from PySide6.QtWidgets import QSpinBox
+                    for button in buttons:
+                        if '%' in button.text() or button.objectName().startswith('accent-preset-'):
+                            word=max(button.text().split(),key=button.fontMetrics().horizontalAdvance)
+                            assert button.fontMetrics().horizontalAdvance(word)<=button.width()-2*button.margin()
+                    target=window.scroll.widget().findChild(QSpinBox,'setting-scale');assert target
+                    window.scroll.ensureWidgetVisible(target)
+                    window.grab().save(str(evidence/('Windows-Qt-layout-'+profile['id']+'-settings-scale.png')))
                 state['layoutRows'].append(dict(profile=profile['id'],page=page,requestedWidth=profile['width'],actualWidth=window.width(),actualHeight=window.height(),viewportWidth=window.scroll.viewport().width(),outerHorizontalMaximum=0,primaryActions=sum(bool(b.property('primary')) for b in buttons),synchronousRenderMs=round(state['layoutRenderMs'],2)))
                 state['layoutIndex']+=1
                 if state['layoutIndex']<40:state['stage']=41;return

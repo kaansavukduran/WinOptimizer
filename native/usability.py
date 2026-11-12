@@ -85,7 +85,7 @@ def adapt(window):
         for button in window.nav_widget.findChildren(QPushButton):
             if button.isChecked():button.setFocus(Qt.OtherFocusReason);break
     # Forms reflow on resize without recreating inputs or losing unsaved text.
-    from PySide6.QtWidgets import QFormLayout
+    from PySide6.QtWidgets import QFormLayout,QGridLayout
     body=window.scroll.widget()
     if body:
         for form in body.findChildren(QFormLayout):
@@ -94,6 +94,18 @@ def adapt(window):
                 item=form.itemAt(index,QFormLayout.LabelRole)
                 if item and isinstance(item.widget(),QLabel):
                     item.widget().setWordWrap(True);item.widget().setTextFormat(Qt.PlainText)
+        for grid in body.findChildren(QGridLayout):
+            maximum=grid.property('responsiveColumns')
+            if not maximum:continue
+            widgets=[grid.itemAt(i).widget() for i in range(grid.count())]
+            if not widgets:continue
+            available=min(grid.geometry().width() or width,width-80)
+            widest=max(w.sizeHint().width() for w in widgets)
+            columns=max(1,min(maximum,(available+grid.spacing())//max(1,widest+grid.spacing())))
+            if grid.property('currentColumns')==columns:continue
+            for widget in widgets:grid.removeWidget(widget)
+            for index,widget in enumerate(widgets):grid.addWidget(widget,index//columns,index%columns)
+            grid.setProperty('currentColumns',columns)
 
 def show_help(window):
     # Reuse one dialog. Opening help never retries an operation or changes progress.

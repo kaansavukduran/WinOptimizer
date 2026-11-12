@@ -861,6 +861,7 @@ class Window(QMainWindow):
         layout.addWidget(slider);top.addWidget(spin,1);top.addWidget(reset);layout.addLayout(top)
         if key=='scale':
             presets=QGridLayout()
+            presets.setProperty('responsiveColumns',3)
             for index,val in enumerate((80,100,125,150,175,200)):
                 b=QPushButton(f'{val}%');b.clicked.connect(lambda _,v=val:(spin.setValue(v),self.save_setting(key,v)));presets.addWidget(b,index//3,index%3)
             layout.addLayout(presets)
@@ -953,6 +954,7 @@ class Window(QMainWindow):
     def resizeEvent(self,event):
         super().resizeEvent(event)
         usability.adapt(self)
+        if hasattr(self,'compact_nav'):QTimer.singleShot(0,self,lambda:usability.adapt(self))
         if self.ready and getattr(self,'aion',None):self.companion_header.adapt()
         if self.ready and not self.details_expanded:
             QTimer.singleShot(0,lambda:self.set_operation_details(self.settings.get('operationDetails',True)))
