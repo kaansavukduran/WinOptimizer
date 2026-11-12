@@ -46,7 +46,7 @@ class Window(QMainWindow):
     def __init__(self, bridge, data, portable=False):
         super().__init__()
         self.bridge, self.data, self.portable = bridge, data, portable
-        self.settings = dict(language='tr', theme='system', scale=100, textSize=100, font='system', motion=True, companion=True, gamification=True)
+        self.settings = dict(language='tr', theme='dark', scale=100, textSize=100, font='system', motion=True, companion=True, gamification=True)
         self.resource_root=ROOT
         self.page, self.busy, self.ready = 'home', False, False
         self.backend_lost, self.failure = False, None
@@ -91,6 +91,7 @@ class Window(QMainWindow):
         self.splitter = splitter
         self.scroll = QScrollArea()
         self.scroll.setWidgetResizable(True)
+        self.scroll.setAlignment(Qt.AlignHCenter|Qt.AlignTop)
         splitter.addWidget(self.scroll)
         log = QWidget()
         layout = QVBoxLayout(log)
@@ -163,6 +164,7 @@ class Window(QMainWindow):
         self.notice.setText(self.t('ux.ready'))
         self.appearance()
         self.render()
+        self.initial_nav_focus.start(0)
 
     def appearance(self):
         scale = self.settings.get('scale', 100) / 100
@@ -182,7 +184,9 @@ class Window(QMainWindow):
         for label in self.findChildren(QLabel):
             if label.property('heading'):
                 heading=QFont(font);heading.setPointSizeF(font.pointSizeF()*(1.35 if label.property('headingLevel')!=2 else 1.12));heading.setBold(True);label.setFont(heading)
-        theme = self.settings.get('theme', 'system')
+            elif label.property('careTitle'):
+                use=QFont(font);use.setBold(True);label.setFont(use)
+        theme = self.settings.get('theme', 'dark')
         dark = theme in ('dark', 'contrast') or (theme == 'system' and QApplication.palette().window().color().lightness() < 128)
         high = theme == 'contrast'
         bg, surface, fg, line, accent = ('#000000', '#111111', '#ffffff', '#ffffff', '#ffff00') if high else ('#18151e', '#29222f', '#fff5fa', '#aa8fa8', self.settings.get('accent', '#b82e69')) if dark else ('#fcf7fb', '#ffffff', '#302838', '#8e748a', self.settings.get('accent', '#b82e69'))
@@ -192,10 +196,16 @@ class Window(QMainWindow):
         self.visual_tokens=dict(background=bg,surface=surface,text=fg,border=line,accent=accent,accentInk=accent_ink,focus=focus,danger=danger,success=success)
         pad = round((6 if self.settings.get('density')=='compact' else 8) * scale)
         self.nav_scroll.setFixedHeight(round(64*scale))
-        self.setStyleSheet(f'QWidget{{color:{fg};background:{bg};selection-background-color:{accent};selection-color:{accent_ink};}} QGroupBox,QTreeWidget,QLineEdit,QComboBox,QSpinBox,QDoubleSpinBox{{background:{surface};border:1px solid {line};border-radius:4px;padding:{pad}px;}} QGroupBox{{margin-top:14px;padding-top:24px;}} QGroupBox[section="true"]{{margin-top:0;padding-top:12px;}} QGroupBox::title{{subcontrol-origin:margin;left:12px;}} QPushButton{{background:{surface};border:1px solid {line};border-radius:4px;padding:{pad}px;min-height:{round(24*scale)}px;}} QPushButton:hover{{border:2px solid {focus};}} QPushButton:pressed{{border:3px solid {focus};}} QPushButton[danger="true"]{{color:{danger};border:2px solid {danger};}} QPushButton:disabled{{color:#888888;}} QPushButton[primary="true"]{{background:{accent};color:{accent_ink};font-weight:bold;}} QPushButton:checked{{border:2px solid {focus};}} QPushButton:focus,QComboBox:focus,QLineEdit:focus,QSpinBox:focus,QDoubleSpinBox:focus,QTreeWidget:focus,QTextEdit:focus{{border:3px solid {focus};}} QCheckBox:focus,QSlider:focus,QGroupBox:focus{{outline:2px solid {focus};}} QHeaderView::section{{background:{surface};padding:{pad}px;}} QProgressBar{{border:1px solid {line};min-height:12px;}} QProgressBar::chunk{{background:{accent};}} QCheckBox{{spacing:8px;padding:6px;}} QLabel{{background:transparent;}} QToolTip{{background:{surface};color:{fg};border:1px solid {line};}} QLabel#app-brand{{font-weight:bold;}}')
-        self.outer.setSpacing(round(10 * scale))
+        self.setStyleSheet(f'QWidget{{color:{fg};background:{bg};selection-background-color:{accent};selection-color:{accent_ink};}} QGroupBox,QTreeWidget,QLineEdit,QComboBox,QSpinBox,QDoubleSpinBox{{background:{surface};border:1px solid {line};border-radius:4px;padding:{pad}px;}} QGroupBox{{margin-top:14px;padding-top:24px;}} QGroupBox[section="true"]{{margin-top:0;padding-top:12px;}} QGroupBox::title{{subcontrol-origin:margin;left:12px;}} QPushButton{{background:{surface};border:2px solid {line};border-radius:4px;padding:{pad}px;min-height:{round(24*scale)}px;}} QPushButton:hover{{border:2px solid {focus};}} QPushButton:pressed{{border:2px solid {focus};}} QPushButton[danger="true"]{{color:{danger};border:2px solid {danger};}} QPushButton:disabled{{color:#888888;}} QPushButton[primary="true"]{{background:{accent};color:{accent_ink};font-weight:bold;}} QPushButton:checked{{border:2px solid {focus};}} QPushButton:focus{{border:2px solid {focus};}} QPushButton[primary="true"]:focus{{border:2px solid {accent_ink};}} QComboBox:focus,QLineEdit:focus,QSpinBox:focus,QDoubleSpinBox:focus,QTreeWidget:focus,QTextEdit:focus{{border:3px solid {focus};}} QCheckBox:focus,QSlider:focus,QGroupBox:focus{{outline:2px solid {focus};}} QHeaderView::section{{background:{surface};padding:{pad}px;}} QProgressBar{{border:1px solid {line};min-height:12px;}} QProgressBar::chunk{{background:{accent};}} QCheckBox{{spacing:8px;padding:6px;}} QLabel{{background:transparent;}} QToolTip{{background:{surface};color:{fg};border:1px solid {line};}} QLabel#app-brand{{font-weight:bold;}}')
+        self.outer.setSpacing(round(8 * scale))
+        inset=round(16*scale)
+        self.outer.setContentsMargins(inset,inset,inset,inset)
+        self.nav_layout.setContentsMargins(0,0,0,0)
+        self.nav_layout.setSpacing(round(8*scale))
         self.set_operation_details(self.settings.get('operationDetails',True))
-        if hasattr(self,'body'):self.body.setSpacing(round((10 if self.settings.get('density')=='compact' else 14)*scale))
+        if hasattr(self,'body'):
+            self.body.setSpacing(round((8 if self.settings.get('density')=='compact' else 16)*scale))
+            self.body.parentWidget().setMaximumWidth(round(1120*scale))
         self.footer.setText(f'{VERSION} · Windows x64 · {self.t("n.port") if self.portable else "Setup"}')
         personalize.sync(self)
         usability.adapt(self)
@@ -221,8 +231,12 @@ class Window(QMainWindow):
             self.nav_layout.addWidget(button)
         usability.sync(self)
         body = QWidget()
+        body.setObjectName('page-content')
+        body.setMaximumWidth(round(1120*self.settings.get('scale',100)/100))
         self.body = QVBoxLayout(body)
-        self.body.setSpacing(round(14 * self.settings.get('scale', 100) / 100))
+        inset=round(16*self.settings.get('scale',100)/100)
+        self.body.setContentsMargins(inset,inset,inset,inset)
+        self.body.setSpacing(round((8 if self.settings.get('density')=='compact' else 16)*self.settings.get('scale',100)/100))
         self.actions = []
         if self.ready:
             guided_home=self.page=='home' and not self.failure

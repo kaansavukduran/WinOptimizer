@@ -1,8 +1,38 @@
 import math
-from PySide6.QtCore import Qt, QTimer, Slot, QSize
+from PySide6.QtCore import Qt, QTimer, Slot, QSize, QEvent
 from PySide6.QtGui import QTextBlockFormat, QTextCursor, QTextLayout, QTextOption
 from PySide6.QtWidgets import (QTextEdit, QSizePolicy, QFrame, QPushButton,
-    QCheckBox, QComboBox, QStylePainter, QStyleOptionButton, QStyle)
+    QCheckBox, QComboBox, QStylePainter, QStyleOptionButton, QStyle, QWidget, QBoxLayout)
+
+class ActionRow(QWidget):
+    """Readable copy beside an equally sized action; stack when actual text needs room."""
+    def __init__(self,copy,action,family,owner):
+        super().__init__()
+        self.copy,self.action,self.family,self.owner=copy,action,family,owner
+        self.row=QBoxLayout(QBoxLayout.LeftToRight,self)
+        self.row.setContentsMargins(0,0,0,0)
+        self.row.addWidget(copy,1);self.row.addWidget(action)
+        self.geometry_key=None
+        self.adapt()
+    def adapt(self):
+        gap=round(16*self.owner.settings.get('scale',100)/100)
+        fm=self.action.fontMetrics()
+        family_width=max(fm.horizontalAdvance(text) for text in self.family)+2*self.action.margin()
+        family_width=max(44,family_width)
+        stacked=self.width()<max(240,fm.averageCharWidth()*40)+family_width+gap
+        key=(stacked,family_width,gap)
+        if key==self.geometry_key:return
+        self.geometry_key=key
+        self.row.setSpacing(gap)
+        self.row.setDirection(QBoxLayout.TopToBottom if stacked else QBoxLayout.LeftToRight)
+        self.action.setMinimumWidth(44 if stacked else family_width)
+        self.action.setMaximumWidth(16777215 if stacked else family_width)
+        self.row.setAlignment(self.action,Qt.Alignment() if stacked else Qt.AlignVCenter)
+    def resizeEvent(self,event):
+        self.adapt();super().resizeEvent(event)
+    def changeEvent(self,event):
+        super().changeEvent(event)
+        if event.type()==QEvent.FontChange and hasattr(self,'row'):self.adapt()
 
 def wrapped(text,font,width):
     """Use Qt's text layout, including long words, without changing accessible text."""
