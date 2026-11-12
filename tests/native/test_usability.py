@@ -26,13 +26,18 @@ def test_compact_navigation_exposes_all_sections_and_keeps_selected_page(window,
     assert w.footer.wordWrap() and w.scroll.viewport().height()>60
 
 def test_navigation_adapts_on_resize_and_focus_moves_to_visible_control(window,application):
-    w,_=window;w.resize(2000,900);w.go('hardware');QTest.qWait(30)
-    assert w.nav_scroll.isVisible() and not w.compact_nav.isVisible()
+    # Windows can clamp an oversized top-level window to the runner's desktop.
+    # Use its real work area and supported compact density instead of assuming 2K.
+    w,_=window;wide=max(900,application.primaryScreen().availableGeometry().width()-60)
+    w.settings.update(scale=80,density='compact');w.appearance()
+    w.resize(wide,900);w.go('hardware');QTest.qWait(40)
+    until(application,lambda:w.nav_scroll.isVisible() and not w.compact_nav.isVisible())
     w.activateWindow();w.findChild(QPushButton,'nav-hardware').setFocus();QTest.qWait(20)
+    until(application,lambda:w.findChild(QPushButton,'nav-hardware').hasFocus())
     w.resize(540,900);QTest.qWait(30)
     assert w.compact_nav.isVisible() and w.page_picker.hasFocus()
-    w.resize(2000,900);QTest.qWait(30)
-    assert w.nav_scroll.isVisible() and w.findChild(QPushButton,'nav-hardware').hasFocus()
+    w.resize(wide,900)
+    until(application,lambda:w.nav_scroll.isVisible() and w.findChild(QPushButton,'nav-hardware').hasFocus())
 
 @pytest.mark.parametrize('language',['tr','en'])
 @pytest.mark.parametrize('page',PAGES)
