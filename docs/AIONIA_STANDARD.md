@@ -1,6 +1,6 @@
-# AIONIA v1.1 — WinOptimizer uygulaması
+# AIONIA v1.2 — WinOptimizer uygulaması
 
-Normatif kaynak: [Evrensel Dijital Ürün, Tasarım ve Kalite Standartları](https://docs.google.com/document/d/16jj2cwbm8SiVWqDy3N3dzqxTlLoK7JR2_aH6hl4noWY/edit), v1.1, 12 Kasım 2026. Drive belgesi bu tarihte okunmuştur. **11. bölüm**, önceki Godot/oyun/pixel art zorunluluklarını teknoloji bağımsız ürün kapsamıyla değiştirir. Kullanıcının WinOptimizer için yaptığı “normal uygulama, oyun motoru değil” açıklaması uygulanır.
+Normatif kaynak: [Evrensel Dijital Ürün, Tasarım ve Kalite Standartları](https://docs.google.com/document/d/16jj2cwbm8SiVWqDy3N3dzqxTlLoK7JR2_aH6hl4noWY/edit), v1.2, 12 Kasım 2026. Drive belgesi bu tarihte okunmuştur. **11. ve 14. bölümler**, teknoloji bağımsız ürün kapsamını ve bütünsel UI/UX kalite kapılarını belirler. Kullanıcının WinOptimizer için yaptığı “normal uygulama, oyun motoru değil” açıklaması uygulanır.
 
 ## Ürün ve kullanıcı
 
@@ -23,3 +23,9 @@ Teknoloji: Python 3.12 / Qt Widgets, paketlenmiş headless Node ve sınırlandı
 Görünüm tercihleri, geçmiş, bakım ilerlemesi ve onaylı Aion varlıkları korunur. Yeni rehber/gezinti sistem değişikliği yapmaz, ağ bağlantısı/telemetri eklemez; metinler paketlidir. Kamera, fizik, oynanabilir bölüm, Godot/web export bu masaüstü aracı için kapsam dışıdır. Ses/müzik eklenmez. Yeni evren karakteri veya onaysız marka logosu yüklenmez.
 
 Testler PASS / FAIL / NOT TESTED olarak [QA kaydında](AIONIA-QA.md) raporlanır. Kaynak Qt testleri gerçek Windows paket/yardımcı teknoloji testi yerine geçmez. [Ürün tasarımı](APP_DESIGN.md), [görsel kurallar](ART_BIBLE.md), [referans manifesti](AIONIA-REFERENCES.json).
+
+## v1.2 uygulaması / 6.9.0
+
+[DESIGN_BRIEF](DESIGN_BRIEF.md), [ekran envanteri](SCREEN_INVENTORY.md) ve [v1.2 QA](AIONIA-1.2-QA.md) bu turun karar ve doğrulama kayıtlarıdır. Ana kategori adları/sırası ve görsel kimlik korunur. Yeni motor/framework/dependency yoktur. Uzun yerel etiketler, kontroller ve başlıklar Qt üzerinden satıra bölünür; yalnız tabloların içindeki iki boyutlu içerik yatay kayabilir. Her sayfada en fazla bir vurgulu ana eylem vardır; otomatik kaydedilen ayarlara sahte Kaydet düğmesi eklenmez. İlgili bölüm başlığı sayfa başlığının altında ikinci düzeydir.
+
+v1.2 telefon/tablet/web kuralları var olmayan platform sürümü iddiasına dönüşmez: dağıtım Windows x64'tür. Dar pencere bir telefon testi değildir. Fiziksel Windows tablet/dokunmatik, OSK/sistem DPI, ekran okuyucu ve düşük donanım ölçülmedikçe NOT TESTED kalır. Oyun/Xbox zorunluluğu bu bakım uygulamasına uygulanmaz.

@@ -1,6 +1,6 @@
 # WinOptimizer görsel ve etkileşim kuralları
 
-AIONIA v1.1 uygulanır. Bu bir bakım uygulamasıdır: sıcak, sade, okunaklı ve öngörülebilir. Fragaria Interactive üst marka, AIONIA evren/tasarım standardıdır; Fragaria Games oyun yayın markası bu aracı oyun yapmaz. Arayüz metni sistem/Verdana/OpenDyslexic ile okunur; pixel font veya zorunlu pixel art dönüşümü yapılmaz.
+AIONIA v1.2 uygulanır. Bu bir bakım uygulamasıdır: sıcak, sade, okunaklı ve öngörülebilir. Fragaria Interactive üst marka, AIONIA evren/tasarım standardıdır; Fragaria Games oyun yayın markası bu aracı oyun yapmaz. Arayüz metni sistem/Verdana/OpenDyslexic ile okunur; pixel font veya zorunlu pixel art dönüşümü yapılmaz.
 
 ## Ortak bileşen sistemi
 
@@ -19,3 +19,9 @@ Aion A/B arka kuyruk pozları, Kuzu v01/v02, motion/canonical paftalar farklıd�
 Yerel `native/mascot.py` çalışma davranışı esastır. Core ve sections: 256×256 hücre, 4 sütun × 6 satır, 360 ms/kare, 4 kare döngü; success bir kez oynar ve idle'a döner. Pet: 192×208 hücre, 8×11, 16 yön satır 9–10; sevilme satır 3/4, 4/5 kare, 240 ms/kare. Pivot altta ortada, en/boy korunur. Bu varlıklar mevcut yumuşak çizimli uygulama görselleridir; pixel-perfect oyun sprite'ı diye sunulmaz. Oyun hitbox'ı yok; tıklama bölgesi karakter widget'ıdır.
 
 Windows azaltılmış hareketi ve uygulama hareket/görünürlük ayarları korunur. Gizlenince animasyon zamanlayıcısı durur. Başarı animi tek başına işlem kanıtı değildir; gerçek adım günlüğü esas alınır. Kaynak/hak kayıtları mevcut `ASSETS.json` ve üçüncü taraf bildirimlerinde korunur.
+
+## v1.2 yerel bileşen davranışı
+
+Qt'nin yerel Button/CheckBox/ComboBox temel sınıfları kullanılır. Metin, Qt'nin kelime sınırı/uzun sözcük sarımıyla çizilir; asıl metin, erişilebilir ad, tıklama ve klavye semantiği kısaltılmaz. Düğme/checkbox için en az 44 mantıksal piksel hedeflenir; fiziksel dokunmatik sertifikası değildir. Seçici kısa görünümünde tam ad bölüm başlığında veya font önizleme başlığında, açılır listede ve ipucunda bulunur. Başlıklar düz metin, seçilebilir ve sarılabilirdir; teknik ham HTML yorumlanmaz. Form etiketleri de sarılır; yalnız tablo sütunları iki boyutlu kalır.
+
+Tehlike: açık `#9c2242`, koyu `#ffb0bd`; başarı-adımı: açık `#1c6849`, koyu `#9ce2c2`. Yüksek kontrastta sarı/beyaz. Bunlar metinle birlikte kullanılır. Günlükte bir adımın complete/failed sonucu renklendirilir; tüm cihaz sağlıklı diye yorumlanmaz. Hover/pressed/focus doğal Qt durumu ve ortak kenarla görünür; yeni gradient/parıltı/ikon ailesi yoktur.

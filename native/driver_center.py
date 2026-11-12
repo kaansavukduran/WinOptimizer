@@ -1,6 +1,7 @@
 """One native driver workflow, sharing the existing signed-package backend."""
 from PySide6.QtCore import Qt, QTimer, QDateTime, QLocale
 from PySide6.QtWidgets import QComboBox, QLineEdit, QTreeWidget, QTreeWidgetItem, QPushButton, QFileDialog
+from widgets import Choice as QComboBox
 
 SECTIONS=('updates','inventory','backups','offline','ignored')
 
@@ -33,20 +34,21 @@ def render(window):
     window.label(t('driversIntro'))
     from journey import render_return
     render_return(window)
-    updates=window.state.get('updates')
-    if window.driver_section=='updates' and updates:
-        window.button(f'{t("updateAllDrivers")} ({len(updates)})',lambda:window.install_offers(updates),True,literal=True,name='update-all')
-    window.button('checkDrivers',lambda:window.run('windows-updates',callback=lambda r:result(window,'updates',r,'updates')),True,name='driver-check')
-    window.button('inventory',lambda:window.run('drivers',callback=lambda r:result(window,'drivers',r,'inventory')),name='driver-inventory')
-    window.button('driverBackup',lambda:backup(window),name='driver-backup')
-    saved=window.state.get('driverBackupResult')
-    if isinstance(saved,dict):window.label(t('j.backupCreated').format(count=saved.get('packages',0)) if saved.get('packages',0)>0 else t('j.noPackages'))
     picker=QComboBox();picker.setObjectName('driver-section');picker.setAccessibleName(t('dc.choose'))
     for key in SECTIONS:picker.addItem(t('dc.'+key),key)
     picker.setCurrentIndex(SECTIONS.index(window.driver_section));picker.setEnabled(not window.busy)
     picker.currentIndexChanged.connect(lambda _:section(window,picker.currentData()))
     window.body.addWidget(picker)
+    window.label(t('dc.'+window.driver_section),heading=True,level=2)
     window.label(t('dc.help.'+window.driver_section))
+    updates=window.state.get('updates')
+    if window.driver_section=='updates' and updates:
+        window.button(f'{t("updateAllDrivers")} ({len(updates)})',lambda:window.install_offers(updates),True,literal=True,name='update-all')
+    window.button('checkDrivers',lambda:window.run('windows-updates',callback=lambda r:result(window,'updates',r,'updates')),window.driver_section=='updates' and not updates,name='driver-check')
+    window.button('inventory',lambda:window.run('drivers',callback=lambda r:result(window,'drivers',r,'inventory')),name='driver-inventory',primary=window.driver_section=='inventory')
+    window.button('driverBackup',lambda:backup(window),name='driver-backup',primary=window.driver_section=='backups' and not window.state.get('package'))
+    saved=window.state.get('driverBackupResult')
+    if isinstance(saved,dict):window.label(t('j.backupCreated').format(count=saved.get('packages',0)) if saved.get('packages',0)>0 else t('j.noPackages'))
     globals()['render_'+window.driver_section](window)
 
 def render_updates(window):
@@ -127,7 +129,7 @@ def render_backups(window):
         tree=window.table(plan.get('candidates',[]),[('name',t('d.name')),('provider',t('provider')),('version',t('version')),('publisher',t('dc.publisher'))],check=True);tree.setObjectName('driver-package-tree')
         window.label(t('w.blocked')+': '+str(sum(not r.get('eligible') for r in plan.get('candidates',[]))))
         selection=window.label(t('dc.selection').format(count=0));selection.setObjectName('driver-package-selection')
-        apply=window.button('w.apply',lambda:apply_package(window,plan,window.chosen(tree)),name='driver-package-apply',enabled=False)
+        apply=window.button('w.apply',lambda:apply_package(window,plan,window.chosen(tree)),name='driver-package-apply',enabled=False,primary=True)
         def selected():
             count=len(window.chosen(tree));selection.setPlainText(t('dc.selection').format(count=count))
             apply.setEnabled(not window.busy and 1<=count<=20)
@@ -159,7 +161,7 @@ def apply_package(window,plan,rows):
 
 def render_offline(window):
     window.button('w.exportHardware',lambda:window.export('offline.export'),name='driver-offline-export')
-    window.button('w.readHardware',lambda:window.run('offline.inventory',callback=lambda r:window.store('offline',r)),name='driver-offline-read')
+    window.button('w.readHardware',lambda:window.run('offline.inventory',callback=lambda r:window.store('offline',r)),name='driver-offline-read',primary=True)
     if window.state.get('offline'):
         tree=window.table(window.state['offline']['devices'],[('name',window.t('d.name')),('hardwareIds',window.t('w.hardware'))],check=True)
         def search():
@@ -169,7 +171,7 @@ def render_offline(window):
     window.button('dc.openPackages',lambda:section(window,'backups'),name='driver-offline-import')
 
 def render_ignored(window):
-    window.button('dc.refreshLibrary',lambda:library(window),name='driver-ignored-refresh')
+    window.button('dc.refreshLibrary',lambda:library(window),name='driver-ignored-refresh',primary=True)
     items=window.state.get('library',{}).get('ignored',[])
     if 'library' in window.state and not items:window.label(window.t('dc.noIgnored'))
     if not items:return

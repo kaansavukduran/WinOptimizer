@@ -4,6 +4,8 @@ from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QWidget, QLabel, QHBoxLayout, QVBoxLayout, QBoxLayout,
     QPushButton, QComboBox, QDialog, QDialogButtonBox, QScrollArea)
 
+from widgets import Button as QPushButton, Choice as QComboBox
+
 PAGES = ('home', 'scanFix', 'cleanup', 'drivers', 'hardware', 'startup',
          'workshop', 'tools', 'history', 'settings')
 
@@ -40,8 +42,10 @@ def sync(window):
     window.page_picker.setAccessibleName(window.t('ux.section'))
     window.nav_label.setText(window.t('ux.section'))
     blocker=QSignalBlocker(window.page_picker)
-    window.page_picker.clear()
-    for page in PAGES:window.page_picker.addItem(window.t(page),page)
+    desired=[(window.t(page),page) for page in PAGES]
+    if [(window.page_picker.itemText(i),window.page_picker.itemData(i)) for i in range(window.page_picker.count())]!=desired:
+        window.page_picker.clear()
+        for title,page in desired:window.page_picker.addItem(title,page)
     window.page_picker.setCurrentIndex(max(0,window.page_picker.findData(window.page)))
     del blocker
     window.page_picker.setEnabled(window.ready)
@@ -55,6 +59,9 @@ def adapt(window):
     required=sum(window.nav_layout.itemAt(i).widget().sizeHint().width() for i in range(window.nav_layout.count()))
     required+=window.nav_layout.spacing()*max(0,window.nav_layout.count()-1)+window.nav_layout.contentsMargins().left()+window.nav_layout.contentsMargins().right()
     compact=window.ready and required>window.width()-window.outer.contentsMargins().left()-window.outer.contentsMargins().right()-8
+    nav_height=max((window.nav_layout.itemAt(i).widget().sizeHint().height() for i in range(window.nav_layout.count())),default=0)
+    nav_margins=window.nav_layout.contentsMargins()
+    window.nav_scroll.setFixedHeight(max(round(64*window.settings.get('scale',100)/100),nav_height+nav_margins.top()+nav_margins.bottom()+2))
     focused=window.focusWidget()
     nav_had_focus=focused is not None and window.nav_widget.isAncestorOf(focused)
     picker_had_focus=focused is window.page_picker
@@ -77,6 +84,28 @@ def adapt(window):
     elif not compact and picker_had_focus:
         for button in window.nav_widget.findChildren(QPushButton):
             if button.isChecked():button.setFocus(Qt.OtherFocusReason);break
+    # Forms reflow on resize without recreating inputs or losing unsaved text.
+    from PySide6.QtWidgets import QFormLayout,QGridLayout
+    body=window.scroll.widget()
+    if body:
+        for form in body.findChildren(QFormLayout):
+            form.setRowWrapPolicy(QFormLayout.WrapAllRows if width<900 or window.settings.get('scale',100)>=150 else QFormLayout.WrapLongRows)
+            for index in range(form.rowCount()):
+                item=form.itemAt(index,QFormLayout.LabelRole)
+                if item and isinstance(item.widget(),QLabel):
+                    item.widget().setWordWrap(True);item.widget().setTextFormat(Qt.PlainText)
+        for grid in body.findChildren(QGridLayout):
+            maximum=grid.property('responsiveColumns')
+            if not maximum:continue
+            widgets=[grid.itemAt(i).widget() for i in range(grid.count())]
+            if not widgets:continue
+            available=min(grid.geometry().width() or width,width-80)
+            widest=max(w.sizeHint().width() for w in widgets)
+            columns=max(1,min(maximum,(available+grid.spacing())//max(1,widest+grid.spacing())))
+            if grid.property('currentColumns')==columns:continue
+            for widget in widgets:grid.removeWidget(widget)
+            for index,widget in enumerate(widgets):grid.addWidget(widget,index//columns,index%columns)
+            grid.setProperty('currentColumns',columns)
 
 def show_help(window):
     # Reuse one dialog. Opening help never retries an operation or changes progress.
@@ -93,7 +122,7 @@ def show_help(window):
     content=QWidget(); layout=QVBoxLayout(content)
     window.label(window.t('ux.guideTitle'),heading=True,layout=layout)
     window.label(window.t('ux.firstMinute'),layout=layout)
-    window.label(window.t(window.page),heading=True,layout=layout)
+    window.label(window.t(window.page),heading=True,level=2,layout=layout)
     window.label(window.t('ux.pages.'+window.page),layout=layout)
     window.label(window.t('ux.feedback'),layout=layout)
     window.label(window.t('ux.keys'),layout=layout)

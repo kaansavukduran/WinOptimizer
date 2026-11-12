@@ -821,6 +821,13 @@
       },
       "helpButton": "Yardım",
       "details": "İşlem ayrıntıları"
+    },
+    "layout": {
+      "startupEmpty": "Önce başlangıç öğelerini listele. Bu kontrol tek başına hiçbir öğeyi değiştirmez.",
+      "startupNone": "Bu listede gösterilecek başlangıç öğesi bulunmadı.",
+      "chooseStartup": "Devre dışı bırakmak için bir öğe seç.",
+      "oneStartup": "Tek seferde bir başlangıç öğesi seç. Diğer seçimleri kaldır; sonra devam et.",
+      "reviewStartup": "Seçili öğeyi ve onay ekranını inceleyerek devam edebilirsin."
     }
   },
   "en": {
@@ -1645,6 +1652,13 @@
       },
       "helpButton": "Help",
       "details": "Operation details"
+    },
+    "layout": {
+      "startupEmpty": "List startup entries first. This check alone does not change any entry.",
+      "startupNone": "No startup entries were returned for this list.",
+      "chooseStartup": "Select one entry to disable.",
+      "oneStartup": "Select one startup entry at a time. Clear the other selections before continuing.",
+      "reviewStartup": "Review the selected entry and the confirmation before continuing."
     }
   }
 }
