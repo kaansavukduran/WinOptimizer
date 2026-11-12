@@ -47,3 +47,16 @@ def test_live_appearance_changes_scale_bold_care_titles_and_keep_action_family_w
  assert len({r.action.width() for r in rows})==1
  assert all(button.height()>=button.heightForWidth(button.width()) for button in body.findChildren(Button) if button.isVisible())
  assert not any(c=='health' for c,_ in b.calls)
+
+@pytest.mark.parametrize('language',['tr','en'])
+def test_narrow_large_text_numeric_reset_stacks_and_keeps_words_intact(window,application,language):
+ from PySide6.QtWidgets import QSpinBox
+ w,b=window;w.settings.update(language=language,scale=200,textSize=125,font='dyslexic',operationDetails=False)
+ w.resize(540,900);w.appearance();w.go('settings');QTest.qWait(80)
+ spin=w.scroll.widget().findChild(QSpinBox,'setting-scale');row=spin.parentWidget();reset=row.findChild(Button)
+ assert row.row.direction()==QBoxLayout.TopToBottom
+ word=max(reset.text().split(),key=reset.fontMetrics().horizontalAdvance)
+ assert reset.fontMetrics().horizontalAdvance(word)<=reset.width()-2*reset.margin()
+ assert reset.height()>=reset.heightForWidth(reset.width()) and w.scroll.horizontalScrollBar().maximum()==0
+ before=copy.deepcopy(b.calls);w.resize(1240,900);QTest.qWait(80)
+ assert row.row.direction()==QBoxLayout.LeftToRight and spin.value()==200 and b.calls==before

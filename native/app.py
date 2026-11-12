@@ -857,7 +857,7 @@ class Window(QMainWindow):
         return combo
 
     def numeric(self,form,key,label,minimum,maximum,step,default):
-        row=QWidget();layout=QVBoxLayout(row);top=QHBoxLayout()
+        row=QWidget();layout=QVBoxLayout(row);top=personalize.ResponsiveRow(row,self)
         slider=QSlider(Qt.Horizontal);slider.setRange(minimum,maximum);slider.setSingleStep(step);slider.setPageStep(step)
         spin=QSpinBox();spin.setRange(minimum,maximum);spin.setSingleStep(step);spin.setSuffix('%' if key in ('scale','textSize','mascotSize') else '')
         spin.setObjectName('setting-'+key);spin.setAccessibleName(label);slider.setAccessibleName(label)
@@ -872,7 +872,7 @@ class Window(QMainWindow):
         slider.valueChanged.connect(lambda value:commit(value) if slider.hasFocus() and not slider.isSliderDown() else None)
         spin.editingFinished.connect(lambda:commit(spin.value()))
         reset=QPushButton(self.t('n.default'));reset.clicked.connect(lambda:(spin.setValue(default),self.save_setting(key,default)))
-        layout.addWidget(slider);top.addWidget(spin,1);top.addWidget(reset);layout.addLayout(top)
+        layout.addWidget(slider);top.row.addWidget(spin,1);top.row.addWidget(reset);layout.addWidget(top)
         if key=='scale':
             presets=QGridLayout()
             presets.setProperty('responsiveColumns',3)

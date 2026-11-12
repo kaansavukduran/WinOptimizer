@@ -9,7 +9,7 @@
 | Bakım adımında geniş düğme başlık ve durumu daraltıyordu | Başlık/durum aynı sütun; ölçülen ortak eylem genişliği, gerçek alana göre dikey dizilim. Kaynak regresyonu doğrulandı; Windows kapısı ayrıca aşağıdadır. | PASS |
 | Geniş ekranda içerik ve kısa yardımcı düğmeler kontrolsüz genişliyordu | Ölçekli içerik sınırı ve eşit yan boşluk; metin kadar yardımcı düğme, HFW korunur. Kaynak regresyonu doğrulandı; Windows kapısı ayrıca aşağıdadır. | PASS |
 | Düğme kenarı focus/press durumunda kalınlık değiştiriyordu | 2 px ortak kenar, renk/yerel odak işaretiyle durum; geometri sabit. Kaynak regresyonu doğrulandı; Windows kapısı ayrıca aşağıdadır. | PASS |
-| Kaynak regresyonları; eski startup/disposal/recovery/safety testleri | Yerel 248 Qt / 59 Node PASS; üretim bağımlılığı denetiminde 0 bulgu. Windows sonucu ayrıca beklenir. | PASS |
+| Kaynak regresyonları; eski startup/disposal/recovery/safety testleri | Yerel 250 Qt / 59 Node PASS; üretim bağımlılığı denetiminde 0 bulgu. Windows sonucu ayrıca beklenir. | PASS |
 | Gerçek Windows Setup/Portable/reopen, beş profil × on ekran, geometrik ölçüm ve PNG | Dört önceki profil korunur; geniş koyu/sistem-font profili eklenir. | NOT TESTED |
 | Gerçek 6.9.0 → 6.10.0 imzalı kurulu güncelleme ve veri koruma | Payload hash, registry/runtime, önceki ayarlar ve geçmiş doğrulanacak. | NOT TESTED |
 | Fiziksel Windows tablet/dokunmatik/OSK/DPI, NVDA/Narrator, düşük donanım | Windows pencere/Qt simülasyonu fiziksel cihaz kanıtı değildir. | NOT TESTED |
@@ -18,3 +18,5 @@
 Oyun/mobil OS/web portu yapılmaz; oyun kontrol şeması/onay maddesi uygulanmaz. Mevcut azaltılmış hareket, Aion'u gizleme, klavye, tema/font/ölçek ve gerçek adım günlüğü korunur. Testte yakalanan büyük EN metin kırpılması, yardımcı düğmenin QSizePolicy değişirken height-for-width bilgisini kaybetmesinden kaynaklandı; politika bayrağı korunarak düzeltildi, eski kırpılmama koşulu gevşetilmedi. Final sonuçlar ve açık sınırlar bu kayıtta güncellenecek.
 
 İlk Windows paket testi FAIL: test-helper QBoxLayout enumunu nesne üzerinden okumaya çalıştı (stage 42 AttributeError); doğrudan QBoxLayout sınıf sabitiyle düzeltildi. Bu bir test yardımcı kodu hatasıydı; geometri eşitliği/ortalanma/kırpılma koşulları korunur. Başarısız kaynak/PR koşuları 43258785867 / 43258856386; düzeltme sonrası paket kapısı yeniden çalıştırılır.
+
+İkinci kaynak Windows kapısı (43260641334 / PR 43260652556) PASS; 50 geometri kaydı ve önceki tüm paket testleri geçti. Gerçek PNG incelemesinde büyük yazı/dar pencerede sayı alanı yanındaki Varsayılana dön sözcüklerinin parçalandığı görüldü. Aynı mevcut ResponsiveRow ile dar pencerede sayı ve sıfırlama alt alta dizildi; TR/EN tam sözcük, görünürlük, resize ve değer koruma regresyonu eklendi. Son paket bu ek düzeltmeyle yeniden doğrulanır; önceki yeşil kayıt yeni kaynak için PASS yerine kullanılmaz.
