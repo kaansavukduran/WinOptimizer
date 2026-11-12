@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.10.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 97187897,
+  "sha256": "8f970f35da1ec434e68c27db11ed01687e1d107e6c9b2fa65250e6ff1e9054c7",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.10.0/WinOptimizer-Aion-6.10.0-Windows-x64-Setup.exe",
+  "sourceCommit": "bed307e63084c2a8777146746244249d7fe0ba81",
+  "notes": {
+    "tr": "AIONIA v1.5: dengeli bakım adımları, aynı ölçüde eşdeğer eylemler, ortalanmış içerik ve büyük yazıda yeniden dizilen yüzde alanları. Yeni kurulum koyu/sistem fontu; kayıtlı tercihler korunur.",
+    "en": "AIONIA v1.5: balanced care steps, equal related actions, centered content and reflowing large-text numeric controls. Fresh installs use dark/system font; saved choices are preserved."
+  },
+  "portable": {
+    "bytes": 97037374,
+    "sha256": "5068bbd0e62fe78ddc23a32cd46544705cb3a068824b533c42a8d92e8cad046b",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.10.0/WinOptimizer-Aion-6.10.0-Windows-x64-Portable.exe"
+  }
+}
