@@ -5,7 +5,7 @@ Resmî belge 12.11.2026 tarihinde erişilerek okundu. PASS yalnız adı verilen 
 | Kontrol | Durum | Kanıt / sınır |
 | --- | --- | --- |
 | Ürün, teknoloji, 10 ekran, geçmiş hata ve görsel kaynak denetimi | PASS | DESIGN_BRIEF, SCREEN_INVENTORY, ART_BIBLE; mevcut Aion/ikon korunur. |
-| Kaynak Qt/Node regresyonları | PASS | Yerel 232 Qt / 58 Node; önceki kritik regresyonlar korunur. Windows paket sonucu ayrı beklenir. |
+| Kaynak Qt/Node regresyonları | PASS | Yerel 233 Qt / 58 Node; önceki kritik regresyonlar korunur. Windows paket sonucu ayrı beklenir. |
 | Ana ekran ve 16 alt bölüm, TR/EN, dar/geniş/büyük yazı | PASS | Asıl hedef dış yatay kaydırma 0 ve tek ana eylem; yalnız birim testi fiziksel cihaz değildir. |
 | Başlangıçta boş/seçim durumları, açıklamalı disabled, klavye | PASS | Gerçek Qt denetim testi. |
 | Hata/kurtarma, yükleme, veri/tercih koruma, onay/geri alma | PASS | Mevcut ve yeni regresyonlar; paket doğrulaması bekleniyor. |

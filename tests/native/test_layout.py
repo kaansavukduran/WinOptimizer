@@ -93,3 +93,13 @@ def test_large_text_error_state_keeps_recovery_actions_reachable(window,applicat
     button=w.scroll.widget().findChild(QPushButton,'recovery-copy');assert button
     w.scroll.ensureWidgetVisible(button);QTest.qWait(50)
     assert w.scroll.viewport().rect().contains(button.mapTo(w.scroll.viewport(),button.rect().center()))
+
+def test_reduced_scale_navigation_does_not_clip_wrapped_tab_buttons(window,application):
+    from PySide6.QtCore import QRect
+    w,_=window;w.settings.update(scale=80,textSize=100,density='compact')
+    w.resize(1200,900);w.appearance();w.render();QTest.qWait(60)
+    if w.nav_scroll.isVisible():
+        viewport=w.nav_scroll.viewport()
+        for button in w.nav_widget.findChildren(QPushButton):
+            assert viewport.rect().contains(QRect(button.mapTo(viewport,button.rect().topLeft()),button.size()))
+    else:assert w.page_picker.isVisible() and w.page_picker.count()==10

@@ -29,7 +29,9 @@ class Button(QPushButton):
         return max(44,super().sizeHint().height(),lines*self.fontMetrics().lineSpacing()+2*self.margin())
     def minimumSizeHint(self):return QSize(44,max(44,super().minimumSizeHint().height()))
     def sizeHint(self):
-        hint=super().sizeHint();width=min(520,hint.width());return QSize(width,self.heightForWidth(width))
+        hint=super().sizeHint()
+        preferred=max(self.fontMetrics().horizontalAdvance(line) for line in self.text().split('\n'))+2*self.margin()
+        width=min(520,max(hint.width(),preferred));return QSize(width,self.heightForWidth(width))
     def paintEvent(self,event):
         painter=QStylePainter(self);option=QStyleOptionButton();self.initStyleOption(option)
         option.text=wrapped(self.text(),self.font(),self.width()-2*self.margin())

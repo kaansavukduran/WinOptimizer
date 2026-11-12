@@ -59,6 +59,9 @@ def adapt(window):
     required=sum(window.nav_layout.itemAt(i).widget().sizeHint().width() for i in range(window.nav_layout.count()))
     required+=window.nav_layout.spacing()*max(0,window.nav_layout.count()-1)+window.nav_layout.contentsMargins().left()+window.nav_layout.contentsMargins().right()
     compact=window.ready and required>window.width()-window.outer.contentsMargins().left()-window.outer.contentsMargins().right()-8
+    nav_height=max((window.nav_layout.itemAt(i).widget().sizeHint().height() for i in range(window.nav_layout.count())),default=0)
+    nav_margins=window.nav_layout.contentsMargins()
+    window.nav_scroll.setFixedHeight(max(round(64*window.settings.get('scale',100)/100),nav_height+nav_margins.top()+nav_margins.bottom()+2))
     focused=window.focusWidget()
     nav_had_focus=focused is not None and window.nav_widget.isAncestorOf(focused)
     picker_had_focus=focused is window.page_picker
