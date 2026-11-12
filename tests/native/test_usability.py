@@ -18,8 +18,12 @@ def test_compact_navigation_exposes_all_sections_and_keeps_selected_page(window,
     assert w.page_picker.currentData()=='hardware'
     assert w.page_picker.minimumSizeHint().width()<w.width()
     w.page_picker.setCurrentIndex(9);w.page_picker.activated.emit(9)
+    until(application,lambda:w.scroll.viewport().height()>60)
     assert w.page=='settings' and w.page_picker.currentData()=='settings'
     assert not any(c in ('diagnostics.scan','diagnostics.updates','cleanup','startup-disable') for c,_ in b.calls)
+    assert w.width()==540
+    assert w.help_button.width()>=w.help_button.sizeHint().width()
+    assert w.footer.wordWrap() and w.scroll.viewport().height()>60
 
 def test_navigation_adapts_on_resize_and_focus_moves_to_visible_control(window,application):
     w,_=window;w.resize(2000,900);w.go('hardware');QTest.qWait(30)

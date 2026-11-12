@@ -11,6 +11,7 @@ Durum 12 Kasım 2026. PASS yalnız belirtilen ortam/kapsam için geçerlidir. Pa
 | F1 rehber / Esc / Ctrl kısayolları / odak | PASS | Gerçek Qt olayları, on sayfa TR/EN rehberi; rehber sistem işlemi başlatmadı. |
 | Açılış yükleme ve motor hatası | PASS | Gecikmeli bootstrap ve başarısız motor; yükleme kapanıp kurtarma kaldı. |
 | Kontrast token'ları | PASS | Açık/koyu/kontrast × 4 özel renk; metin 4.5:1 ve odak/sınır 3:1 renk çiftleri. |
+| Node üretim bağımlılıkları denetimi | PASS | npm audit --omit=dev: sıfır bilinen açık; Python/Qt veya tüm ürün pentesti değildir. |
 | Kaynak regresyonları | PASS | Yerel 133 Qt / 58 Node; Windows paket doğrulaması ayrıca bekleniyor. |
 | Gerçek Windows Setup/Portable/yeniden açılış | NOT TESTED | Yeni paket henüz doğrulanmadı. |
 | Gerçek 6.7.0 → 6.8.0 güncelleme | NOT TESTED | İmza/hash, tercihler/geçmiş ve çalışan sürüm doğrulanacak. |

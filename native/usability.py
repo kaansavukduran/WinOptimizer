@@ -1,16 +1,17 @@
 """Native navigation and contextual guidance; never starts a Windows operation."""
 from PySide6.QtCore import Qt, QSignalBlocker
 from PySide6.QtGui import QKeySequence, QShortcut
-from PySide6.QtWidgets import (QWidget, QLabel, QHBoxLayout, QVBoxLayout,
+from PySide6.QtWidgets import (QWidget, QLabel, QHBoxLayout, QVBoxLayout, QBoxLayout,
     QPushButton, QComboBox, QDialog, QDialogButtonBox, QScrollArea)
 
 PAGES = ('home', 'scanFix', 'cleanup', 'drivers', 'hardware', 'startup',
          'workshop', 'tools', 'history', 'settings')
 
 def setup(window):
-    bar=QWidget(); row=QHBoxLayout(bar); row.setContentsMargins(0,0,0,0)
+    bar=QWidget(); row=QBoxLayout(QBoxLayout.LeftToRight,bar); row.setContentsMargins(0,0,0,0)
+    window.brand_bar,window.brand_layout=bar,row
     window.brand=QLabel('WinOptimizer Aion'); window.brand.setObjectName('app-brand')
-    row.addWidget(window.brand); row.addStretch()
+    window.brand.setWordWrap(True);row.addWidget(window.brand,1)
     window.help_button=QPushButton(); window.help_button.setObjectName('context-help')
     window.help_button.clicked.connect(lambda:show_help(window)); row.addWidget(window.help_button)
     window.outer.insertWidget(0,bar)
@@ -34,7 +35,8 @@ def navigate(window,page):
 
 def sync(window):
     if not hasattr(window,'page_picker'):return
-    window.help_button.setText(window.t('ux.help')+' · F1')
+    window.help_button.setText(window.t('ux.helpButton')+' · F1')
+    window.help_button.setAccessibleName(window.t('ux.help')+' · F1')
     window.page_picker.setAccessibleName(window.t('ux.section'))
     window.nav_label.setText(window.t('ux.section'))
     blocker=QSignalBlocker(window.page_picker)
@@ -58,6 +60,19 @@ def adapt(window):
     picker_had_focus=focused is window.page_picker
     window.nav_scroll.setVisible(window.ready and not compact)
     window.compact_nav.setVisible(compact)
+    width=window.width()-window.outer.contentsMargins().left()-window.outer.contentsMargins().right()
+    # The OS title already identifies the app; keep task space at large text sizes.
+    window.brand.setVisible(not compact)
+    # Version remains under Settings > About; prioritize work over footer chrome.
+    window.footer.setVisible(not (compact and window.font().pointSizeF()>18))
+    brand_width=window.brand.fontMetrics().horizontalAdvance(window.brand.text()) if not compact else 0
+    window.brand_layout.setDirection(QBoxLayout.TopToBottom if brand_width+window.help_button.sizeHint().width()+12>width else QBoxLayout.LeftToRight)
+    if hasattr(window,'log_title'):
+        narrow=width<900
+        window.log_title.setVisible(not narrow or window.details_expanded)
+        full=window.t('forge.hide' if window.details_expanded else 'forge.show')
+        window.log_toggle.setText(window.t('ux.details') if narrow else full)
+        window.log_toggle.setAccessibleName(full);window.log_toggle.setToolTip(full)
     if compact and nav_had_focus:window.page_picker.setFocus(Qt.OtherFocusReason)
     elif not compact and picker_had_focus:
         for button in window.nav_widget.findChildren(QPushButton):

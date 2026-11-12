@@ -124,10 +124,16 @@ class Window(QMainWindow):
         self.export_log.clicked.connect(lambda: self.export('report.export'))
         detail_layout.addWidget(self.export_log)
         layout.addWidget(self.log_details)
-        splitter.addWidget(log)
+        self.log_scroll=QScrollArea()
+        self.log_scroll.setWidgetResizable(True)
+        self.log_scroll.setWidget(log)
+        self.log_scroll.setAccessibleName(self.t('n.trace'))
+        self.log_scroll.setMinimumHeight(80)
+        splitter.addWidget(self.log_scroll)
         splitter.setSizes([620, 200])
         self.outer.addWidget(splitter, 1)
         self.footer = QLabel()
+        self.footer.setWordWrap(True)
         self.outer.addWidget(self.footer)
         usability.setup(self)
         self.notice.setText(self.t('ux.loading'))
@@ -187,7 +193,7 @@ class Window(QMainWindow):
         self.outer.setSpacing(round(10 * scale))
         self.set_operation_details(self.settings.get('operationDetails',True))
         if hasattr(self,'body'):self.body.setSpacing(round((10 if self.settings.get('density')=='compact' else 14)*scale))
-        self.footer.setText(f'{VERSION} · Windows x64 · {self.t("n.port") if self.portable else "Setup"} · {self.t("n.native")}')
+        self.footer.setText(f'{VERSION} · Windows x64 · {self.t("n.port") if self.portable else "Setup"}')
         personalize.sync(self)
         usability.adapt(self)
 
@@ -247,8 +253,10 @@ class Window(QMainWindow):
         self.log_toggle.setAccessibleName(self.log_toggle.text())
         self.log_panel.layout().activate()
         self.log_panel.setMaximumHeight(16777215 if expanded else max(self.log_panel.sizeHint().height(),self.log_panel.minimumSizeHint().height(),self.log_panel.layout().totalHeightForWidth(self.log_panel.width())))
+        self.log_scroll.setMaximumHeight(self.log_panel.maximumHeight())
         if changed:self.splitter.setSizes([620,200] if expanded else [1000,self.log_panel.maximumHeight()])
         if persist:self.save_setting('operationDetails',expanded)
+        usability.adapt(self)
 
     def go(self, page):
         self.page = page

@@ -802,8 +802,8 @@
       "section": "Bölüm",
       "close": "Kapat",
       "guideTitle": "Aion ile adım adım bakım",
-      "loading": "Açılıyor · İşlem motoruna bağlanılıyor. Henüz tarama veya değişiklik yapılmıyor.",
-      "ready": "Hazır · Başlamak için Tara ve Düzelt’i aç. İşlemler sen başlatınca çalışır.",
+      "loading": "Açılıyor · İşlem motoru bekleniyor. Henüz işlem başlamadı.",
+      "ready": "Hazır · Tara ve Düzelt ile başla.",
       "firstMinute": "1. Tara ve Düzelt ile bilgisayarı kontrol et.\n2. Sonuçlarda ne bulunduğunu ve öneriyi oku.\n3. Yapılacak değişikliği incele ve onayla. Tarama tek başına ayar değiştirmez.",
       "feedback": "İşlem sürerken üstte gerçek aşama veya Windows yanıtı bekleniyor açıklaması görünür. Belirsiz ilerleme yüzdelik tamamlanma değildir. Alttaki İşlem adımları; tamamlanan, başarısız ve atlanan işleri nedenleriyle gösterir. Bir hata veya kontrol edilemeyen sonuç sağlıklı sayılmaz.",
       "keys": "Klavye: Tab / Shift+Tab ile denetimler arasında gez; Enter veya Boşluk ile odaktaki düğmeyi kullan. Ctrl+1…9 ilk dokuz bölümü, Ctrl+0 Ayarlar’ı açar. F1 bu rehberi açar; Esc rehberi kapatır. Dar pencerede üstteki Bölüm listesini kullan. Ayarlar → Görünüm: yazı tipi, renk, tema ve ölçek; Aion ve Bildirimler: hareketi azaltma veya Aion’u kapatma.",
@@ -818,7 +818,9 @@
         "tools": "Windows bakım ve tanılama araçlarını açıklamalarıyla incele. Yönetici izni isteyen eylemde Windows ayrıca izin sorabilir.",
         "history": "Önceki işlemleri, temizlik geri alma kayıtlarını ve yedekleri incele. Bir işlem kaydı, bütün bilgisayarın hatasız olduğunun kanıtı değildir.",
         "settings": "Görünüm’de font, tema, renk ve bağımsız arayüz/yazı ölçeği vardır. Erişilebilirlik ve oyunlaştırma bölümlerinde satır aralığı, hareket ve Aion seçeneklerini düzenle. Güncellemeler’den uygulama sürümünü kontrol et."
-      }
+      },
+      "helpButton": "Yardım",
+      "details": "İşlem ayrıntıları"
     }
   },
   "en": {
@@ -1624,8 +1626,8 @@
       "section": "Section",
       "close": "Close",
       "guideTitle": "Step-by-step care with Aion",
-      "loading": "Opening · Connecting to the operation engine. No scan or change has started.",
-      "ready": "Ready · Open Scan & Fix to begin. Operations start when you request them.",
+      "loading": "Opening · Waiting for the operation engine. No operation has started.",
+      "ready": "Ready · Begin with Scan & Fix.",
       "firstMinute": "1. Check the computer with Scan & Fix.\n2. Read the findings and recommendations.\n3. Review and confirm any proposed change. Scanning alone does not change settings.",
       "feedback": "While work runs, the top status shows the actual stage or explains that Windows is still responding. Indeterminate progress is not a completion percentage. Operation steps below distinguish completed, failed and skipped work with reasons. An error or unavailable check is not counted as healthy.",
       "keys": "Keyboard: Tab / Shift+Tab move between controls; Enter or Space activates the focused button. Ctrl+1…9 open the first nine sections; Ctrl+0 opens Settings. F1 opens this guide; Esc closes it. Use the Section list in a narrow window. Settings → Appearance contains font, color, theme and scaling; Aion & Notifications controls reduced motion and Aion visibility.",
@@ -1640,7 +1642,9 @@
         "tools": "Review the descriptions of Windows maintenance and diagnostic tools. Actions requiring elevation may also prompt for Windows permission.",
         "history": "Review past operations, cleanup restoration records and backups. One completed operation does not prove that the entire computer is error-free.",
         "settings": "Appearance contains font, theme, color and independent UI/text scales. Accessibility and gamification include line spacing, motion and Aion controls. Check the app version under Updates."
-      }
+      },
+      "helpButton": "Help",
+      "details": "Operation details"
     }
   }
 }
