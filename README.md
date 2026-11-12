@@ -8,6 +8,8 @@ A bilingual native Windows care app. The 6.x GUI uses Python/Qt Widgets, with a 
 
 ## İndir ve aç / Download and open
 
+**6.10.0 — AIONIA v1.5:** Bakım adımları daha okunur, eşdeğer düğmeler aynı ölçüde ve içerik geniş ekranda dengeli ortalanır. İlk açılış koyu tema + sistem fontu; önceki seçimlerin korunur. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.10.0) · [Gerçek ekranlar](docs/SCREEN_INVENTORY.md#6100-geometri-ve-optik-denge) · [Test matrisi](docs/AIONIA-1.5-QA.md). / Balanced native geometry, readable care actions and preserved preferences.
+
 **6.9.0 — AIONIA v1.2:** Satıra bölünen kontroller ve başlıklar, daha açık kategoriler, tek ana eylem ve büyük yazıda yeniden dizilen form/renk/yüzde seçenekleri. Mevcut Qt, Aion ve kayıtlar korunur. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.9.0) · [Test matrisi](docs/AIONIA-1.2-QA.md) · [On gerçek ekran](docs/SCREEN_INVENTORY.md#gerçek-windows-ekranları). / Consistent native categories, wrapping controls and responsive large-text layouts.
 
 **6.8.0 — AIONIA v1.1:** Dar pencerede tüm bölümler, çevrimdışı F1 kullanım rehberi, klavye kısayolları, özel renklerde görünür odak ve anlaşılır açılış. Büyük yazıda işlem günlüğü ana içeriği kaplamaz. Mevcut Windows/Qt altyapısı ve Aion korunur. [Setup ve Portable](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.8.0) · [Standart ve kapsam](docs/AIONIA_STANDARD.md) · [PASS / FAIL / NOT TESTED](docs/AIONIA-QA.md) · [Gerçek Windows ekranı](docs/screenshots/WinOptimizer-6.8.0-Surucu-Merkezi.png). / Native desktop usability and accessibility without changing the existing technology.

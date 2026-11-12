@@ -1,5 +1,11 @@
 # WinOptimizer Aion Forge
 
+**6.10.0 / AIONIA v1.5** source `bed307e63084c2a8777146746244249d7fe0ba81`, PR #21/#22/#23, release `443247958`. 251 Qt/59 Node; source/PR, Setup/Portable/reopen, 50 layout records, motion and actual 6.9→6.10 upgrade PASS. Native Windows Qt architecture and user Aion/icon preserved. New defaults dark/system-font never overwrite saved themes/fonts. Measured action-family geometry, readable copy, centered capped content, stable borders/spacing. No new engine/framework/runtime dependency.
+
+Physical touch/OSK/DPI, screen reader, full WCAG/perf/pentest NOT TESTED; no complete Driver Booster catalog parity. New baseline/evidence: AIONIA-1.5-QA, VALIDATION, SCREEN_INVENTORY. Private version folder `1xpkixDcdQyUGHp5iNCe-aZdHDWUfIQ-L`; every source/merge/metadata/closing push has source+full Git+receipt backup; both whole EXEs and source/evidence archive raw-readback checked. Canonical receipt preserves 444 prior records. Never upload signing keys.
+
+## Previous 6.9.0 handoff
+
 Durum: **6.9.0 AIONIA v1.2; Windows Qt altyapısı korunur.** Kaynak `34468ca6720898fed73e454f2c5620ad1ce98135`, PR #20, merge `4b31845d1c2982ffe86eee8d1342428f371b741e`, metadata `9f0ec09bd1d8501c7972e70e443057853c3fd885`, yayın `443110396`. 237 Qt/58 Node; kaynak/PR/main, Setup/Portable/reopen, 40 layout profili, hareket ve 6.8→6.9 gerçek güncelleme PASS. İlk update helper sekme varsayımı gerçek Section seçicisiyle düzeltildi; ürün payload'ı değişmedi.
 
 DESIGN_BRIEF, SCREEN_INVENTORY, AIONIA-1.2-QA ve VALIDATION güncel. Sarılan native kontroller, tek ana eylem, anlamlı başlık/kategoriler, responsive form/preset, giriş ve açıklık durumunu koruma; önceki startup/disposal/backend/recovery güvenlik regresyonları korunur. Aion/logo yeniden tasarlanmadı; onaysız canon eklenmedi. Fiziksel cihaz/ekran okuyucu/tam WCAG/perf/pentest NOT TESTED. Driver Booster tam paritesi yok. Kapsamı genişletirken bu sınırları ve mevcut onay/yedek/imza/hash kurallarını koru.

@@ -1,5 +1,22 @@
 # Verification evidence
 
+## 6.10.0 AIONIA v1.5 geometric consistency and optical balance
+
+Release `443247958`, source/tag `bed307e63084c2a8777146746244249d7fe0ba81`, PR #23, merge `43e12396386b528abc5f3379ccd807b90abfcf02`, signed metadata `59c4a87e139327369481d9241cc9b064e0713240`. Existing Windows Python/Qt Widgets + headless Node/PowerShell, data, approvals, driver signature/firmware restrictions, Aion and icon retained. Official standard was reread: current v1.5 supersedes repo v1.2; universal default theme and geometry clauses 19/20 apply, game-only control/loading requirements do not.
+
+251 Qt + 59 Node PASS locally and Windows. New regressions measure equal equivalent-action widths, readable copy, center offsets, bounded desktop width, live bold-font scaling, height-for-width retention, hover/focus/press geometry, state retention and saved theme/font preservation. Prior startup/disposal/backend-recovery/safety tests remain. First local large EN helper-button clipping was fixed by retaining its HFW size-policy flag; no assertion was weakened. Production dependency audit: zero reported vulnerabilities at audit time, not a pentest.
+
+All final Windows gates PASS: source `43268516468`, pr `43268769427`, motion `43270762625`, publish `43271183208`, upgrade `43271827016`. Source artifact {"id": 13969085155, "bytes": 200562483, "sha256": "bc9a2b3235bb36c76122f33f85828624fd453406e5c672e92ad6b189116484cd"}; motion artifact {"id": 13968077227, "bytes": 3537745, "sha256": "0befe99b97eec9a4640695bade493d3b89e0a079e5d6fe31bff4695337c3de13"}; upgrade artifact {"id": 13969635490, "bytes": 6798051, "sha256": "6b32f6d32631e69f66aad242f415b62487f74ddf1a2aba2bb7cefbf9afbbff70"}.
+
+Merged source differs only in four signed release-metadata files; application/tests/workflows equal verified source. Duplicate automatic main run `43272509434 is CANCELLED, not PASS.
+
+Actual Setup/Portable/reopen and upgraded application produce five profiles × ten main pages: four prior TR/EN light/dark/compact/large-text profiles plus wide dark/system-font. Actual WM dimensions, viewport/body width and center offset, equal care-action widths, synchronous render time and original PNG are recorded. Outer horizontal scroll zero; center residual ≤2 logical px; at most one primary; all visible wrapped controls fit. All ten wide/system-font pages and representative compact/large-text images were human visually inspected. New-install Setup/Portable first-launch receipts confirm dark/system-font. Motion-enabled run advances all ten Aion page clocks and restores OS preference. Seven original icon resource sizes match both release EXEs.
+
+Real baseline 6.9.0 UI invokes authenticated update/confirmation; installed hash equals released Portable payload, registry/runtime 6.10.0, previous settings (test beta channel excluded), cleanup/restore history and health/scan milestones preserved. Both binaries and signed metadata are exact source artifact bytes; main rebuild is an independent verification, not a replacement payload.
+
+Synchronous render only: Setup P95 61.58 ms over 50 records, predeclared budget 2000 ms; not startup/end-to-end/FPS/CPU/RAM/energy. Physical Windows tablet/touch/OSK/system DPI/low-end, screen reader, real-user study, full WCAG/performance/pentest remain NOT TESTED. No phone OS/web/gamepad port is claimed. Driver Booster proprietary catalog/full parity gaps remain as documented. [QA matrix](AIONIA-1.5-QA.md), [screens](SCREEN_INVENTORY.md).
+
+
 ## 6.9.0 AIONIA v1.2 native layout and task hierarchy
 
 [v6.9.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.9.0): application/tag source `34468ca6720898fed73e454f2c5620ad1ce98135`, PR #20, merge `4b31845d1c2982ffe86eee8d1342428f371b741e`, metadata `9f0ec09bd1d8501c7972e70e443057853c3fd885`, release `443110396`. Later commit `3462f2693ab87c5026dfcb03b8a4dfa25893ee87` changes only the Windows update UI test helper; release payload is the signed source build. Existing Qt Widgets/headless Node/PowerShell, data, approvals, driver signature restrictions, Aion and icon remain. No new framework/runtime dependency/telemetry. Official v1.2 and prior reference provenance were reviewed; unapproved canon is not inferred.
