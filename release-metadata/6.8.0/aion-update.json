@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "version": "6.8.0",
+  "platform": "win32",
+  "arch": "x64",
+  "bytes": 97169205,
+  "sha256": "fedb42e1b4bdc9bbb143b4842cb86a5fe60dac3961695207bdc5535478f5db82",
+  "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.8.0/WinOptimizer-Aion-6.8.0-Windows-x64-Setup.exe",
+  "sourceCommit": "0d31aa570f099011c141d249e27e75ee7b3a3b31",
+  "notes": {
+    "tr": "AIONIA v1.1: dar ekranda bütün bölümler, F1 kullanım rehberi, klavye kısayolları, görünür odak ve anlaşılır açılış. Mevcut Aion, ayarlar ve geçmiş korunur.",
+    "en": "AIONIA v1.1: all sections in narrow windows, local F1 guidance, keyboard shortcuts, visible focus and clear startup. Existing Aion, preferences and history are preserved."
+  },
+  "portable": {
+    "bytes": 97018106,
+    "sha256": "8a45999b82bd198a0b2c7ac112a18baa9199b327f4d8eb61abb2e4cecdb064da",
+    "url": "https://github.com/kaansavukduran/WinOptimizer/releases/download/v6.8.0/WinOptimizer-Aion-6.8.0-Windows-x64-Portable.exe"
+  }
+}
