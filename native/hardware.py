@@ -3,6 +3,7 @@ from datetime import datetime
 from PySide6.QtCore import Qt
 from pathlib import Path
 from PySide6.QtWidgets import QApplication, QLabel, QComboBox, QLineEdit, QTreeWidget, QTreeWidgetItem, QHeaderView, QFormLayout, QFileDialog
+from widgets import Choice as QComboBox, Paragraph
 
 MEMORY_TYPES={20:'DDR',21:'DDR2',22:'DDR2 FB-DIMM',24:'DDR3',26:'DDR4',27:'LPDDR',28:'LPDDR2',29:'LPDDR3',30:'LPDDR4',34:'DDR5',35:'LPDDR5'}
 ARCHITECTURES={0:'x86',5:'ARM',6:'Itanium',9:'x64',12:'ARM64'}
@@ -89,9 +90,7 @@ def render(window):
     form.setRowWrapPolicy(QFormLayout.WrapAllRows if window.width()<850 else QFormLayout.WrapLongRows)
     summary.addLayout(form)
     for key,value in summary_entries(report,language,t):
-        left,right=QLabel(key),QLabel(value)
-        for label in (left,right):
-            label.setWordWrap(True);label.setTextFormat(Qt.PlainText);label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        left,right=Paragraph(key),Paragraph(value)
         form.addRow(left,right)
     def copy_summary():
         QApplication.clipboard().setText(summary_text(report,language,t));window.notice.setText(t('forge.copied'))

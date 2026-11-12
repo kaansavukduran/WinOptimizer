@@ -26,7 +26,7 @@ def start(window, scenario):
         dialog.findChild(QDialogButtonBox).button(QDialogButtonBox.Ok).click()
     def advance():
         try:
-            if time.time()-began>240:raise AssertionError('NATIVE_SMOKE_TIMEOUT stage='+str(state['stage']))
+            if time.time()-began>360:raise AssertionError('NATIVE_SMOKE_TIMEOUT stage='+str(state['stage']))
             if not window.ready or window.busy:return
             stage=state['stage']
             if stage==0:
@@ -153,7 +153,7 @@ def start(window, scenario):
                 window.go('home');state['stage']=15
             elif stage==15:
                 from PySide6.QtWidgets import QGroupBox
-                assert any(g.title()==window.t('care.homeStatus') for g in window.findChildren(QGroupBox))
+                assert any(g.accessibleName()==window.t('care.homeStatus') for g in window.scroll.widget().findChildren(QGroupBox))
                 window.grab().save(str(evidence/'Windows-Qt-unified-home-tr-100.png'))
                 window.go('history');state['stage']=16
             elif stage==16:
@@ -351,6 +351,39 @@ def start(window, scenario):
                 window.settings=state['usabilityPreferences'];window.resize(*state['usabilitySize']);window.appearance();window.render()
                 (evidence/'aionia-usability.json').write_text(json.dumps(dict(verified=True,standard='AIONIA 1.1',actualPackagedQt=True,compactNavigationAllTenPages=True,realKeyboardNavigation=True,localizedContextHelp=True,focusContrastVerified=True,preferencesRestored=True,milestonesUnchanged=True),indent=2),encoding='utf-8')
                 state['usabilityChecked']=True;finish(state['usabilityFinalSettings'])
+            elif stage==40:
+                state['layoutPreferences']=dict(window.settings)
+                state['layoutSize']=(window.width(),window.height())
+                state['layoutMilestones']=list(window.state['milestones'])
+                state['layoutPages']=list(__import__('usability').PAGES)
+                state['layoutProfiles']=[dict(id='wide-light-tr',width=1240,language='tr',theme='light',scale=100,textSize=100),dict(id='compact-dark-en',width=540,language='en',theme='dark',scale=100,textSize=100),dict(id='large-dark-tr',width=540,language='tr',theme='dark',scale=200,textSize=125),dict(id='large-light-en',width=540,language='en',theme='light',scale=200,textSize=125)]
+                state.update(layoutIndex=0,layoutRows=[],stage=41)
+            elif stage==41:
+                index=state['layoutIndex'];profile=state['layoutProfiles'][index//10];page=state['layoutPages'][index%10]
+                window.settings.update({k:v for k,v in profile.items() if k not in ('id','width')})
+                window.settings.update(font='dyslexic',operationDetails=False,motion=False)
+                window.resize(profile['width'],900);window.appearance();window.page=page
+                began_render=time.perf_counter();window.render();state['layoutRenderMs']=(time.perf_counter()-began_render)*1000
+                window.notice.setText(window.t('ux.ready'));window.scroll.verticalScrollBar().setValue(0)
+                state.update(layoutProfile=profile,layoutPage=page,stage=42)
+            elif stage==42:
+                # Real Qt geometry after its deferred text layout, not only a pixel diff.
+                assert window.scroll.horizontalScrollBar().maximum()==0,(state['layoutProfile'],state['layoutPage'],window.scroll.widget().width(),window.scroll.viewport().width())
+                from widgets import Button
+                buttons=window.scroll.widget().findChildren(QPushButton)
+                assert sum(bool(b.property('primary')) for b in buttons)<=1
+                assert all(b.height()>=b.heightForWidth(b.width()) for b in buttons if isinstance(b,Button) and b.isVisible())
+                assert state['layoutRenderMs']<=2000,('Synchronous Qt render exceeded the predeclared 2000 ms CI budget',state['layoutRenderMs'])
+                profile,page=state['layoutProfile'],state['layoutPage']
+                window.grab().save(str(evidence/('Windows-Qt-layout-'+profile['id']+'-'+page+'.png')))
+                state['layoutRows'].append(dict(profile=profile['id'],page=page,requestedWidth=profile['width'],actualWidth=window.width(),actualHeight=window.height(),viewportWidth=window.scroll.viewport().width(),outerHorizontalMaximum=0,primaryActions=sum(bool(b.property('primary')) for b in buttons),synchronousRenderMs=round(state['layoutRenderMs'],2)))
+                state['layoutIndex']+=1
+                if state['layoutIndex']<40:state['stage']=41;return
+                assert window.state['milestones']==state['layoutMilestones']
+                timings=sorted(r['synchronousRenderMs'] for r in state['layoutRows'])
+                (evidence/'aionia-layout.json').write_text(json.dumps(dict(verified=True,standard='AIONIA 1.2',actualPackagedWindows=True,rows=state['layoutRows'],renderBudgetMs=2000,p95SynchronousRenderMs=timings[37],preferencesRestored=True,milestonesUnchanged=True,physicalDeviceCertification=False),indent=2),encoding='utf-8')
+                window.settings=state['layoutPreferences'];window.resize(*state['layoutSize']);window.appearance();window.render()
+                state['layoutChecked']=True;finish(state['layoutFinalSettings'])
         except Exception as error:
             timer.stop()
             (evidence/'FAILED.json').write_text(json.dumps({'scenario':scenario,'stage':state['stage'],'error':repr(error),'notice':window.notice.text()},indent=2),encoding='utf-8')
@@ -364,6 +397,9 @@ def start(window, scenario):
             return
         if not state.get('usabilityChecked'):
             state.update(usabilityFinalSettings=settings,stage=37)
+            return
+        if not state.get('layoutChecked'):
+            state.update(layoutFinalSettings=settings,stage=40)
             return
         if not state.get('recoveryChecked'):
             assert not window.busy

@@ -212,7 +212,8 @@ def test_shared_scan_places_evidence_in_existing_pages_without_a_donor_tab(windo
     assert ('diagnostics.scan',dict(online=True)) in bridge.calls and w.t('care.review') in w.notice.text()
     tree=w.findChild(QTreeWidget,'scan-records-tree');assert tree.topLevelItemCount()==4
     assert w.t('hw.emptyStatus') in tree.topLevelItem(1).text(1)
-    detail=next(g for g in w.findChildren(QGroupBox) if g.title()==w.t('care.scanDetails'));detail.setChecked(True)
+    from PySide6.QtWidgets import QCheckBox
+    detail=w.scroll.widget().findChild(QCheckBox,'section-toggle-care.scanDetails');assert detail;detail.setChecked(True)
     w.findChild(QPushButton,'care-copy').click()
     assert 'private local event message' not in application.clipboard().text()
     assert w.t('care.historyNote') in application.clipboard().text()
@@ -223,7 +224,7 @@ def test_shared_scan_places_evidence_in_existing_pages_without_a_donor_tab(windo
     w.go('history');application.processEvents()
     assert w.findChild(QTreeWidget,'update-records-tree').topLevelItemCount()==1
     w.go('home');application.processEvents()
-    assert any(g.title()==w.t('care.homeStatus') for g in w.findChildren(QGroupBox))
+    assert any(g.accessibleName()==w.t('care.homeStatus') for g in w.scroll.widget().findChildren(QGroupBox))
     w.go('scanFix');application.processEvents()
     assert w.findChild(QLineEdit,'scan-records-search').text()=='Fixture event'
     assert len([c for c,_ in bridge.calls if c=='diagnostics.scan'])==1
@@ -343,9 +344,13 @@ def test_scan_feedback_respects_findings_even_without_an_attention_flag(window,s
 def test_expanding_options_before_initial_callback_keeps_visible_controls(window,application):
     from PySide6.QtWidgets import QCheckBox
     w,bridge=window;w.go('scanFix')
-    check=w.scroll.widget().findChild(QCheckBox,'scan-online');group=check.parentWidget()
-    group.setChecked(True);application.processEvents()
-    assert group.isChecked() and not check.isHidden()
+    check=w.scroll.widget().findChild(QCheckBox,'scan-online')
+    toggle=w.scroll.widget().findChild(QCheckBox,'scan-options-toggle')
+    toggle.setChecked(True);application.processEvents()
+    assert toggle.isChecked() and check.isVisible()
+    w.render();application.processEvents()
+    assert w.scroll.widget().findChild(QCheckBox,'scan-options-toggle').isChecked()
+    assert w.scroll.widget().findChild(QCheckBox,'scan-online').isVisible()
 
 @pytest.mark.parametrize('language',['tr','en'])
 def test_journey_explains_real_steps_and_reveals_the_missing_backup_without_running_it(window,application,language):

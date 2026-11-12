@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QBoxLayout, QGridLayout, QLineEdit, QColorDialog, QPushButton
 from mascot import Aion
+from widgets import Button as QPushButton
 
 PALETTE = [('pink','#b82e69'),('blue','#066f82'),('purple','#7451b8'),('green','#21734a'),('amber','#8a5100')]
 
@@ -83,8 +84,11 @@ def sync(window):
             button.setEnabled(window.settings.get('companion',True))
 
 def font_controls(window,form):
-    window.choice(form,'font',[('system',window.t('systemFont')),('readable',window.t('readableFont')),('dyslexic',window.t('dyslexicFont'))])
+    choose=window.choice(form,'font',[('system',window.t('systemFont')),('readable',window.t('readableFont')),('dyslexic',window.t('dyslexicFont'))])
     sample=QWidget();layout=QVBoxLayout(sample);layout.setContentsMargins(0,0,0,0)
+    selected=window.label(window.t('look.preview')+' · '+choose.currentText(),layout=layout)
+    selected.setObjectName('font-preview-title')
+    choose.currentTextChanged.connect(lambda value:selected.setPlainText(window.t('look.preview')+' · '+value))
     preview=window.label(window.t('fontPreview'),layout=layout);preview.setObjectName('font-preview')
     preview.setAccessibleName(window.t('look.preview'))
     window.label(window.t('look.offlineFont'),layout=layout)

@@ -4,6 +4,7 @@ import json
 from PySide6.QtWidgets import QApplication, QComboBox, QLineEdit, QTreeWidget, QTreeWidgetItem, QHeaderView, QFormLayout, QLabel, QHBoxLayout
 from hardware import format_value as hardware_value, progress_state as category_progress
 from PySide6.QtCore import Qt
+from widgets import Choice as QComboBox
 
 SECTIONS=('readiness','defender','firewall','systemEvents','appEvents','crashes','dumps','updateHistory','services')
 

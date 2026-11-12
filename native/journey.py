@@ -41,6 +41,7 @@ def reveal_step(window,key):
     if window.busy:return
     item=next(item for item in STEPS if item[0]==key)
     window.state['journeyActiveStep']=key
+    if key=='drivers':window.driver_section='backups'
     window.go(item[2])
     target=window.scroll.widget().findChild(QPushButton,item[3])
     window.notice.setText(window.t('j.locate.'+key).format(action=window.t(ACTIONS[key])))

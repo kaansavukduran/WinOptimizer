@@ -54,7 +54,7 @@ def render(window):
     panel = QGroupBox()
     panel.setObjectName('operation-recovery')
     layout = QVBoxLayout(panel)
-    window.label(words['title'], heading=True, layout=layout)
+    window.label(words['title'], heading=True, level=2, layout=layout)
     request = failure.get('request')
     page = request['page'] if request else window.page
     location = window.t(page)

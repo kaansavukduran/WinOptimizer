@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
     QSizePolicy, QSplitter, QGridLayout)
 from bridge import Bridge
 from mascot import Aion
-from widgets import Paragraph
+from widgets import Paragraph, Button as QPushButton, CheckBox as QCheckBox, Choice as QComboBox
 import recovery
 import personalize
 import usability
@@ -76,8 +76,7 @@ class Window(QMainWindow):
         self.nav_scroll.setMinimumHeight(64)
         self.nav_scroll.setMaximumHeight(100)
         self.outer.addWidget(self.nav_scroll)
-        self.notice = QLabel()
-        self.notice.setWordWrap(True)
+        self.notice = Paragraph('')
         self.notice.setAccessibleName(self.t('n.result'))
         self.outer.addWidget(self.notice)
         self.progress = QProgressBar()
@@ -175,21 +174,25 @@ class Window(QMainWindow):
         QApplication.setFont(font)
         self.setFont(font)
         for paragraph in self.findChildren(Paragraph):
-            paragraph.setFont(font)
-            paragraph.document().setDefaultFont(font)
+            use=QFont(font)
+            if paragraph.property('heading'):
+                use.setPointSizeF(font.pointSizeF()*(1.35 if paragraph.property('headingLevel')!=2 else 1.12));use.setBold(True)
+            paragraph.setFont(use)
+            paragraph.document().setDefaultFont(use)
         for label in self.findChildren(QLabel):
             if label.property('heading'):
-                heading=QFont(font);heading.setPointSizeF(font.pointSizeF()*1.4);heading.setBold(True);label.setFont(heading)
+                heading=QFont(font);heading.setPointSizeF(font.pointSizeF()*(1.35 if label.property('headingLevel')!=2 else 1.12));heading.setBold(True);label.setFont(heading)
         theme = self.settings.get('theme', 'system')
         dark = theme in ('dark', 'contrast') or (theme == 'system' and QApplication.palette().window().color().lightness() < 128)
         high = theme == 'contrast'
         bg, surface, fg, line, accent = ('#000000', '#111111', '#ffffff', '#ffffff', '#ffff00') if high else ('#18151e', '#29222f', '#fff5fa', '#aa8fa8', self.settings.get('accent', '#b82e69')) if dark else ('#fcf7fb', '#ffffff', '#302838', '#8e748a', self.settings.get('accent', '#b82e69'))
         accent_ink=personalize.ink(accent)
         focus=personalize.focus_color(accent,bg,surface)
-        self.visual_tokens=dict(background=bg,surface=surface,text=fg,border=line,accent=accent,accentInk=accent_ink,focus=focus)
+        danger,success=('#ffff00','#ffffff') if high else ('#ffb0bd','#9ce2c2') if dark else ('#9c2242','#1c6849')
+        self.visual_tokens=dict(background=bg,surface=surface,text=fg,border=line,accent=accent,accentInk=accent_ink,focus=focus,danger=danger,success=success)
         pad = round((6 if self.settings.get('density')=='compact' else 8) * scale)
         self.nav_scroll.setFixedHeight(round(64*scale))
-        self.setStyleSheet(f'QWidget{{color:{fg};background:{bg};selection-background-color:{accent};selection-color:{accent_ink};}} QGroupBox,QTreeWidget,QLineEdit,QComboBox,QSpinBox,QDoubleSpinBox{{background:{surface};border:1px solid {line};border-radius:4px;padding:{pad}px;}} QGroupBox{{margin-top:14px;padding-top:24px;}} QGroupBox::title{{subcontrol-origin:margin;left:12px;}} QPushButton{{background:{surface};border:1px solid {line};border-radius:4px;padding:{pad}px;min-height:{round(24*scale)}px;}} QPushButton:disabled{{color:#888888;}} QPushButton[primary="true"]{{background:{accent};color:{accent_ink};font-weight:bold;}} QPushButton:checked{{border:2px solid {focus};}} QPushButton:focus,QComboBox:focus,QLineEdit:focus,QSpinBox:focus,QDoubleSpinBox:focus,QTreeWidget:focus,QTextEdit:focus{{border:3px solid {focus};}} QCheckBox:focus,QSlider:focus,QGroupBox:focus{{outline:2px solid {focus};}} QHeaderView::section{{background:{surface};padding:{pad}px;}} QProgressBar{{border:1px solid {line};min-height:12px;}} QProgressBar::chunk{{background:{accent};}} QCheckBox{{spacing:8px;padding:6px;}} QLabel{{background:transparent;}} QToolTip{{background:{surface};color:{fg};border:1px solid {line};}} QLabel#app-brand{{font-weight:bold;}}')
+        self.setStyleSheet(f'QWidget{{color:{fg};background:{bg};selection-background-color:{accent};selection-color:{accent_ink};}} QGroupBox,QTreeWidget,QLineEdit,QComboBox,QSpinBox,QDoubleSpinBox{{background:{surface};border:1px solid {line};border-radius:4px;padding:{pad}px;}} QGroupBox{{margin-top:14px;padding-top:24px;}} QGroupBox[section="true"]{{margin-top:0;padding-top:12px;}} QGroupBox::title{{subcontrol-origin:margin;left:12px;}} QPushButton{{background:{surface};border:1px solid {line};border-radius:4px;padding:{pad}px;min-height:{round(24*scale)}px;}} QPushButton:hover{{border:2px solid {focus};}} QPushButton:pressed{{border:3px solid {focus};}} QPushButton[danger="true"]{{color:{danger};border:2px solid {danger};}} QPushButton:disabled{{color:#888888;}} QPushButton[primary="true"]{{background:{accent};color:{accent_ink};font-weight:bold;}} QPushButton:checked{{border:2px solid {focus};}} QPushButton:focus,QComboBox:focus,QLineEdit:focus,QSpinBox:focus,QDoubleSpinBox:focus,QTreeWidget:focus,QTextEdit:focus{{border:3px solid {focus};}} QCheckBox:focus,QSlider:focus,QGroupBox:focus{{outline:2px solid {focus};}} QHeaderView::section{{background:{surface};padding:{pad}px;}} QProgressBar{{border:1px solid {line};min-height:12px;}} QProgressBar::chunk{{background:{accent};}} QCheckBox{{spacing:8px;padding:6px;}} QLabel{{background:transparent;}} QToolTip{{background:{surface};color:{fg};border:1px solid {line};}} QLabel#app-brand{{font-weight:bold;}}')
         self.outer.setSpacing(round(10 * scale))
         self.set_operation_details(self.settings.get('operationDetails',True))
         if hasattr(self,'body'):self.body.setSpacing(round((10 if self.settings.get('density')=='compact' else 14)*scale))
@@ -243,6 +246,7 @@ class Window(QMainWindow):
         self.trace_signature = None
         self.set_operation_details(self.settings.get('operationDetails',True))
         personalize.sync(self)
+        usability.adapt(self)
 
     def set_operation_details(self, expanded, persist=False):
         changed=getattr(self,'details_expanded',None)!=expanded
@@ -269,25 +273,26 @@ class Window(QMainWindow):
         if page == 'workshop':
             self.run('workshop.library', callback=lambda r: self.store('library', r), silent=True)
 
-    def label(self, value, heading=False, layout=None):
-        label = QLabel(str(value)) if heading else Paragraph(str(value),self.settings.get('lineHeight',1.5))
+    def label(self, value, heading=False, layout=None, level=1):
+        label = Paragraph(str(value),1.15 if heading else self.settings.get('lineHeight',1.5))
         if heading:
             label.setProperty('heading',True)
-            label.setWordWrap(True)
-            label.setTextFormat(Qt.PlainText)
-            label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            label.setProperty('headingLevel',level)
+            label.setAccessibleName(str(value))
         if heading:
             font = self.font()
-            font.setPointSizeF(font.pointSizeF() * 1.4)
+            font.setPointSizeF(font.pointSizeF() * (1.35 if level==1 else 1.12))
             font.setBold(True)
             label.setFont(font)
+            label.document().setDefaultFont(font)
         (layout or self.body).addWidget(label)
         return label
 
-    def button(self, key, callback, primary=False, layout=None, enabled=True, literal=False, name=None):
+    def button(self, key, callback, primary=False, layout=None, enabled=True, literal=False, name=None, danger=False):
         button = QPushButton(key if literal else self.t(key))
         button.setObjectName(name or key)
         button.setProperty('primary', primary)
+        button.setProperty('danger',danger or key in ('purge','disable'))
         button.setEnabled(enabled and not self.busy)
         button.clicked.connect(callback)
         (layout or self.body).addWidget(button)
@@ -295,19 +300,21 @@ class Window(QMainWindow):
         return button
 
     def group(self, key, checkable=False, checked=False):
-        group = QGroupBox(self.t(key))
-        if checkable:
-            group.setCheckable(True)
-            group.setChecked(checked)
-        layout = QVBoxLayout(group)
+        group = QGroupBox()
+        group.setAccessibleName(self.t(key))
+        group.setProperty('section',True)
+        outer = QVBoxLayout(group)
         self.body.addWidget(group)
         if checkable:
-            def toggle(value):
-                for i in range(layout.count()):
-                    if layout.itemAt(i).widget():layout.itemAt(i).widget().setVisible(value)
-            group.toggled.connect(toggle)
-            QTimer.singleShot(0,group,lambda:toggle(group.isChecked()))
-        return layout
+            open_states=self.state.setdefault('disclosures',{})
+            toggle=QCheckBox(self.t(key));toggle.setObjectName('section-toggle-'+key)
+            toggle.setChecked(open_states.get(key,checked));outer.addWidget(toggle)
+            panel=QWidget();inner=QVBoxLayout(panel);inner.setContentsMargins(0,0,0,0)
+            outer.addWidget(panel);panel.setVisible(toggle.isChecked())
+            toggle.toggled.connect(lambda value:(open_states.update({key:value}),panel.setVisible(value)))
+            return inner
+        self.label(self.t(key),heading=True,level=2,layout=outer)
+        return outer
 
     def details(self, key, content, layout=None):
         group = QGroupBox(self.t(key))
@@ -483,7 +490,9 @@ class Window(QMainWindow):
                 if event.get('step','').startswith('care-'):step=self.t('care.'+event['step'][5:])
                 if not event.get('step','').startswith(('hardware-','care-')) and event.get('step','').replace('-','_') not in NATIVE[self.settings['language']]:
                     step = self.action_name(event.get('step') if event.get('step')=='windows-updates' else event.get('action', ''))
-                QTreeWidgetItem(self.log, [time, self.t('n.native_source' if event.get('origin') == 'native' else 'n.app'), step, ('Başladı' if self.settings['language']=='tr' else 'Started') if event.get('status')=='running' else self.t('n.' + event.get('status', 'running')), detail])
+                item=QTreeWidgetItem(self.log, [time, self.t('n.native_source' if event.get('origin') == 'native' else 'n.app'), step, ('Başladı' if self.settings['language']=='tr' else 'Started') if event.get('status')=='running' else self.t('n.' + event.get('status', 'running')), detail])
+                if event.get('status') in ('complete','failed'):
+                    item.setForeground(3,QColor(self.visual_tokens['success' if event['status']=='complete' else 'danger']))
             self.log.resizeColumnToContents(0)
             self.log.resizeColumnToContents(1)
             self.log.resizeColumnToContents(2)
@@ -539,7 +548,8 @@ class Window(QMainWindow):
         personalize.sync(self)
 
     def page_home(self):
-        self.button('scanFix', lambda: self.go('scanFix'), True, name='home-scan')
+        has_next=self.settings.get('gamification',True) and not {'health','scan','drivers'}<=set(self.state.get('milestones',[]))
+        self.button('scanFix', lambda: self.go('scanFix'), not has_next, name='home-scan')
         self.hero()
         from journey import render_return
         render_return(self)
@@ -556,7 +566,13 @@ class Window(QMainWindow):
         self.label(self.t('n.local_data'))
 
     def scan_options(self):
-        options = self.group('d.scanOptions', True, False)
+        from PySide6.QtWidgets import QWidget
+        toggle=QCheckBox(self.t('d.scanOptions'));toggle.setObjectName('scan-options-toggle')
+        toggle.setChecked(self.state.get('scanOptionsExpanded',False))
+        self.body.addWidget(toggle)
+        panel=QWidget();options=QVBoxLayout(panel);options.setContentsMargins(0,0,0,0)
+        self.body.addWidget(panel);panel.setVisible(toggle.isChecked())
+        toggle.toggled.connect(lambda value:(self.state.update(scanOptionsExpanded=value),panel.setVisible(value)))
         online = QCheckBox(self.t('d.online'))
         online.setObjectName('scan-online')
         online.setChecked(self.scan_online)
@@ -565,8 +581,9 @@ class Window(QMainWindow):
         self.label(self.t('d.onlineHelp'), layout=options)
 
     def page_scanFix(self):
-        self.button('d.again' if self.state.get('report') else 'd.scan', lambda:self.scan(), True, name='start-scan')
         report = self.state.get('report')
+        has_updates=report and any(f['status']=='update' and any(a['kind']=='update' for a in f['actions']) for f in report.get('findings',[]))
+        self.button('d.again' if report else 'd.scan', lambda:self.scan(), not has_updates, name='start-scan')
         if not report:
             self.hero()
             self.scan_options()
@@ -620,8 +637,10 @@ class Window(QMainWindow):
         self.run('diagnostics.scan',dict(online=self.scan_online),lambda r:self.store('report',r))
 
     def finding(self, finding, report):
-        box = QGroupBox(f'{finding["evidence"].get("name",self.t("d."+finding["category"]))} · {self.t("d."+finding["status"])}')
+        title=f'{finding["evidence"].get("name",self.t("d."+finding["category"]))} · {self.t("d."+finding["status"])}'
+        box = QGroupBox();box.setProperty('section',True);box.setAccessibleName(title)
         layout = QVBoxLayout(box)
+        self.label(title,heading=True,level=2,layout=layout)
         self.label(self.t('d.'+finding['reason']),layout=layout)
         self.details('n.values',json.dumps(finding['evidence'],ensure_ascii=False,indent=2),layout)
         for action in finding.get('actions',[]):
@@ -697,8 +716,16 @@ class Window(QMainWindow):
     def page_startup(self):
         self.label(self.t('startupIntro'))
         self.button('refresh',lambda:self.run('startup',callback=lambda r:self.store('startup',r)),True)
+        if 'startup' not in self.state:self.label(self.t('layout.startupEmpty'))
+        elif not self.state['startup']:self.label(self.t('layout.startupNone'))
         tree=self.table(self.state.get('startup',[]),[('name',self.t('d.name')),('command',self.t('n.values'))],check=True)
-        self.button('disable',lambda:self.disable_startup(self.chosen(tree)))
+        tree.setObjectName('startup-tree')
+        hint=self.label(self.t('layout.chooseStartup'));hint.setObjectName('startup-selection-hint')
+        disable=self.button('disable',lambda:self.disable_startup(self.chosen(tree)),enabled=False,name='startup-disable')
+        def selected():
+            count=len(self.chosen(tree));disable.setEnabled(not self.busy and count==1)
+            hint.setPlainText(self.t('layout.oneStartup' if count>1 else 'layout.reviewStartup' if count==1 else 'layout.chooseStartup'))
+        tree.itemChanged.connect(lambda *_:selected())
         self.button('startupOpen',lambda:self.external('startup'))
 
     def disable_startup(self,rows):
@@ -709,7 +736,7 @@ class Window(QMainWindow):
     def page_tools(self):
         from care import render_tools
         render_tools(self)
-        self.button('network',lambda:self.run('network',callback=lambda r:self.store('network',r)),True)
+        self.button('network',lambda:self.run('network',callback=lambda r:self.store('network',r)))
         self.button('dnsFlush',lambda:self.confirm(self.t('d.confirm'),self.t('d.dnsImpact'),[self.t('dnsFlush')],lambda:self.run('dns-flush')))
         self.button('power',lambda:self.run('power-profiles',callback=lambda r:self.store('power',r)))
         if self.state.get('network'):
@@ -720,7 +747,7 @@ class Window(QMainWindow):
             self.button(self.t({'security':'securityOpen','windows':'windowsUpdate','sound':'d.sound','display':'d.displayAction','network-settings':'d.networkAction'}[key]),lambda _,k=key:self.external(k),literal=True)
 
     def page_history(self):
-        self.button('refresh',lambda:self.run('history',callback=lambda r:self.store('history',r)))
+        self.button('refresh',lambda:self.run('history',callback=lambda r:self.store('history',r)),True)
         self.button('exportBackup',lambda:self.export('backup.export'))
         from care import render_history
         render_history(self)
@@ -849,6 +876,7 @@ class Window(QMainWindow):
         sections.setCurrentIndex(max(0,sections.findData(self.settings_section)))
         sections.currentIndexChanged.connect(lambda _:self.set_settings_section(sections.currentData()))
         self.body.addWidget(sections)
+        self.label(self.t(self.settings_section),heading=True,level=2)
         form=QFormLayout();form.setRowWrapPolicy(QFormLayout.WrapAllRows if self.width()<900 else QFormLayout.WrapLongRows);self.body.addLayout(form)
         section=self.settings_section
         if section=='general':

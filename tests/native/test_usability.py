@@ -70,6 +70,7 @@ def test_actual_theme_tokens_keep_focus_and_active_text_contrast(window,theme,ac
         assert contrast(t['text'],surface)>=4.5
         assert contrast(t['focus'],surface)>=3
         assert contrast(t['border'],surface)>=3
+        assert contrast(t['danger'],surface)>=4.5 and contrast(t['success'],surface)>=4.5
     assert contrast(t['accentInk'],t['accent'])>=4.5
     assert 'QComboBox:focus' in w.styleSheet() and 'QTreeWidget:focus' in w.styleSheet()
     assert w.settings['accent']==accent
