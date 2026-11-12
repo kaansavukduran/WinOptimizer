@@ -8,7 +8,7 @@ import sys
 import time
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QPushButton, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QTreeWidget, QLineEdit
+from PySide6.QtWidgets import QApplication, QPushButton, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QTreeWidget, QLineEdit, QBoxLayout
 
 def start(window, scenario):
     evidence=Path(os.environ.get('AION_EVIDENCE',str(Path.cwd()/'work/native-evidence')))
@@ -387,7 +387,7 @@ def start(window, scenario):
                 assert abs(2*offset+content.width()-viewport.width())<=2,('Content is not optically centered',offset,content.width(),viewport.width())
                 rows=content.findChildren(ActionRow)
                 assert len({r.action.width() for r in rows})<=1,('Unequal equivalent care actions',[(r.action.text(),r.action.width()) for r in rows])
-                assert all(r.row.direction()==r.row.TopToBottom or r.copy.width()>=r.width()/2 for r in rows)
+                assert all(r.row.direction()==QBoxLayout.TopToBottom or r.copy.width()>=r.width()/2 for r in rows)
                 window.grab().save(str(evidence/('Windows-Qt-layout-'+profile['id']+'-'+page+'.png')))
                 if page=='settings' and profile['scale']==200:
                     from PySide6.QtWidgets import QSpinBox

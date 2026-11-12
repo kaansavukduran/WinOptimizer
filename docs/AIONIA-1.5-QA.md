@@ -16,3 +16,5 @@
 | İnsan görev başarısı, tam performans/WCAG/pentest | Test edilmedikçe yüzde, FPS veya sertifikasyon iddiası yok. | NOT TESTED |
 
 Oyun/mobil OS/web portu yapılmaz; oyun kontrol şeması/onay maddesi uygulanmaz. Mevcut azaltılmış hareket, Aion'u gizleme, klavye, tema/font/ölçek ve gerçek adım günlüğü korunur. Testte yakalanan büyük EN metin kırpılması, yardımcı düğmenin QSizePolicy değişirken height-for-width bilgisini kaybetmesinden kaynaklandı; politika bayrağı korunarak düzeltildi, eski kırpılmama koşulu gevşetilmedi. Final sonuçlar ve açık sınırlar bu kayıtta güncellenecek.
+
+İlk Windows paket testi FAIL: test-helper QBoxLayout enumunu nesne üzerinden okumaya çalıştı (stage 42 AttributeError); doğrudan QBoxLayout sınıf sabitiyle düzeltildi. Bu bir test yardımcı kodu hatasıydı; geometri eşitliği/ortalanma/kırpılma koşulları korunur. Başarısız kaynak/PR koşuları 43258785867 / 43258856386; düzeltme sonrası paket kapısı yeniden çalıştırılır.
