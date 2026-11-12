@@ -1,5 +1,24 @@
 # Verification evidence
 
+## 6.9.0 AIONIA v1.2 native layout and task hierarchy
+
+[v6.9.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.9.0): application/tag source `34468ca6720898fed73e454f2c5620ad1ce98135`, PR #20, merge `4b31845d1c2982ffe86eee8d1342428f371b741e`, metadata `9f0ec09bd1d8501c7972e70e443057853c3fd885`, release `443110396`. Later commit `3462f2693ab87c5026dfcb03b8a4dfa25893ee87` changes only the Windows update UI test helper; release payload is the signed source build. Existing Qt Widgets/headless Node/PowerShell, data, approvals, driver signature restrictions, Aion and icon remain. No new framework/runtime dependency/telemetry. Official v1.2 and prior reference provenance were reviewed; unapproved canon is not inferred.
+
+237 Qt + 58 Node tests PASS locally and Windows. New regressions exercise ten main pages × TR/EN × three layouts, sixteen subcategories × two languages, wrapped controls/native keyboard semantics, startup selection states, resize data/disclosure retention, long hardware identifiers, error single-primary, navigation clipping and intact percentage/color presets. Existing startup resize, disposed callback, recovery, history and driver safety tests remain. Production dependency audit reports zero vulnerabilities at audit time; this is not a pentest.
+
+Final source/PR/merge/publish/motion/update runs all PASS: `43241042187`, `43241053812`, `43244480985`, `43244571425`, `43242673911`, `43246280944`. Original update test `43244789017` failed before update because baseline 6.8.0 uses its compact page picker with saved large text; UIA dump established this. The helper now selects the real visible Settings row through its native popup, then exercises update controls/confirmation. Duplicate application build `43246245988` was cancelled: helper-only change is exercised by the real update run, while final application/merge builds pass. This does not bypass the updater or weaken safety/hash checks.
+
+Source Windows artifact `13954927421`, 199897718 bytes, SHA-256 `7f3b6a74cd68378c7c7a5383d54ef1d6081403a829466971d9e352c17303cc4b`. Motion artifact `13954583750`, 3166207 bytes, SHA-256 `b4ea858c09333f1d6c05446d46f834bc96711ef2a44114b7db434a35202409c3`. Update artifact is recorded in the closing verification receipt.
+
+Actual packaged Windows Setup/Portable/reopen and upgraded application produce AIONIA 1.2 JSON receipts: four profiles × ten pages; 1240/540 logical px requested and actual width, actual height recorded by WM. Wide/light/TR, compact/dark/EN, 200% scale × 125% text dark/TR and light/EN; original PNGs accompany receipts. Outer horizontal maximum zero, at most one primary action, visible controls meet wrapped height. All ten normal Windows images and representative compact/large-text images were visually reviewed; [original screenshots and category inventory](SCREEN_INVENTORY.md). Pure layouts also test 237 px; these are window profiles, not physical device certification. Synchronous `Window.render` call P95: source Setup 46.27 ms, Portable 45.44 ms (40 records; predeclared 2000 ms budget). This measures neither startup nor end-to-end user latency/FPS/CPU/RAM/energy.
+
+Update verifies installed file SHA equals the released Portable payload, registry/runtime 6.9.0, previous preference values (test-only beta channel excluded), cleanup/restore history and health/scan milestones. New and old layout/usability/driver/personalization/recovery receipts pass after update. Motion-enabled test advances all ten Aion clocks and restores original Windows motion preference. No unsigned driver was installed. Seven icon sizes match both release binaries.
+
+Setup: 97183774 bytes, SHA-256 `6eda0bdfce468cd19d83f15054f576f2a406543239a0989f377f12717ec9b9e9`. Portable: 97032507 bytes, SHA-256 `098add5ead9a52b284fdb09c71d36ea883900526bc61ed096931bcde11553974`. Five immutable public assets include signed manifest and checksums. Source/all-history bundles, both whole EXEs and evidence are backed up to the authorized private 6.9 folder, raw-downloaded and compared; signing keys excluded.
+
+[PASS / FAIL / NOT TESTED](AIONIA-1.2-QA.md): physical touch/Windows tablet/OSK/system DPI/low-end hardware, NVDA/Narrator, real-user tasks, full performance benchmark, full WCAG and pentest are NOT TESTED. Phone OS/web/gamepad are outside this Windows utility's platform scope. Driver Booster proprietary-catalog/full legacy parity remains incomplete: [coverage](REQUEST-COVERAGE.md).
+
+
 ## 6.8.0 AIONIA v1.1 native desktop usability
 
 [v6.8.0](https://github.com/kaansavukduran/WinOptimizer/releases/tag/v6.8.0) is stable/latest. Application/tag source `0d31aa570f099011c141d249e27e75ee7b3a3b31`, PR #19, merge `b7235a8da68246ab6119af05f996bee9c518ca7b`, signed metadata `a7b4bc8bb6df8fd1e625210e3528031f05fa2348`, release `442995150`.

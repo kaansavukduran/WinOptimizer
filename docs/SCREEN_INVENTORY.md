@@ -18,3 +18,13 @@ Mevcut on ana kategori ve Ctrl+1…9/Ctrl+0 sırası korunur. Önce kullanıcı 
 Başlık sırası: sayfa → bölüm → özellik/değer. Uzun aygıt adları ve Türkçe etiketler sarılır. Tablo sütunlarının kendi yatay kaydırması, bütün sayfanın yatay kaymasıyla karıştırılmaz. Formlar pencere değişince yeniden dizilir, girilen metin kaybolmaz. Yeni durumlar, eski yükleniyor/hata/iptal/onay/geri alma ve çevrimdışı davranışlarının yerine geçmez.
 
 Geçmiş kullanıcı şikâyetleri: erken resize attribute hatası, silinen Qt nesnesine geç callback, belirsiz Windows beklemesi, belirsiz bakım 2/3 sayacı, bulunamayan font/tema, bilinmeyen sürücü kodu, motor kopmasında sonsuz bekleme ve büyük yazıda kaybolan içerik. İlgili eski testler korunur; yeni ekran/profil ve alt bölüm testleri eklenir. Fonksiyonel ve görsel Windows QA kaydı AIONIA-1.2-QA.md içindedir.
+
+## Gerçek Windows ekranları
+
+6.9.0 Setup, Windows CI; aşağıdaki on görüntü açık tema, Türkçe, paketli OpenDyslexic ve %100 arayüz/yazı profilidir. Test fontu varsayılan font seçimi değildir. Görüntüler değiştirilmeden kopyalanmıştır; ekran görüntüsü tek başına işlev testi sayılmaz. Dar pencerede yerel bölüm seçicisi kullanılır.
+
+[home](screenshots/6.9.0/home.png) · [scanFix](screenshots/6.9.0/scanFix.png) · [cleanup](screenshots/6.9.0/cleanup.png) · [drivers](screenshots/6.9.0/drivers.png) · [hardware](screenshots/6.9.0/hardware.png) · [startup](screenshots/6.9.0/startup.png) · [workshop](screenshots/6.9.0/workshop.png) · [tools](screenshots/6.9.0/tools.png) · [history](screenshots/6.9.0/history.png) · [settings](screenshots/6.9.0/settings.png)
+
+Büyük yazı sınır örnekleri (%200 arayüz × %125 yazı, 540 mantıksal px): [koyu/TR](screenshots/6.9.0/large-dark-tr-settings-scale.png), [açık/EN](screenshots/6.9.0/large-light-en-settings-scale.png). Bu uç profilde içerik dikey kaydırılır; yüzde alanı ve hazır seçenekler içeride kalır.
+
+Paket kanıtında dört profil × on sayfa = 40 kayıt bulunur: geniş/açık/TR 1240 px, dar/koyu/EN 540 px, büyük/koyu/TR ve büyük/açık/EN 540 px. Bunlar Windows pencere testleridir; fiziksel telefon/tablet veya web sürümü doğrulaması değildir.

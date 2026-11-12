@@ -1,5 +1,13 @@
 # WinOptimizer Aion Forge
 
+Durum: **6.9.0 AIONIA v1.2; Windows Qt altyapısı korunur.** Kaynak `34468ca6720898fed73e454f2c5620ad1ce98135`, PR #20, merge `4b31845d1c2982ffe86eee8d1342428f371b741e`, metadata `9f0ec09bd1d8501c7972e70e443057853c3fd885`, yayın `443110396`. 237 Qt/58 Node; kaynak/PR/main, Setup/Portable/reopen, 40 layout profili, hareket ve 6.8→6.9 gerçek güncelleme PASS. İlk update helper sekme varsayımı gerçek Section seçicisiyle düzeltildi; ürün payload'ı değişmedi.
+
+DESIGN_BRIEF, SCREEN_INVENTORY, AIONIA-1.2-QA ve VALIDATION güncel. Sarılan native kontroller, tek ana eylem, anlamlı başlık/kategoriler, responsive form/preset, giriş ve açıklık durumunu koruma; önceki startup/disposal/backend/recovery güvenlik regresyonları korunur. Aion/logo yeniden tasarlanmadı; onaysız canon eklenmedi. Fiziksel cihaz/ekran okuyucu/tam WCAG/perf/pentest NOT TESTED. Driver Booster tam paritesi yok. Kapsamı genişletirken bu sınırları ve mevcut onay/yedek/imza/hash kurallarını koru.
+
+Özel Drive sürüm klasörü `1lzKb04IkVc96msVGtzwR5dF8ouQLyThU`; her push/merge için kaynak+tam Git+receipt, iki bütün EXE ve kaynak/kanıt arşivi ham geri okuma/hash/ZIP/bundle denetiminden geçer. Özel anahtarları yükleme. Son canonical receipt önceki 414 kaydı değiştirmeden yeni doğrulanan kayıtları ekler.
+
+## Önceki 6.8.0 kaydı
+
 Durum: **6.8.0 kararlı/latest; AIONIA v1.1 masaüstü kullanılabilirliği tamamlandı.** Kaynak/etiket `0d31aa570f099011c141d249e27e75ee7b3a3b31`, PR #19, merge `b7235a8da68246ab6119af05f996bee9c518ca7b`, metadata `a7b4bc8bb6df8fd1e625210e3528031f05fa2348`, yayın `442995150`.
 
 Kullanıcı Godot değil normal uygulama olduğunu açıkladı ve v1.1 teknoloji bağımsız standardı verdi. Resmi Drive belgesi bölüm 11 geçerlidir; Windows Python/Qt/headless Node/PowerShell altyapısını değiştirme. Yeni motor/framework/telemetri yok. 00_BAŞLA ve 19 görsel incelendi; onaysız canonical adı/logo/Emre sprite'ı kesinleşmiş kabul edilmez. Mevcut Aion ve çarklı ikon korunur; diğer karakterleri bu araca zorla ekleme. Standart uygulaması docs/AIONIA_STANDARD.md; tasarım/asset kaynakları APP_DESIGN.md, ART_BIBLE.md, AIONIA-REFERENCES.json.

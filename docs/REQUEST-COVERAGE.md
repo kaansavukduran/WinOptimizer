@@ -1,9 +1,10 @@
 # İsteklerin kapsam kaydı
 
-Bu kayıt, yapılan işi başka bir uygulamanın bütün özellikleriyle eşit göstermemek için tutulur. Son yayımlanmış kanıtlar `VALIDATION.md` içindedir. 6.7.0, gerçek Windows Setup/Portable, hareket açık animasyon ve 6.6.0 → 6.7.0 uygulama içi güncelleme kontrollerinden geçerek kararlı yayımlandı.
+Bu kayıt, yapılan işi başka bir uygulamanın bütün özellikleriyle eşit göstermemek için tutulur. Son yayımlanmış 6.9.0 kanıtları `VALIDATION.md` içindedir. 6.7.0, gerçek Windows Setup/Portable, hareket açık animasyon ve 6.6.0 → 6.7.0 uygulama içi güncelleme kontrollerinden geçerek kararlı yayımlandı.
 
 | Önceki istek | Durum / uygulamadaki yeri |
 | --- | --- |
+| AIONIA v1.2 bütünsel UX/tema/yerleşim | 6.9: Sarılan kontroller, bölüm hiyerarşisi, tek ana eylem, yeniden dizilen formlar ve okunur presetler. 237 Qt/58 Node, gerçek Windows paketleri/40 profil ve 6.8→6.9 güncelleme PASS. Fiziksel cihaz/yardımcı teknoloji/tam denetim sınırları AIONIA-1.2-QA.md içinde. |
 | AIONIA v1.1 teknoloji bağımsız kalite standardı | 6.8: Dar ekran/klavye/rehber/kontrast/açılış; mevcut Qt ve onaylı Aion korunur. Gerçek Windows ve güncelleme PASS; yardımcı teknoloji, fiziksel cihaz, perf ve tam denetim sınırları AIONIA-QA.md içinde. |
 | Yalnız Windows, Chromium olmadan bağımsız uygulama | Tamam: Python/Qt Widgets, paketli Node, Windows PowerShell. Başka OS paketi veya donor alt uygulama yok. |
 | Setup ve portable, ayrı sürümler, uygulama içi güncelleme | Tamam: sürümlü iki EXE; imzalı güncelleme metadatası ve dosya özeti, gerçek iki paketle güncelleme kontrolü. Portable Data klasörünü korur. |
